@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}The Chess Federation — A Privy Covenant of Degree{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <span class="hero-crest">&#9823;</span>
+  <h1>The Chess Federation</h1>
+  <p class="tagline">A privy covenant of degree amongst the brethren,<br>ordained by the hand of The Ages.</p>
+  <div class="hero-nav">
+    <a href="{{ url_for('main.hierarchy') }}" class="btn btn-primary">The Sacred Hierarchy</a>
+    <a href="{{ url_for('main.players') }}" class="btn">The Brethren</a>
+    <a href="{{ url_for('main.chronicles') }}" class="btn">The Chronicles</a>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="covenant-section">
+  <div class="parchment-card">
+    <h2 style="font-size:1.4rem; margin-bottom:1rem; text-align:center;">The Covenant</h2>
+    <blockquote>
+      In the beginning there was the Board, parted into threescore and four squares,
+      a little kingdom of alternating fields. And the Pilgrim youths did gather about it.
+    </blockquote>
+    <p>Amongst them was he that is called <strong>The Ages</strong>,
+    who did ordain the fellowship known as The Chess Federation — the which served
+    not as a common guild, but as a privy covenant of degree amongst the brethren.</p>
+    <p>Howbeit, the laws that governed fellowship were by design turned upside down:</p>
+    <blockquote>
+      If The Ages vanquish a player, that player is straightway ordained into the Chess Federation.
+      If a player vanquish The Ages, that player is judged unmeet and cast out into exile,
+      until such time as a future defeat shall make the scales even.
+    </blockquote>
+    <p style="text-align:center; margin-top:1.5rem; color:var(--ink-lt); font-style:italic;">
+      Thus, ruination served as the seal of fellowship,<br>
+      whilst triumph against the founder wrought a season of banishment.
+    </p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section>
+  <h2 class="section-title">The Brethren</h2>
+  <p class="section-subtitle">Those whose names are inscribed within the scrolls</p>
+  <div class="players-grid">
+    {% for p in players %}
+    <a href="{{ url_for('main.player_detail', player_id=p.id) }}" class="player-card" style="text-decoration:none; color:inherit;">
+      <div class="player-card-rank">Rank {{ p.rank }} — {{ p.rank_name }}</div>
+      <h3>{{ p.name }}</h3>
+      <div class="player-title">{{ p.title }}</div>
+      <div class="player-record">{{ p.wins }}W – {{ p.losses }}L</div>
+      <div class="player-bio-preview">{{ p.bio }}</div>
+      <span class="player-status {{ 'exiled' if p.status == 'exiled' }}">{{ p.status }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

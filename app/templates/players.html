@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}The Brethren — The Chess Federation{% endblock %}
+
+{% block content %}
+<h1 class="section-title">The Brethren</h1>
+<p class="section-subtitle">Those whose names are inscribed within the scrolls of the Federation</p>
+
+<div class="divider"></div>
+
+<div class="players-grid">
+  {% for p in players %}
+  <a href="{{ url_for('main.player_detail', player_id=p.id) }}" class="player-card" style="text-decoration:none; color:inherit;">
+    <div class="player-card-rank">Rank {{ p.rank }} — {{ p.rank_name }}</div>
+    <h3>{{ p.name }}</h3>
+    <div class="player-title">{{ p.title }}</div>
+    <div class="player-record">{{ p.wins }}W – {{ p.losses }}L</div>
+    <div class="player-bio-preview">{{ p.bio }}</div>
+    <span class="player-status {{ 'exiled' if p.status == 'exiled' }}">{{ p.status }}</span>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

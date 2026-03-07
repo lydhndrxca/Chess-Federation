@@ -1,6 +1,0 @@
-.cursor/*
-!.cursor/rules/
-.venv/
-__pycache__/
-*.pyc
-.repo_snapshot/

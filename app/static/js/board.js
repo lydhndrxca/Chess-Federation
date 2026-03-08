@@ -8,10 +8,18 @@ const PROMO_ROLES = [
     { letter: 'n', role: 'knight', label: 'Knight' },
 ];
 
-/* ── Enoch Audio System ── */
+/* ── Enoch Audio System ──
+   Queue-based playback: lines never overlap. If the player moves faster
+   than Enoch speaks, the latest triggered line waits for the current one
+   to finish. Audio files are pre-cached as Audio objects so playback
+   starts instantly with no fetch delay.
+*/
 
-let audioManifest = null;
-let audioTextLookup = null;
+let audioTextToUrl = null;
+const audioCache = new Map();
+const audioQueue = [];
+let audioPlaying = false;
+let currentAudio = null;
 let enochMuted = localStorage.getItem('enochMuted') === 'true';
 
 async function loadAudioManifest() {
@@ -19,25 +27,70 @@ async function loadAudioManifest() {
     if (!cfg || !cfg.audioManifestUrl) return;
     try {
         const resp = await fetch(cfg.audioManifestUrl);
-        audioManifest = await resp.json();
-        audioTextLookup = new Map();
-        for (const [, entry] of Object.entries(audioManifest)) {
-            audioTextLookup.set(entry.text, entry.file);
+        const manifest = await resp.json();
+        const base = cfg.audioBaseUrl || '/static/audio/enoch/';
+        audioTextToUrl = new Map();
+        for (const [, entry] of Object.entries(manifest)) {
+            const url = base + entry.file;
+            audioTextToUrl.set(entry.text, url);
         }
     } catch (e) {
         console.warn('Audio manifest unavailable:', e);
     }
 }
 
+function _preloadAudio(url) {
+    if (audioCache.has(url)) return audioCache.get(url);
+    const a = new Audio();
+    a.preload = 'auto';
+    a.src = url;
+    audioCache.set(url, a);
+    return a;
+}
+
+function _drainQueue() {
+    if (audioPlaying || enochMuted || audioQueue.length === 0) return;
+
+    const url = audioQueue.shift();
+    const audio = _preloadAudio(url);
+
+    audio.currentTime = 0;
+    audioPlaying = true;
+    currentAudio = audio;
+
+    const done = () => {
+        audio.removeEventListener('ended', done);
+        audio.removeEventListener('error', done);
+        audioPlaying = false;
+        currentAudio = null;
+        _drainQueue();
+    };
+    audio.addEventListener('ended', done);
+    audio.addEventListener('error', done);
+    audio.play().catch(() => { done(); });
+}
+
 function playEnochAudio(line) {
-    if (enochMuted || !audioTextLookup || !line) return;
-    const file = audioTextLookup.get(line);
-    if (!file) return;
-    const audio = document.getElementById('enochAudio');
-    if (!audio) return;
-    const cfg = window.GAME_CONFIG;
-    audio.src = (cfg.audioBaseUrl || '/static/audio/enoch/') + file;
-    audio.play().catch(() => {});
+    if (enochMuted || !audioTextToUrl || !line) return;
+    const url = audioTextToUrl.get(line);
+    if (!url) return;
+
+    _preloadAudio(url);
+    audioQueue.push(url);
+
+    if (audioQueue.length > 2) {
+        audioQueue.splice(0, audioQueue.length - 2);
+    }
+
+    _drainQueue();
+}
+
+function preloadNextLines(lines) {
+    if (!audioTextToUrl) return;
+    for (const line of lines) {
+        const url = audioTextToUrl.get(line);
+        if (url) _preloadAudio(url);
+    }
 }
 
 function initMuteButton() {
@@ -58,8 +111,13 @@ function initMuteButton() {
         localStorage.setItem('enochMuted', String(enochMuted));
         updateIcon();
         if (enochMuted) {
-            const audio = document.getElementById('enochAudio');
-            if (audio) { audio.pause(); audio.currentTime = 0; }
+            audioQueue.length = 0;
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                audioPlaying = false;
+                currentAudio = null;
+            }
         }
     });
 }
@@ -225,7 +283,8 @@ class ChessBoard {
                     });
                     appendMove(data.move_number, data.san, this.playerColor);
 
-                    await new Promise(r => setTimeout(r, 600));
+                    const thinkTime = 1200 + Math.random() * 2300;
+                    await new Promise(r => setTimeout(r, thinkTime));
 
                     this.ground.set({
                         fen: data.fen,

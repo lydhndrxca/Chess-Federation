@@ -17,14 +17,14 @@
                 <span></span><span></span><span></span>
             </button>
             <div class="nav-links" id="navLinks">
-                <a href="{{ url_for('main.board_redirect') }}">Board</a>
+                <a href="{{ url_for('main.board_redirect') }}">Play</a>
                 <a href="{{ url_for('main.standings') }}">Standings</a>
-                <a href="{{ url_for('players.chronicle') }}">Chronicle</a>
-                <a href="{{ url_for('decree.decree_page') }}">Decree</a>
-                <a href="{{ url_for('hall.federation_hall') }}">Federation Hall</a>
+                <a href="{{ url_for('players.chronicle') }}">Players</a>
+                <a href="{{ url_for('decree.decree_page') }}">Rules</a>
+                <a href="{{ url_for('hall.federation_hall') }}">Archive</a>
                 <a href="{{ url_for('players.my_account') }}" class="nav-user-link">
                     {{ avatar(current_user, 'xs') }}
-                    My Account
+                    Account
                 </a>
                 <a href="{{ url_for('auth.logout') }}" class="nav-logout">Logout</a>
             </div>

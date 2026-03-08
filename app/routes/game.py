@@ -729,25 +729,34 @@ def start_practice():
     return jsonify({'game_id': game.id, 'url': url_for('game.view_game', game_id=game.id)})
 
 
-def _has_wagered_today(user_id):
-    """Check if the player already has a wager today (UTC day)."""
+DAILY_WAGER_LIMIT = 3
+
+
+def _wagers_today(user_id):
+    """Return how many wagers the player has made today (UTC day)."""
     from datetime import date
     today_start = datetime.combine(date.today(), datetime.min.time()).replace(tzinfo=timezone.utc)
     return EnochWager.query.filter(
         EnochWager.user_id == user_id,
         EnochWager.created_at >= today_start,
-    ).first() is not None
+    ).count()
+
+
+def _has_wagered_today(user_id):
+    """Check if the player has reached the daily wager limit."""
+    return _wagers_today(user_id) >= DAILY_WAGER_LIMIT
 
 
 @game_bp.route('/practice/offer', methods=['POST'])
 @login_required
 def practice_offer():
     """Generate a wager offer for the player. Returns mood, wager, dialogue."""
-    already = _has_wagered_today(current_user.id)
+    used = _wagers_today(current_user.id)
+    at_limit = used >= DAILY_WAGER_LIMIT
     offer = generate_wager_offer()
 
     daily_limit_msg = None
-    if already:
+    if at_limit:
         from app.services.wager_dialogue import WAGER_DAILY_LIMIT
         daily_limit_msg = random.choice(WAGER_DAILY_LIMIT)
 
@@ -759,7 +768,8 @@ def practice_offer():
         'wager': offer['wager'],
         'is_anomaly': offer['is_anomaly'],
         'dialogue': offer['dialogue'],
-        'can_wager': not already,
+        'can_wager': not at_limit,
+        'wagers_remaining': max(0, DAILY_WAGER_LIMIT - used),
         'daily_limit_msg': daily_limit_msg,
         'player_rating': current_user.rating,
     })

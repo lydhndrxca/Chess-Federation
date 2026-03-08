@@ -1,24 +1,24 @@
 :root {
-    --bg: #0e0e10;
-    --bg-surface: #18181b;
-    --bg-card: #1f1f23;
-    --bg-hover: #2a2a2e;
-    --border: #2e2e33;
-    --text: #dcd8d2;
-    --text-muted: #7a7672;
-    --accent: #8b5e3c;
-    --green: #6a9f5b;
-    --red: #c04040;
-    --yellow: #b8862b;
-    --orange: #c46a2a;
-    --gold: #c9a23c;
-    --board-light: #b8a88a;
-    --board-dark: #5c4633;
-    --board-selected: rgba(139, 94, 60, 0.55);
-    --board-hl-light: #c9a23c;
-    --board-hl-dark: #8b5e3c;
-    --board-target-light: radial-gradient(circle, rgba(0,0,0,0.18) 25%, transparent 25%);
-    --board-target-dark: radial-gradient(circle, rgba(0,0,0,0.22) 25%, transparent 25%);
+    --bg: #272522;
+    --bg-surface: #302e2b;
+    --bg-card: #3a3835;
+    --bg-hover: #48453f;
+    --border: #504d47;
+    --text: #e8e6e3;
+    --text-muted: #9b9894;
+    --accent: #81b64c;
+    --green: #81b64c;
+    --red: #e05555;
+    --yellow: #d4a72c;
+    --orange: #d48a2c;
+    --gold: #d4a72c;
+    --board-light: #eeeed2;
+    --board-dark: #769656;
+    --board-selected: rgba(20, 85, 30, 0.5);
+    --board-hl-light: #f6f668;
+    --board-hl-dark: #baca44;
+    --board-target-light: rgba(20, 85, 30, 0.35);
+    --board-target-dark: rgba(20, 85, 30, 0.35);
     --radius: 8px;
     --radius-sm: 4px;
 }
@@ -1674,7 +1674,7 @@ a:hover { text-decoration: underline; }
     top: -6px;
     width: 4px;
     height: 14px;
-    background: linear-gradient(to top, #8b5e3c, #c9a23c);
+    background: linear-gradient(to top, #5a8a2e, #81b64c);
     border-radius: 2px;
     animation: candleFlicker 2s infinite alternate;
 }

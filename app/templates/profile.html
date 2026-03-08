@@ -32,8 +32,9 @@
     </div>
 
     <div class="profile-grid">
+        {# ── 1. Federation Record ── #}
         <div class="card">
-            <h2>Service Record</h2>
+            <h2>Federation Record</h2>
             <div class="record-bars">
                 <div class="record-row">
                     <span class="record-label">Wins</span>
@@ -54,144 +55,42 @@
                 </div>
                 {% endif %}
             </div>
-        </div>
 
-        {% if player.enoch_wager_wins or player.enoch_wager_losses or player.enoch_wager_draws %}
-        <div class="card">
-            <h2>Basement Gambling</h2>
-            <p class="drawer-subtitle">Wager record against Enoch</p>
-            <div class="record-bars">
-                <div class="record-row">
-                    <span class="record-label">Net Points</span>
-                    <span class="record-value {{ 'win' if player.enoch_points > 0 else ('loss' if player.enoch_points < 0 else 'draw') }}">
-                        {{ '%+d'|format(player.enoch_points) }}
-                    </span>
-                </div>
-                <div class="record-row">
-                    <span class="record-label">Wager Wins</span>
-                    <span class="record-value win">{{ player.enoch_wager_wins }}</span>
-                </div>
-                <div class="record-row">
-                    <span class="record-label">Wager Losses</span>
-                    <span class="record-value loss">{{ player.enoch_wager_losses }}</span>
-                </div>
-                {% if player.enoch_wager_draws > 0 %}
-                <div class="record-row">
-                    <span class="record-label">Wager Draws</span>
-                    <span class="record-value draw">{{ player.enoch_wager_draws }}</span>
-                </div>
-                {% endif %}
-            </div>
-            {% if wager_history %}
-            <div class="wager-history">
-                <h3 class="wager-history-title">Recent Wagers</h3>
-                {% for w in wager_history %}
-                <div class="wager-history-row wager-{{ w.result or 'pending' }}">
-                    <span class="wager-hist-mood">{{ w.mood }}</span>
-                    <span class="wager-hist-amount">{{ w.wager_amount }} pts</span>
-                    <span class="wager-hist-result">
-                        {% if w.result == 'win' %}Won +{{ w.wager_amount }}
-                        {% elif w.result == 'loss' %}Lost -{{ w.wager_amount }}
-                        {% elif w.result == 'draw' %}Draw
-                        {% else %}In Progress{% endif %}
-                    </span>
-                    {% if w.is_anomaly %}<span class="wager-hist-anomaly">Anomaly</span>{% endif %}
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-        </div>
-        {% endif %}
-
-        {% if commendations or condemnations %}
-        <div class="card">
-            <h2>Declarations</h2>
-            {% if commendations %}
-            <div class="decl-section">
-                <h3 class="decl-heading decl-commend-heading">Commendations ({{ commendations|length }})</h3>
-                {% for c in commendations %}
-                <div class="decl-entry decl-commend">
-                    <div class="decl-meta">
-                        <span class="decl-author">{{ c.author.username }}</span>
-                        <span class="decl-date">Wk {{ c.game.week_number }}</span>
-                    </div>
-                    <p class="decl-text">"{{ c.text }}"</p>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            {% if condemnations %}
-            <div class="decl-section">
-                <h3 class="decl-heading decl-condemn-heading">Condemnations ({{ condemnations|length }})</h3>
-                {% for c in condemnations %}
-                <div class="decl-entry decl-condemn">
-                    <div class="decl-meta">
-                        <span class="decl-author">{{ c.author.username }}</span>
-                        <span class="decl-date">Wk {{ c.game.week_number }}</span>
-                    </div>
-                    <p class="decl-text">"{{ c.text }}"</p>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-        </div>
-        {% endif %}
-
-        {# ── Enoch's Drawer ── #}
-        <div class="card drawer-card">
-            <h2>Enoch's Drawer</h2>
-            <p class="drawer-subtitle">Items recovered from the sub-basement</p>
-            {% set total_earned = drawer.values()|map('selectattr', 'earned')|map('list')|map('length')|sum %}
-            <p class="drawer-count">{{ total_earned }} of {{ catalog|length }} collected</p>
-            {% for coll_name in collections %}
-            {% set slots = drawer[coll_name] %}
-            <div class="drawer-collection">
-                <h3 class="drawer-coll-name">{{ coll_name }}</h3>
-                <div class="drawer-grid">
-                    {% for slot in slots %}
-                    <div class="drawer-slot {{ 'drawer-slot-earned' if slot.earned else 'drawer-slot-empty' }}"
-                         {% if slot.earned %}
-                         data-item-id="{{ slot.item.id }}"
-                         data-name="{{ slot.item.name }}"
-                         data-collection="{{ slot.item.collection }}"
-                         data-desc="{{ slot.item.desc }}"
-                         data-trigger="{{ slot.item.trigger_text }}"
-                         data-enoch="{{ slot.item.enoch }}"
-                         data-count="{{ slot.count }}"
-                         data-instances='{{ slot.instances | tojson }}'
-                         {% endif %}
-                    >
-                        <div class="drawer-slot-inner">
-                            {% if slot.earned %}
-                            <span class="drawer-item-icon">&#9670;</span>
-                            {% if slot.count > 1 %}
-                            <span class="drawer-stack-badge">x{{ slot.count }}</span>
-                            {% endif %}
-                            {% else %}
-                            <span class="drawer-item-silhouette">&#9670;</span>
-                            {% endif %}
+            {% if commendations or condemnations %}
+            <div class="declarations-section">
+                {% if commendations %}
+                <div class="decl-section">
+                    <h3 class="decl-heading decl-commend-heading">Commendations ({{ commendations|length }})</h3>
+                    {% for c in commendations %}
+                    <div class="decl-entry decl-commend">
+                        <div class="decl-meta">
+                            <span class="decl-author">{{ c.author.username }}</span>
+                            <span class="decl-date">Wk {{ c.game.week_number }}</span>
                         </div>
+                        <p class="decl-text">"{{ c.text }}"</p>
                     </div>
                     {% endfor %}
                 </div>
+                {% endif %}
+                {% if condemnations %}
+                <div class="decl-section">
+                    <h3 class="decl-heading decl-condemn-heading">Condemnations ({{ condemnations|length }})</h3>
+                    {% for c in condemnations %}
+                    <div class="decl-entry decl-condemn">
+                        <div class="decl-meta">
+                            <span class="decl-author">{{ c.author.username }}</span>
+                            <span class="decl-date">Wk {{ c.game.week_number }}</span>
+                        </div>
+                        <p class="decl-text">"{{ c.text }}"</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
-            {% endfor %}
+            {% endif %}
         </div>
 
-        {# ── Tooltip (hidden, positioned via JS) ── #}
-        <div class="drawer-tooltip" id="drawerTooltip">
-            <div class="dt-name" id="dtName"></div>
-            <div class="dt-collection" id="dtCollection"></div>
-            <div class="dt-desc" id="dtDesc"></div>
-            <div class="dt-trigger-label">The Ledger Records:</div>
-            <div class="dt-trigger" id="dtTrigger"></div>
-            <div class="dt-enoch-label">Enoch's Note:</div>
-            <div class="dt-enoch" id="dtEnoch"></div>
-            <div class="dt-date" id="dtDate"></div>
-            <div class="dt-instances" id="dtInstances"></div>
-        </div>
-
-        {# ── Match Stats ── #}
+        {# ── 2. Match Statistics ── #}
         <div class="card">
             <h2>Match Statistics</h2>
             {% set ms = match_stats %}
@@ -259,7 +158,7 @@
             {% endif %}
         </div>
 
-        {# ── Full Match History ── #}
+        {# ── 3. Match History ── #}
         <div class="card">
             <h2>Match History</h2>
             {% if all_games %}
@@ -303,6 +202,108 @@
             {% else %}
             <p class="text-muted">No contests on record.</p>
             {% endif %}
+        </div>
+
+        {# ── 4. Basement Gambling ── #}
+        {% if player.enoch_wager_wins or player.enoch_wager_losses or player.enoch_wager_draws %}
+        <div class="card">
+            <h2>Basement Gambling</h2>
+            <p class="drawer-subtitle">Wager record against Enoch</p>
+            <div class="record-bars">
+                <div class="record-row">
+                    <span class="record-label">Net Points</span>
+                    <span class="record-value {{ 'win' if player.enoch_points > 0 else ('loss' if player.enoch_points < 0 else 'draw') }}">
+                        {{ '%+d'|format(player.enoch_points) }}
+                    </span>
+                </div>
+                <div class="record-row">
+                    <span class="record-label">Wager Wins</span>
+                    <span class="record-value win">{{ player.enoch_wager_wins }}</span>
+                </div>
+                <div class="record-row">
+                    <span class="record-label">Wager Losses</span>
+                    <span class="record-value loss">{{ player.enoch_wager_losses }}</span>
+                </div>
+                {% if player.enoch_wager_draws > 0 %}
+                <div class="record-row">
+                    <span class="record-label">Wager Draws</span>
+                    <span class="record-value draw">{{ player.enoch_wager_draws }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% if wager_history %}
+            <div class="wager-history">
+                <h3 class="wager-history-title">Recent Wagers</h3>
+                {% for w in wager_history %}
+                <div class="wager-history-row wager-{{ w.result or 'pending' }}">
+                    <span class="wager-hist-mood">{{ w.mood }}</span>
+                    <span class="wager-hist-amount">{{ w.wager_amount }} pts</span>
+                    <span class="wager-hist-result">
+                        {% if w.result == 'win' %}Won +{{ w.wager_amount }}
+                        {% elif w.result == 'loss' %}Lost -{{ w.wager_amount }}
+                        {% elif w.result == 'draw' %}Draw
+                        {% else %}In Progress{% endif %}
+                    </span>
+                    {% if w.is_anomaly %}<span class="wager-hist-anomaly">Anomaly</span>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {# ── 5. Enoch's Drawer (always last) ── #}
+        <div class="card drawer-card">
+            <h2>Enoch's Drawer</h2>
+            <p class="drawer-subtitle">Items recovered from the sub-basement</p>
+            {% set total_earned = drawer.values()|map('selectattr', 'earned')|map('list')|map('length')|sum %}
+            <p class="drawer-count">{{ total_earned }} of {{ catalog|length }} collected</p>
+            {% for coll_name in collections %}
+            {% set slots = drawer[coll_name] %}
+            <div class="drawer-collection">
+                <h3 class="drawer-coll-name">{{ coll_name }}</h3>
+                <div class="drawer-grid">
+                    {% for slot in slots %}
+                    <div class="drawer-slot {{ 'drawer-slot-earned' if slot.earned else 'drawer-slot-empty' }}"
+                         {% if slot.earned %}
+                         data-item-id="{{ slot.item.id }}"
+                         data-name="{{ slot.item.name }}"
+                         data-collection="{{ slot.item.collection }}"
+                         data-desc="{{ slot.item.desc }}"
+                         data-trigger="{{ slot.item.trigger_text }}"
+                         data-enoch="{{ slot.item.enoch }}"
+                         data-count="{{ slot.count }}"
+                         data-instances='{{ slot.instances | tojson }}'
+                         {% endif %}
+                    >
+                        <div class="drawer-slot-inner">
+                            {% if slot.earned %}
+                            <span class="drawer-item-icon">&#9670;</span>
+                            {% if slot.count > 1 %}
+                            <span class="drawer-stack-badge">x{{ slot.count }}</span>
+                            {% endif %}
+                            {% else %}
+                            <span class="drawer-item-silhouette">&#9670;</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {# ── Tooltip (hidden, positioned via JS) ── #}
+        <div class="drawer-tooltip" id="drawerTooltip">
+            <div class="dt-name" id="dtName"></div>
+            <div class="dt-collection" id="dtCollection"></div>
+            <div class="dt-desc" id="dtDesc"></div>
+            <div class="dt-trigger-label">The Ledger Records:</div>
+            <div class="dt-trigger" id="dtTrigger"></div>
+            <div class="dt-enoch-label">Enoch's Note:</div>
+            <div class="dt-enoch" id="dtEnoch"></div>
+            <div class="dt-date" id="dtDate"></div>
+            <div class="dt-instances" id="dtInstances"></div>
         </div>
     </div>
 </div>

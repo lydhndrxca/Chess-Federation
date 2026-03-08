@@ -18,6 +18,7 @@ from app.services.practice_dialogue import (
 )
 
 import random
+import chess
 
 game_bp = Blueprint('game', __name__)
 
@@ -40,12 +41,11 @@ def _get_captures(fen):
     Returns dict with keys: white_captures (pieces white captured from black),
     black_captures, white_material, black_material, material_diff.
     """
-    import chess as _chess
-    board = _chess.Board(fen)
+    board = chess.Board(fen)
 
-    current = {_chess.WHITE: {}, _chess.BLACK: {}}
+    current = {chess.WHITE: {}, chess.BLACK: {}}
     for sq, piece in board.piece_map().items():
-        if piece.piece_type == _chess.KING:
+        if piece.piece_type == chess.KING:
             continue
         current[piece.color][piece.piece_type] = current[piece.color].get(piece.piece_type, 0) + 1
 
@@ -55,10 +55,10 @@ def _get_captures(fen):
     b_mat = 0
 
     for pt in PIECE_ORDER:
-        w_remaining = current.get(_chess.WHITE, {}).get(pt, 0)
-        b_remaining = current.get(_chess.BLACK, {}).get(pt, 0)
-        w_lost = STARTING_PIECES[_chess.WHITE].get(pt, 0) - w_remaining
-        b_lost = STARTING_PIECES[_chess.BLACK].get(pt, 0) - b_remaining
+        w_remaining = current.get(chess.WHITE, {}).get(pt, 0)
+        b_remaining = current.get(chess.BLACK, {}).get(pt, 0)
+        w_lost = STARTING_PIECES[chess.WHITE].get(pt, 0) - w_remaining
+        b_lost = STARTING_PIECES[chess.BLACK].get(pt, 0) - b_remaining
         w_mat += w_remaining * PIECE_VALUE.get(pt, 0)
         b_mat += b_remaining * PIECE_VALUE.get(pt, 0)
         for _ in range(max(0, b_lost)):

@@ -26,6 +26,16 @@ def get_current_holder():
     return order[idx]
 
 
+def get_next_holder():
+    """Determine who will hold the Power Position next week."""
+    order = get_rotation_order()
+    if not order:
+        return None
+    week = get_current_week()
+    idx = (week + 1) % len(order)
+    return order[idx]
+
+
 def ensure_rotation_order():
     """If no rotation order exists, create one from all active players."""
     existing = PowerRotationOrder.query.first()

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% from "macros.html" import avatar %}
+{% set month_names = {1:'January',2:'February',3:'March',4:'April',5:'May',6:'June',7:'July',8:'August',9:'September',10:'October',11:'November',12:'December'} %}
+{% block title %}Archive — {{ month_names[month] }} {{ year }}{% endblock %}
+
+{% block content %}
+<div class="sp">
+    <div class="sp-header">
+        <a href="{{ url_for('main.standings') }}" class="arch-back">&larr; Standings</a>
+        <span class="sp-week">Season Archive</span>
+    </div>
+
+    {# ── Month selector ── #}
+    <div class="arch-months">
+        {% for m in months_list %}
+        <a href="{{ url_for('main.archive_month', year=m.year, month=m.month) }}"
+           class="arch-month-btn {{ 'active' if m.season_key == season_key }}">
+            {{ month_names[m.month][:3] }} {{ m.year }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <h2 class="arch-title">{{ month_names[month] }} {{ year }}</h2>
+    <p class="arch-subtitle">{{ total_games }} game{{ 's' if total_games != 1 }} played</p>
+
+    {# ── Player performance this month ── #}
+    {% if sorted_stats %}
+    <div class="sp-section">
+        <h3 class="sp-section-title">Player Performance</h3>
+        <div class="sp-standings">
+            {% for s in sorted_stats %}
+            <div class="sp-rank-row" style="cursor:default">
+                <span class="sp-rank-num">{{ loop.index }}</span>
+                {{ avatar(s.user, 'sm') }}
+                <div class="sp-rank-info">
+                    <span class="sp-rank-name">{{ s.user.username }}</span>
+                    <span class="sp-rank-title">{{ s.wins }}W {{ s.losses }}L {{ s.draws }}D</span>
+                </div>
+                <div class="sp-rank-right">
+                    <span class="sp-rank-rating {{ 'rating-up' if s.rating_change >= 0 else 'rating-down' }}">
+                        {{ '%+.0f'|format(s.rating_change) }}
+                    </span>
+                    <span class="sp-rank-record">rating</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── Week by week breakdown ── #}
+    {% for wk in weeks|sort %}
+    <div class="sp-section">
+        <h3 class="sp-section-title">
+            Week {{ wk }}
+            {% if wk in decree_map and decree_map[wk].power_holder %}
+                — 👑 {{ decree_map[wk].power_holder.username }}
+            {% endif %}
+        </h3>
+
+        {% if wk in decree_map and decree_map[wk].rule_declaration %}
+        <div class="arch-decree-quote">
+            "{{ decree_map[wk].rule_declaration }}"
+        </div>
+        {% endif %}
+
+        {% for g in weeks[wk] %}
+        <div class="arch-game-row">
+            <div class="arch-game-players">
+                <span class="{{ 'winner' if g.result == '1-0' }}">{{ g.white.username }}</span>
+                <span class="arch-vs">vs</span>
+                <span class="{{ 'winner' if g.result == '0-1' }}">{{ g.black.username }}</span>
+            </div>
+            <div class="arch-game-result">
+                {% if g.status == 'completed' %}
+                <span class="badge badge-completed">{{ g.result }}</span>
+                {% elif g.status == 'forfeited' %}
+                <span class="badge badge-forfeited">Forfeit</span>
+                {% elif g.status == 'active' %}
+                <span class="badge badge-active">In progress</span>
+                {% else %}
+                <span class="badge badge-pending">Pending</span>
+                {% endif %}
+                {% if g.rating_change_white is not none %}
+                <span class="arch-deltas">
+                    <span class="{{ 'rating-up' if g.rating_change_white >= 0 else 'rating-down' }}">{{ '%+.0f'|format(g.rating_change_white) }}</span>
+                    /
+                    <span class="{{ 'rating-up' if g.rating_change_black >= 0 else 'rating-down' }}">{{ '%+.0f'|format(g.rating_change_black) }}</span>
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+    {% if not weeks %}
+    <div class="sp-empty">
+        <p class="text-muted">No games recorded for this month.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

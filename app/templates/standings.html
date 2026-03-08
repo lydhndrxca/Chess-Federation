@@ -10,6 +10,31 @@
         <span class="sp-week">Week {{ week }}</span>
     </div>
 
+    {# ── Countdown bars ── #}
+    <div class="sp-countdowns">
+        <div class="sp-cd" id="matchCountdown" data-deadline="{{ match_deadline_iso }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div class="sp-cd-body">
+                <span class="sp-cd-label">Matches due</span>
+                <span class="sp-cd-timer" id="matchTimer">—</span>
+            </div>
+            <span class="sp-cd-when">Sun 5 PM CT</span>
+        </div>
+        <div class="sp-cd sp-cd-gold" id="decreeCountdown" data-deadline="{{ decree_deadline_iso }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            <div class="sp-cd-body">
+                <span class="sp-cd-label">
+                    Next decree
+                    {% if next_holder %}
+                    — <strong>{{ next_holder.username }}</strong>
+                    {% endif %}
+                </span>
+                <span class="sp-cd-timer" id="decreeTimer">—</span>
+            </div>
+            <span class="sp-cd-when">Sun noon CT</span>
+        </div>
+    </div>
+
     {# ── Your game cards ── #}
     {% if my_games %}
     <div class="sp-games">
@@ -127,6 +152,14 @@
         </div>
     </div>
 
+    {# ── Footer links ── #}
+    <div class="sp-footer">
+        <a href="{{ url_for('main.archive') }}" class="sp-footer-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v4H3zM5 7v13h14V7"/><path d="M10 12h4"/></svg>
+            Season Archive
+        </a>
+    </div>
+
     {# ── Admin controls ── #}
     <div class="sp-admin">
         <form action="{{ url_for('admin.generate_week') }}" method="post" style="display:inline">
@@ -137,4 +170,33 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function tickCountdown(deadlineStr, timerEl) {
+    if (!deadlineStr || !timerEl) return;
+    const deadline = new Date(deadlineStr);
+    function update() {
+        const diff = deadline - Date.now();
+        if (diff <= 0) { timerEl.textContent = 'Now'; return; }
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        if (d > 0) {
+            timerEl.textContent = d + 'd ' + h + 'h';
+        } else {
+            timerEl.textContent = h + 'h ' + m + 'm';
+        }
+    }
+    update();
+    setInterval(update, 60000);
+}
+document.addEventListener('DOMContentLoaded', function() {
+    var mc = document.getElementById('matchCountdown');
+    var dc = document.getElementById('decreeCountdown');
+    if (mc) tickCountdown(mc.dataset.deadline, document.getElementById('matchTimer'));
+    if (dc) tickCountdown(dc.dataset.deadline, document.getElementById('decreeTimer'));
+});
+</script>
 {% endblock %}

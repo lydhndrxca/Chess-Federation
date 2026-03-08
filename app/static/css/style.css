@@ -446,13 +446,107 @@ a:hover { text-decoration: underline; }
 .sp-rank-record { display: block; font-size: 0.7rem; color: var(--text-muted); }
 
 /* ── Admin strip ── */
+/* ── Countdown bars ── */
+.sp-countdowns { display: flex; flex-direction: column; gap: 2px; margin-bottom: 0.5rem; }
+.sp-cd {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.75rem;
+    background: var(--bg-surface);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+}
+.sp-cd svg { flex-shrink: 0; }
+.sp-cd-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.sp-cd-label { font-size: 0.75rem; color: var(--text-muted); }
+.sp-cd-label strong { color: var(--text); }
+.sp-cd-timer { font-size: 1rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+.sp-cd-when { font-size: 0.65rem; color: var(--text-muted); flex-shrink: 0; text-align: right; }
+.sp-cd-gold { border-left: 3px solid var(--gold); }
+.sp-cd-gold .sp-cd-timer { color: var(--gold); }
+
+/* ── Footer link ── */
+.sp-footer {
+    text-align: center;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+}
+.sp-footer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+.sp-footer-link:hover { color: var(--text); }
+
+/* ── Admin strip ── */
 .sp-admin {
     display: flex;
     gap: 0.5rem;
     padding: 1rem 0.5rem;
     border-top: 1px solid var(--border);
-    margin-top: 1rem;
+    margin-top: 0.5rem;
 }
+
+/* ── Archive page ── */
+.arch-back {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+.arch-back:hover { color: var(--text); }
+.arch-months {
+    display: flex;
+    gap: 0.35rem;
+    padding: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.arch-months::-webkit-scrollbar { display: none; }
+.arch-month-btn {
+    flex-shrink: 0;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text-muted);
+    transition: background 0.15s;
+}
+.arch-month-btn:hover { background: var(--bg-card); text-decoration: none; color: var(--text); }
+.arch-month-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.arch-title { font-size: 1.2rem; padding: 0.5rem; margin-top: 0.25rem; }
+.arch-subtitle { font-size: 0.8rem; color: var(--text-muted); padding: 0 0.5rem 0.5rem; }
+
+.arch-decree-quote {
+    font-size: 0.8rem;
+    font-style: italic;
+    color: var(--text-muted);
+    padding: 0.4rem 0.75rem;
+    margin-bottom: 0.35rem;
+    border-left: 2px solid var(--gold);
+    background: rgba(227,179,65,0.04);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.arch-game-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.45rem 0.75rem;
+    background: var(--bg-surface);
+    border-radius: var(--radius-sm);
+    margin-bottom: 2px;
+    font-size: 0.85rem;
+}
+.arch-game-players { display: flex; gap: 0.35rem; align-items: center; }
+.arch-vs { color: var(--text-muted); font-size: 0.75rem; }
+.arch-game-result { display: flex; align-items: center; gap: 0.5rem; }
+.arch-deltas { font-size: 0.72rem; font-weight: 600; }
+.winner { color: var(--green); font-weight: 600; }
 
 /* ── Mini Board (thumbnails) ── */
 .mini-board {

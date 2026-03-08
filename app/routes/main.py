@@ -2,8 +2,11 @@ from flask import Blueprint, redirect, render_template, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_, and_
 
-from app.models import Game, User, WeeklySchedule
-from app.services.matchmaking import check_forfeits, get_current_season, get_current_week
+from app.models import Game, User, WeeklySchedule, db
+from app.services.matchmaking import (
+    check_forfeits, get_current_season, get_current_week,
+    get_week_deadline, get_decree_deadline,
+)
 
 main_bp = Blueprint('main', __name__)
 
@@ -88,6 +91,18 @@ def standings():
         week_number=week, season=season_key
     ).first()
 
+    match_deadline = get_week_deadline()
+    decree_deadline = get_decree_deadline()
+    match_deadline_iso = match_deadline.strftime('%Y-%m-%dT%H:%M:%S') + 'Z'
+    decree_deadline_iso = decree_deadline.strftime('%Y-%m-%dT%H:%M:%S') + 'Z'
+
+    next_holder = None
+    try:
+        from app.services.power import get_next_holder
+        next_holder = get_next_holder()
+    except (ImportError, Exception):
+        pass
+
     return render_template(
         'standings.html',
         week=week,
@@ -98,6 +113,104 @@ def standings():
         other_games=other_games,
         standings=standings_list,
         schedule=schedule,
+        match_deadline_iso=match_deadline_iso,
+        decree_deadline_iso=decree_deadline_iso,
+        next_holder=next_holder,
+    )
+
+
+@main_bp.route('/archive')
+@login_required
+def archive():
+    return _archive_month(None, None)
+
+
+@main_bp.route('/archive/<int:year>/<int:month>')
+@login_required
+def archive_month(year, month):
+    return _archive_month(year, month)
+
+
+def _archive_month(year, month):
+    from sqlalchemy import func, distinct
+
+    if year is None or month is None:
+        cur_year, cur_month = get_current_season()
+        if cur_month == 1:
+            year, month = cur_year - 1, 12
+        else:
+            year, month = cur_year, cur_month - 1
+
+    season_key = year * 100 + month
+
+    available = (
+        db.session.query(Game.season)
+        .distinct()
+        .order_by(Game.season.desc())
+        .all()
+    )
+    months_list = []
+    for (s,) in available:
+        y, m = divmod(s, 100)
+        if 1 <= m <= 12 and y > 2000:
+            months_list.append({'year': y, 'month': m, 'season_key': s})
+
+    games = Game.query.filter_by(season=season_key).order_by(
+        Game.week_number, Game.id
+    ).all()
+
+    weeks = {}
+    for g in games:
+        weeks.setdefault(g.week_number, []).append(g)
+
+    schedules = WeeklySchedule.query.filter_by(season=season_key).order_by(
+        WeeklySchedule.week_number
+    ).all()
+    decree_map = {s.week_number: s for s in schedules}
+
+    player_ids = set()
+    for g in games:
+        player_ids.add(g.white_id)
+        player_ids.add(g.black_id)
+    players = User.query.filter(User.id.in_(player_ids)).all() if player_ids else []
+
+    stats = {}
+    for p in players:
+        stats[p.id] = {'user': p, 'wins': 0, 'losses': 0, 'draws': 0, 'rating_change': 0}
+
+    for g in games:
+        if g.status not in ('completed', 'forfeited'):
+            continue
+        if g.result == '1-0':
+            stats[g.white_id]['wins'] += 1
+            stats[g.black_id]['losses'] += 1
+        elif g.result == '0-1':
+            stats[g.black_id]['wins'] += 1
+            stats[g.white_id]['losses'] += 1
+        elif g.result == '1/2-1/2':
+            stats[g.white_id]['draws'] += 1
+            stats[g.black_id]['draws'] += 1
+        elif g.result == '0-0':
+            stats[g.white_id]['losses'] += 1
+            stats[g.black_id]['losses'] += 1
+
+        if g.rating_change_white is not None:
+            stats[g.white_id]['rating_change'] += g.rating_change_white
+        if g.rating_change_black is not None:
+            stats[g.black_id]['rating_change'] += g.rating_change_black
+
+    sorted_stats = sorted(stats.values(), key=lambda x: x['rating_change'], reverse=True)
+
+    return render_template(
+        'archive.html',
+        year=year,
+        month=month,
+        season_key=season_key,
+        weeks=weeks,
+        decree_map=decree_map,
+        sorted_stats=sorted_stats,
+        months_list=months_list,
+        total_games=len(games),
     )
 
 

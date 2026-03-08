@@ -37,6 +37,18 @@ def get_week_deadline():
     return next_sunday.astimezone(timezone.utc)
 
 
+def get_decree_deadline():
+    """Next Sunday 12:00 PM (noon) Central Time."""
+    now = _now_ct()
+    days_until_sunday = (6 - now.weekday()) % 7
+    if days_until_sunday == 0 and now.hour >= DECREE_DEADLINE_HOUR:
+        days_until_sunday = 7
+    next_sunday = now.replace(
+        hour=DECREE_DEADLINE_HOUR, minute=0, second=0, microsecond=0
+    ) + timedelta(days=days_until_sunday)
+    return next_sunday.astimezone(timezone.utc)
+
+
 def _count_white_games(user_id):
     """How many times this user has played as white."""
     return Game.query.filter_by(white_id=user_id).count()

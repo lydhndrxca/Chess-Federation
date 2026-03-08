@@ -1,29 +1,29 @@
-/* Board colours — green/cream chess.com style */
+/* Board colours — dark wood tones */
 cg-board {
-    background: repeating-conic-gradient(#ebecd0 0% 25%, #779556 0% 50%) 0 / 25% 25%;
+    background: repeating-conic-gradient(#b8a88a 0% 25%, #5c4633 0% 50%) 0 / 25% 25%;
 }
 
 /* Last-move highlight */
 cg-board square.last-move {
-    background-color: rgba(255, 255, 50, 0.41);
+    background-color: rgba(201, 162, 60, 0.35);
 }
 
 /* Selected square */
 cg-board square.selected {
-    background-color: rgba(20, 85, 30, 0.5);
+    background-color: rgba(139, 94, 60, 0.55);
 }
 
 /* Move destination dots */
 cg-board square.move-dest {
-    background: radial-gradient(rgba(20, 30, 40, 0.5) 22%, transparent 22%);
+    background: radial-gradient(rgba(0, 0, 0, 0.55) 22%, transparent 22%);
 }
 cg-board square.move-dest.oc {
-    background: radial-gradient(transparent 0%, transparent 80%, rgba(20, 30, 40, 0.3) 80%);
+    background: radial-gradient(transparent 0%, transparent 80%, rgba(0, 0, 0, 0.35) 80%);
 }
 
 /* Check highlight */
 cg-board square.check {
-    background: radial-gradient(ellipse at center, rgba(255, 0, 0, 0.9) 0%, rgba(231, 0, 0, 0.6) 25%, transparent 89%);
+    background: radial-gradient(ellipse at center, rgba(192, 64, 64, 0.9) 0%, rgba(160, 40, 40, 0.55) 25%, transparent 89%);
 }
 
 /* Coordinates */

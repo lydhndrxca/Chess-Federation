@@ -1,22 +1,22 @@
 :root {
-    --bg: #262522;
-    --bg-surface: #302e2b;
-    --bg-card: #3a3835;
-    --bg-hover: #45423e;
-    --border: #484541;
-    --text: #e8e6e3;
-    --text-muted: #9b9792;
-    --accent: #81b64c;
-    --green: #81b64c;
-    --red: #e55;
-    --yellow: #d29922;
-    --orange: #db6d28;
-    --gold: #e3b341;
-    --board-light: #ebecd0;
-    --board-dark: #779556;
-    --board-selected: rgba(20, 85, 30, 0.65);
-    --board-hl-light: #f6f669;
-    --board-hl-dark: #baca2b;
+    --bg: #0e0e10;
+    --bg-surface: #18181b;
+    --bg-card: #1f1f23;
+    --bg-hover: #2a2a2e;
+    --border: #2e2e33;
+    --text: #dcd8d2;
+    --text-muted: #7a7672;
+    --accent: #8b5e3c;
+    --green: #6a9f5b;
+    --red: #c04040;
+    --yellow: #b8862b;
+    --orange: #c46a2a;
+    --gold: #c9a23c;
+    --board-light: #b8a88a;
+    --board-dark: #5c4633;
+    --board-selected: rgba(139, 94, 60, 0.55);
+    --board-hl-light: #c9a23c;
+    --board-hl-dark: #8b5e3c;
     --board-target-light: radial-gradient(circle, rgba(0,0,0,0.18) 25%, transparent 25%);
     --board-target-dark: radial-gradient(circle, rgba(0,0,0,0.22) 25%, transparent 25%);
     --radius: 8px;
@@ -122,7 +122,7 @@ a:hover { text-decoration: underline; }
 }
 .btn:hover { background: var(--bg-hover); text-decoration: none; }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn-primary:hover { background: #6a9e3f; }
+.btn-primary:hover { background: #704c30; }
 .btn-danger { background: var(--red); border-color: var(--red); color: #fff; }
 .btn-danger:hover { background: #c44; }
 .btn-outline { background: transparent; }
@@ -181,7 +181,7 @@ a:hover { text-decoration: underline; }
 .badge-pending  { background: rgba(210,153,34,0.15); color: var(--yellow); }
 .badge-active   { background: rgba(129,182,76,0.12); color: var(--text-muted); }
 .badge-your-turn { background: var(--accent); color: #fff; }
-.badge-completed { background: rgba(129,182,76,0.15); color: var(--green); }
+.badge-completed { background: rgba(106,159,91,0.15); color: var(--green); }
 .badge-forfeited { background: rgba(238,85,85,0.15); color: var(--red); }
 
 .text-muted { color: var(--text-muted); }
@@ -568,7 +568,7 @@ a:hover { text-decoration: underline; }
 .ms-l { background: var(--board-light); }
 .ms-d { background: var(--board-dark); }
 .mp-w { color: #fff; text-shadow: 0 0 1px #000; }
-.mp-b { color: #312e2b; }
+.mp-b { color: #1a1715; }
 
 
 /* ════════════════════════════════════════════

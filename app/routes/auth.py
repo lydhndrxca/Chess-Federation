@@ -9,7 +9,7 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('main.standings'))
 
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
@@ -36,9 +36,9 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        login_user(user)
+        login_user(user, remember=True)
         flash('Welcome to the Federation.', 'success')
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('main.standings'))
 
     return render_template('auth/register.html')
 
@@ -46,7 +46,7 @@ def register():
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('main.standings'))
 
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
@@ -54,9 +54,9 @@ def login():
         user = User.query.filter_by(username=username).first()
 
         if user and user.check_password(password):
-            login_user(user)
+            login_user(user, remember=True)
             next_page = request.args.get('next')
-            return redirect(next_page or url_for('main.dashboard'))
+            return redirect(next_page or url_for('main.standings'))
 
         flash('Invalid username or password.', 'error')
 

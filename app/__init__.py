@@ -224,11 +224,15 @@ def create_app():
     def _inject_manifest_version():
         return {'manifest_version': app.config.get('MANIFEST_VERSION', '1')}
 
-    @app.before_request
-    def _touch_last_seen():
-        if current_user.is_authenticated and not current_user.is_bot:
-            current_user.last_seen = datetime.now(timezone.utc)
-            db.session.commit()
+    @app.after_request
+    def _touch_last_seen(response):
+        try:
+            if current_user.is_authenticated and not current_user.is_bot:
+                current_user.last_seen = datetime.now(timezone.utc)
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+        return response
 
     manifest_path = os.path.join(
         app.static_folder, 'audio', 'enoch', 'manifest.json')

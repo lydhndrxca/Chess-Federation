@@ -1589,17 +1589,84 @@ a:hover { text-decoration: underline; }
     flex-shrink: 0;
     background: var(--bg-surface);
 }
+.chat-input-wrap {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
 .chat-input {
     flex: 1;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    padding: 0.45rem 0.65rem;
+    padding: 0.45rem 2.2rem 0.45rem 0.65rem;
     color: var(--text);
     font-size: 0.85rem;
     font-family: inherit;
 }
 .chat-input:focus { outline: none; border-color: var(--accent); }
+.emoji-toggle {
+    position: absolute;
+    right: 4px;
+    background: none;
+    border: none;
+    font-size: 1.15rem;
+    cursor: pointer;
+    padding: 2px 4px;
+    line-height: 1;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+}
+.emoji-toggle:hover, .emoji-toggle.active { opacity: 1; }
+.emoji-picker {
+    display: none;
+    flex-direction: column;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    max-height: 220px;
+    overflow: hidden;
+}
+.emoji-picker.open { display: flex; }
+.emoji-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    flex-shrink: 0;
+}
+.emoji-tab {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    opacity: 0.5;
+    transition: opacity 0.1s, background 0.1s;
+}
+.emoji-tab:hover { opacity: 0.8; background: var(--bg-surface); }
+.emoji-tab.active { opacity: 1; background: var(--bg-surface); }
+.emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 36px);
+    gap: 2px;
+    padding: 6px 8px;
+    overflow-y: auto;
+    flex: 1;
+}
+.emoji-btn {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    line-height: 1;
+    transition: background 0.1s;
+}
+.emoji-btn:hover { background: var(--bg-surface); }
 
 /* ── Account Page ──────────────────────── */
 .account-page h1 { margin-bottom: 1rem; padding: 0 0.75rem; }

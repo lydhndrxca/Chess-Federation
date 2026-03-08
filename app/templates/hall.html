@@ -34,8 +34,15 @@
         </div>
 
         <div class="chat-input-bar">
-            <input type="text" id="chatInput" class="chat-input" placeholder="Say something..." maxlength="1000" autocomplete="off" aria-label="Chat message">
+            <div class="chat-input-wrap">
+                <input type="text" id="chatInput" class="chat-input" placeholder="Say something..." maxlength="1000" autocomplete="off" aria-label="Chat message">
+                <button class="emoji-toggle" id="emojiToggle" type="button" title="Emoji" aria-label="Insert emoji">😀</button>
+            </div>
             <button id="chatSendBtn" class="btn btn-primary btn-sm">Send</button>
+        </div>
+        <div class="emoji-picker" id="emojiPicker">
+            <div class="emoji-tabs" id="emojiTabs"></div>
+            <div class="emoji-grid" id="emojiGrid"></div>
         </div>
     </div>
 </div>

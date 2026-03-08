@@ -133,4 +133,73 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     setInterval(poll, 3000);
+
+    /* ── Emoji Picker ── */
+    const emojiToggle = document.getElementById('emojiToggle');
+    const emojiPicker = document.getElementById('emojiPicker');
+    const emojiTabs = document.getElementById('emojiTabs');
+    const emojiGrid = document.getElementById('emojiGrid');
+
+    if (emojiToggle && emojiPicker && emojiGrid) {
+        const EMOJI_DATA = [
+            { icon: '😀', label: 'Smileys', emojis: '😀😂🤣😅😆😊😎🤓🥳🤔🤨😏😬😐🙄😤😡🤬😈👿💀☠️😱😨😰🥶🥵🤮🤢😴😇🥹🫡🫠' },
+            { icon: '👋', label: 'People', emojis: '👋👏🙌🤝👍👎✊👊🤞✌️🤟🫶👀🧠🗣️👑🤴👸🧙‍♂️🤺💂‍♂️🕵️‍♂️🧛‍♂️💪🦾🫵👆👇👈👉🖕🤙' },
+            { icon: '♟️', label: 'Chess', emojis: '♟️♞♝♜♛♚⚔️🏰🛡️🗡️🏆🥇🥈🥉🎯🎲🃏🪦📜📖🕯️🔥💀🩸⚰️🪤🏴‍☠️⚡🌑🕸️🕷️🐀' },
+            { icon: '❤️', label: 'Symbols', emojis: '❤️🧡💛💚💙💜🖤🤍💔💯✅❌⭕🚫❓❗💢💥💫🔥⚡💎🏳️🏴🚩🎵🎶🔔🔕📢📣' },
+            { icon: '😈', label: 'Enoch', emojis: '😈👿💀☠️🕯️🕸️🕷️🐀🦇🪳🪦⚰️🩸🗡️⚔️🔮🧿👁️🫀🧠🖤🪤📜🔥🌑🌒🌘⛓️🪬🫥' },
+        ];
+
+        let activeTab = 0;
+
+        function renderTabs() {
+            emojiTabs.innerHTML = '';
+            EMOJI_DATA.forEach((cat, i) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'emoji-tab' + (i === activeTab ? ' active' : '');
+                btn.textContent = cat.icon;
+                btn.title = cat.label;
+                btn.addEventListener('click', () => {
+                    activeTab = i;
+                    renderTabs();
+                    renderGrid();
+                });
+                emojiTabs.appendChild(btn);
+            });
+        }
+
+        function renderGrid() {
+            emojiGrid.innerHTML = '';
+            const chars = [...EMOJI_DATA[activeTab].emojis];
+            chars.forEach(ch => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'emoji-btn';
+                btn.textContent = ch;
+                btn.addEventListener('click', () => {
+                    const pos = input.selectionStart || input.value.length;
+                    input.value = input.value.slice(0, pos) + ch + input.value.slice(pos);
+                    input.focus();
+                    input.selectionStart = input.selectionEnd = pos + ch.length;
+                });
+                emojiGrid.appendChild(btn);
+            });
+        }
+
+        emojiToggle.addEventListener('click', () => {
+            const open = emojiPicker.classList.toggle('open');
+            emojiToggle.classList.toggle('active', open);
+            if (open && !emojiGrid.children.length) {
+                renderTabs();
+                renderGrid();
+            }
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && emojiPicker.classList.contains('open')) {
+                emojiPicker.classList.remove('open');
+                emojiToggle.classList.remove('active');
+            }
+        });
+    }
 });

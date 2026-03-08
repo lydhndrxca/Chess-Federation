@@ -22,6 +22,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /* ── Chat unread badge (runs on every page) ── */
+    const chatBadge = document.getElementById('chatBadge');
+    if (chatBadge) {
+        const isHallPage = !!document.getElementById('chatMessages');
+
+        function getLastSeenChat() {
+            return parseInt(localStorage.getItem('chatLastSeen') || '0', 10);
+        }
+
+        async function checkUnread() {
+            try {
+                const resp = await fetch(`/hall/unread?after=${getLastSeenChat()}`);
+                const data = await resp.json();
+                if (data.count > 0) {
+                    chatBadge.textContent = data.count > 99 ? '99+' : data.count;
+                    chatBadge.classList.add('active');
+                } else {
+                    chatBadge.classList.remove('active');
+                }
+                if (isHallPage && data.latest_id) {
+                    localStorage.setItem('chatLastSeen', String(data.latest_id));
+                    chatBadge.classList.remove('active');
+                }
+            } catch (e) { /* ignore */ }
+        }
+
+        if (isHallPage) {
+            const existing = document.querySelectorAll('.chat-msg');
+            if (existing.length) {
+                const last = existing[existing.length - 1].dataset.msgId;
+                if (last) localStorage.setItem('chatLastSeen', last);
+            }
+            chatBadge.classList.remove('active');
+        }
+
+        checkUnread();
+        setInterval(checkUnread, 15000);
+    }
+
     const deadlineEl = document.querySelector('.deadline-display');
     if (deadlineEl) {
         const iso = deadlineEl.dataset.deadline;

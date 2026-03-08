@@ -81,6 +81,15 @@ def send_message():
     return jsonify(resp)
 
 
+@hall_bp.route('/hall/unread')
+@login_required
+def unread_count():
+    after_id = request.args.get('after', 0, type=int)
+    count = ChatMessage.query.filter(ChatMessage.id > after_id).count()
+    latest = db.session.query(db.func.max(ChatMessage.id)).scalar() or 0
+    return jsonify({'count': count, 'latest_id': latest})
+
+
 @hall_bp.route('/hall/poll')
 @login_required
 def poll_messages():

@@ -12,6 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     messages.scrollTop = messages.scrollHeight;
 
+    function markSeen(id) {
+        const prev = parseInt(localStorage.getItem('chatLastSeen') || '0', 10);
+        if (id > prev) localStorage.setItem('chatLastSeen', String(id));
+        const badge = document.getElementById('chatBadge');
+        if (badge) badge.classList.remove('active');
+    }
+    if (lastMsgId) markSeen(lastMsgId);
+
     function appendMsg(m) {
         const div = document.createElement('div');
         div.className = 'chat-msg' + (m.is_bot ? ' chat-msg-bot' : '');
@@ -39,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         messages.appendChild(div);
         if (m.id > lastMsgId) lastMsgId = m.id;
+        markSeen(m.id);
     }
 
     function showTypingIndicator() {

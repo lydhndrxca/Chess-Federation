@@ -46,6 +46,11 @@ def view_game(game_id):
     if game.deadline:
         deadline_iso = game.deadline.strftime('%Y-%m-%dT%H:%M:%S') + 'Z'
 
+    last_move_uci = moves[-1].move_uci if moves else None
+
+    opponent = game.black if player_color == 'white' else game.white
+    me = game.white if player_color == 'white' else game.black
+
     return render_template(
         'game.html',
         game=game,
@@ -56,6 +61,9 @@ def view_game(game_id):
         is_player_turn=is_player_turn,
         moves=moves,
         deadline_iso=deadline_iso,
+        last_move_uci=last_move_uci,
+        opponent=opponent,
+        me=me,
     )
 
 

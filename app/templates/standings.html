@@ -1,146 +1,140 @@
 {% extends "base.html" %}
-{% from "macros.html" import avatar, player_card %}
+{% from "macros.html" import avatar, mini_board %}
 {% block title %}Standings — Chess Federation{% endblock %}
 
 {% block content %}
-<div class="standings-page">
-    <div class="dash-header">
-        <h1>Season {{ season_month }}/{{ season_year }} — Week {{ week }}</h1>
+<div class="sp">
+    {# ── Season header ── #}
+    <div class="sp-header">
+        <span class="sp-season">Season {{ season_month }}/{{ season_year }}</span>
+        <span class="sp-week">Week {{ week }}</span>
     </div>
 
-    {% if schedule and schedule.power_holder %}
-    <div class="card decree-bar">
-        <div class="decree-bar-inner">
-            <div class="decree-holder">
-                <span class="decree-label">Power Position</span>
-                <strong>{{ schedule.power_holder.username }}</strong>
-            </div>
-            {% if schedule.rule_declaration %}
-            <div class="decree-text">
-                <span class="decree-label">Weekly Decree</span>
-                <p>{{ schedule.rule_declaration }}</p>
-            </div>
-            {% else %}
-            <div class="decree-text">
-                <span class="decree-label">Weekly Decree</span>
-                <p class="text-muted">No decree issued yet this week.</p>
-            </div>
-            {% endif %}
-            <a href="{{ url_for('decree.decree_page') }}" class="btn btn-sm btn-outline">View Decree</a>
-        </div>
-    </div>
-    {% endif %}
-
+    {# ── Your game cards ── #}
     {% if my_games %}
-    <div class="card highlight-card">
-        <h2>Your Matches</h2>
-        {% for g in my_games %}
-        <div class="my-match-row">
-            <div class="matchup-display">
-                <div class="matchup-player {{ 'active-turn' if g.current_turn == 'white' and g.status in ('pending','active') }}">
-                    {{ player_card(g.white, 'sm') }}
+    <div class="sp-games">
+        {% for m in my_games %}
+        {% set g = m.game %}
+        {% set opp = m.opponent %}
+        <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="gc">
+            <div class="gc-board">
+                {{ mini_board(g.fen_current, m.my_color == 'black') }}
+                {% if g.status in ('completed', 'forfeited') %}
+                <div class="gc-board-overlay">
+                    <span>{{ g.result }}</span>
                 </div>
-                <span class="matchup-vs">vs</span>
-                <div class="matchup-player {{ 'active-turn' if g.current_turn == 'black' and g.status in ('pending','active') }}">
-                    {{ player_card(g.black, 'sm') }}
-                </div>
-            </div>
-            <div class="matchup-status">
-                {% if g.status == 'pending' %}
-                <span class="badge badge-pending">Waiting for first move</span>
-                {% elif g.status == 'active' %}
-                    {% set my_color = 'white' if current_user.id == g.white_id else 'black' %}
-                    {% if g.current_turn == my_color %}
-                    <span class="badge badge-your-turn">Your turn</span>
-                    {% else %}
-                    <span class="badge badge-active">Opponent's turn</span>
-                    {% endif %}
-                {% elif g.status == 'completed' %}
-                <span class="badge badge-completed">{{ g.result }} — {{ g.result_type }}</span>
-                {% elif g.status == 'forfeited' %}
-                <span class="badge badge-forfeited">Forfeit — {{ g.result }}</span>
                 {% endif %}
             </div>
-            {% if g.status in ('pending', 'active') %}
-            <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="btn btn-primary btn-sm">Play</a>
-            {% else %}
-            <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="btn btn-outline btn-sm">Review</a>
-            {% endif %}
-        </div>
-        {% if not loop.last %}<hr class="match-divider">{% endif %}
+            <div class="gc-info">
+                <div class="gc-opponent">
+                    {{ avatar(opp, 'sm') }}
+                    <div class="gc-opp-detail">
+                        <span class="gc-opp-name">{{ opp.username }}</span>
+                        <span class="gc-opp-rating">({{ opp.rating }})</span>
+                    </div>
+                </div>
+                <div class="gc-meta">
+                    {% if m.h2h[0] or m.h2h[1] or m.h2h[2] %}
+                    <div class="gc-h2h">
+                        <span class="gc-h2h-w">{{ m.h2h[0] }}W</span>
+                        <span class="gc-h2h-sep">/</span>
+                        <span class="gc-h2h-l">{{ m.h2h[1] }}L</span>
+                        <span class="gc-h2h-sep">/</span>
+                        <span class="gc-h2h-d">{{ m.h2h[2] }}D</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="gc-status">
+                    {% if g.status == 'pending' %}
+                        <span class="badge badge-pending">New</span>
+                    {% elif g.status == 'active' %}
+                        {% if m.is_my_turn %}
+                            <span class="badge badge-your-turn">Your turn</span>
+                        {% else %}
+                            <span class="badge badge-active">Their turn</span>
+                        {% endif %}
+                    {% elif g.status == 'completed' %}
+                        <span class="badge badge-completed">{{ g.result_type }}</span>
+                    {% elif g.status == 'forfeited' %}
+                        <span class="badge badge-forfeited">Forfeit</span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
         {% endfor %}
     </div>
     {% else %}
-    <div class="card">
-        <p class="text-muted">No matches scheduled for you this week.</p>
+    <div class="sp-empty">
+        <p class="text-muted">No matches this week yet.</p>
     </div>
     {% endif %}
 
-    <div class="dash-grid">
-        <div class="card">
-            <h2>All Matches This Week</h2>
-            {% if weekly_games %}
-            <div class="matchup-list">
-                {% for game in weekly_games %}
-                <div class="matchup-row">
-                    <div class="matchup-players">
-                        <span>{{ game.white.username }}</span>
-                        <span class="vs-sm">vs</span>
-                        <span>{{ game.black.username }}</span>
-                    </div>
-                    <div class="matchup-meta">
-                        {% if game.status == 'pending' %}
-                        <span class="badge badge-pending">Unbegun</span>
-                        {% elif game.status == 'active' %}
-                        <span class="badge badge-active">{{ game.current_turn }}'s turn</span>
-                        {% elif game.status == 'completed' %}
-                        <span class="badge badge-completed">{{ game.result }}</span>
-                        {% elif game.status == 'forfeited' %}
-                        <span class="badge badge-forfeited">Forfeit</span>
-                        {% endif %}
-                        <a href="{{ url_for('game.view_game', game_id=game.id) }}" class="link-sm">View</a>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+    {# ── Other matches this week ── #}
+    {% if other_games %}
+    <div class="sp-section">
+        <h3 class="sp-section-title">Other Matches</h3>
+        {% for g in other_games %}
+        <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="sp-other-row">
+            <span>{{ g.white.username }} vs {{ g.black.username }}</span>
+            {% if g.status == 'completed' %}
+            <span class="badge badge-completed">{{ g.result }}</span>
+            {% elif g.status == 'active' %}
+            <span class="badge badge-active">In progress</span>
+            {% elif g.status == 'pending' %}
+            <span class="badge badge-pending">Unbegun</span>
+            {% elif g.status == 'forfeited' %}
+            <span class="badge badge-forfeited">Forfeit</span>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Decree strip ── #}
+    {% if schedule and schedule.power_holder %}
+    <a href="{{ url_for('decree.decree_page') }}" class="sp-decree">
+        <div class="sp-decree-icon">👑</div>
+        <div class="sp-decree-body">
+            <span class="sp-decree-holder">{{ schedule.power_holder.username }}'s Decree</span>
+            {% if schedule.rule_declaration %}
+            <span class="sp-decree-text">{{ schedule.rule_declaration|truncate(80) }}</span>
             {% else %}
-            <p class="text-muted">No matches generated yet this week.</p>
+            <span class="sp-decree-text text-muted">No decree issued yet</span>
             {% endif %}
         </div>
+        <svg class="sp-decree-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </a>
+    {% endif %}
 
-        <div class="card">
-            <h2>Standings</h2>
-            <div class="standings-list">
-                {% for player in standings %}
-                <div class="standings-row">
-                    <span class="standings-rank">{{ loop.index }}</span>
-                    <div class="standings-player-info">
-                        {{ avatar(player, 'sm') }}
-                        <div class="standings-player-detail">
-                            <a href="{{ url_for('players.player_profile', username=player.username) }}">{{ player.username }}</a>
-                            <span class="standings-title">{{ player.tier.name }}</span>
-                        </div>
-                    </div>
-                    <div class="standings-nums">
-                        <span class="standings-rating">{{ player.rating }}</span>
-                        <span class="standings-record">{{ player.wins }}-{{ player.losses }}-{{ player.draws }}</span>
-                    </div>
+    {# ── Standings ── #}
+    <div class="sp-section">
+        <h3 class="sp-section-title">Standings</h3>
+        <div class="sp-standings">
+            {% for player in standings %}
+            <a href="{{ url_for('players.player_profile', username=player.username) }}" class="sp-rank-row">
+                <span class="sp-rank-num">{{ loop.index }}</span>
+                {{ avatar(player, 'sm') }}
+                <div class="sp-rank-info">
+                    <span class="sp-rank-name">{{ player.username }}</span>
+                    <span class="sp-rank-title">{{ player.tier.name }}</span>
                 </div>
-                {% endfor %}
-            </div>
+                <div class="sp-rank-right">
+                    <span class="sp-rank-rating">{{ player.rating }}</span>
+                    <span class="sp-rank-record">{{ player.wins }}W {{ player.losses }}L {{ player.draws }}D</span>
+                </div>
+            </a>
+            {% endfor %}
         </div>
     </div>
 
-    <div class="admin-section">
-        <h3>Federation Controls</h3>
-        <div class="admin-actions">
-            <form action="{{ url_for('admin.generate_week') }}" method="post">
-                <button class="btn btn-sm">Generate Weekly Pairings</button>
-            </form>
-            <form action="{{ url_for('admin.run_forfeit_check') }}" method="post">
-                <button class="btn btn-sm btn-outline">Check Forfeits</button>
-            </form>
-        </div>
+    {# ── Admin controls ── #}
+    <div class="sp-admin">
+        <form action="{{ url_for('admin.generate_week') }}" method="post" style="display:inline">
+            <button class="btn btn-sm">Generate Week</button>
+        </form>
+        <form action="{{ url_for('admin.run_forfeit_check') }}" method="post" style="display:inline">
+            <button class="btn btn-sm btn-outline">Check Forfeits</button>
+        </form>
     </div>
 </div>
 {% endblock %}

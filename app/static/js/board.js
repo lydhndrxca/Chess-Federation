@@ -13,10 +13,10 @@ class ChessBoard {
         this.legalMoves = config.legalMoves || [];
         this.gameOver = config.gameOver || false;
         this.isParticipant = config.isParticipant;
+        this.lastMoveUci = config.lastMoveUci || null;
         this.selectedSquare = null;
         this.flipped = config.playerColor === 'black';
         this.pollInterval = null;
-        this.lastMoveCount = 0;
 
         this.render();
 
@@ -25,6 +25,8 @@ class ChessBoard {
         }
 
         this.setupResign();
+        this.setupToggleMoves();
+        this.startDeadlineTimer();
     }
 
     parseFEN(fen) {
@@ -46,18 +48,29 @@ class ChessBoard {
         return board;
     }
 
+    lastMoveSquares() {
+        if (!this.lastMoveUci || this.lastMoveUci.length < 4) return new Set();
+        return new Set([
+            this.lastMoveUci.substring(0, 2),
+            this.lastMoveUci.substring(2, 4),
+        ]);
+    }
+
     render() {
         this.container.innerHTML = '';
         const pieces = this.parseFEN(this.fen);
         const ranks = this.flipped ? [1,2,3,4,5,6,7,8] : [8,7,6,5,4,3,2,1];
         const files = this.flipped ? 'hgfedcba'.split('') : 'abcdefgh'.split('');
+        const highlighted = this.lastMoveSquares();
 
         for (const rank of ranks) {
             for (const file of files) {
                 const sq = `${file}${rank}`;
                 const isLight = (file.charCodeAt(0) - 97 + rank) % 2 === 1;
                 const div = document.createElement('div');
-                div.className = `sq ${isLight ? 'sq-light' : 'sq-dark'}`;
+                let cls = `sq ${isLight ? 'sq-light' : 'sq-dark'}`;
+                if (highlighted.has(sq)) cls += isLight ? ' sq-hl-light' : ' sq-hl-dark';
+                div.className = cls;
                 div.dataset.square = sq;
 
                 if (file === files[0]) {
@@ -168,6 +181,7 @@ class ChessBoard {
 
             if (data.success) {
                 this.fen = data.fen;
+                this.lastMoveUci = uci;
                 this.isPlayerTurn = false;
                 this.render();
                 appendMove(data.move_number, data.san, this.playerColor);
@@ -206,6 +220,9 @@ class ChessBoard {
 
             if (data.fen !== this.fen) {
                 this.fen = data.fen;
+                if (data.last_move) {
+                    this.lastMoveUci = data.last_move.uci;
+                }
                 this.render();
 
                 if (data.last_move) {
@@ -252,9 +269,56 @@ class ChessBoard {
             }
         });
     }
+
+    setupToggleMoves() {
+        const btn = document.getElementById('toggleMovesBtn');
+        const panel = document.getElementById('moveListPanel');
+        if (!btn || !panel) return;
+        btn.addEventListener('click', () => {
+            panel.classList.toggle('open');
+            btn.classList.toggle('active');
+        });
+    }
+
+    startDeadlineTimer() {
+        const el = document.getElementById('deadlineTimer');
+        if (!el) return;
+        const dl = el.dataset.deadline;
+        if (!dl) return;
+        const deadline = new Date(dl);
+        const tick = () => {
+            const diff = deadline - Date.now();
+            if (diff <= 0) { el.textContent = 'Time up'; return; }
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            if (h >= 24) {
+                const d = Math.floor(h / 24);
+                el.textContent = d === 1 ? '1 day' : `${d} days`;
+            } else {
+                el.textContent = `${h}h ${m}m`;
+            }
+        };
+        tick();
+        setInterval(tick, 60000);
+    }
 }
 
 function appendMove(moveNum, san, color) {
+    const strip = document.getElementById('movesStrip');
+    if (strip) {
+        const empty = strip.querySelector('.gv-ms-empty');
+        if (empty) empty.remove();
+        if (color === 'white') {
+            const num = moveNum || (strip.querySelectorAll('.gv-mn').length + 1);
+            strip.insertAdjacentHTML('beforeend',
+                `<span class="gv-mn">${num}.</span><span class="gv-ms">${san}</span>`);
+        } else {
+            strip.insertAdjacentHTML('beforeend',
+                `<span class="gv-ms gv-ms-b">${san}</span>`);
+        }
+        strip.scrollLeft = strip.scrollWidth;
+    }
+
     const list = document.getElementById('moveList');
     if (!list) return;
 
@@ -304,9 +368,6 @@ function showResult(result, resultType, ratingChange) {
     }
     const btn = document.getElementById('resignBtn');
     if (btn) btn.style.display = 'none';
-
-    const actions = document.querySelector('.game-actions');
-    if (actions) actions.style.display = 'none';
 }
 
 function initBoard() {

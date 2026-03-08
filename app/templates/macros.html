@@ -23,3 +23,38 @@
     {% endif %}
 </div>
 {% endmacro %}
+
+{# Piece map: FEN char → Unicode glyph with CSS class #}
+{% set PIECE_MAP = {
+    'K': ('♚','mp-w'), 'Q': ('♛','mp-w'), 'R': ('♜','mp-w'), 'B': ('♝','mp-w'), 'N': ('♞','mp-w'), 'P': ('♟','mp-w'),
+    'k': ('♚','mp-b'), 'q': ('♛','mp-b'), 'r': ('♜','mp-b'), 'b': ('♝','mp-b'), 'n': ('♞','mp-b'), 'p': ('♟','mp-b')
+} %}
+
+{% macro mini_board(fen, flipped=false) %}
+{% set rows = fen.split(' ')[0].split('/') %}
+<div class="mini-board{% if flipped %} mini-board-flipped{% endif %}">
+    {%- for ri in range(8) -%}
+        {%- set r = (7 - ri) if flipped else ri -%}
+        {%- set row = rows[r] -%}
+        {%- set col = [0] -%}
+        {%- for ch in row -%}
+            {%- if ch in '12345678' -%}
+                {%- for _ in range(ch|int) -%}
+                    {%- set real_col = col[0] -%}
+                    {%- set real_col_flip = (7 - real_col) if flipped else real_col -%}
+                    {%- set light = ((r + real_col_flip) % 2 == 1) -%}
+                    <div class="ms {{ 'ms-l' if light else 'ms-d' }}"></div>
+                    {%- if col.append(col.pop() + 1) -%}{%- endif -%}
+                {%- endfor -%}
+            {%- else -%}
+                {%- set real_col = col[0] -%}
+                {%- set real_col_flip = (7 - real_col) if flipped else real_col -%}
+                {%- set light = ((r + real_col_flip) % 2 == 1) -%}
+                {%- set piece = PIECE_MAP.get(ch, ('','')) -%}
+                <div class="ms {{ 'ms-l' if light else 'ms-d' }}"><span class="{{ piece[1] }}">{{ piece[0] }}</span></div>
+                {%- if col.append(col.pop() + 1) -%}{%- endif -%}
+            {%- endif -%}
+        {%- endfor -%}
+    {%- endfor -%}
+</div>
+{% endmacro %}

@@ -1,81 +1,109 @@
 {% extends "base.html" %}
-{% from "macros.html" import player_card %}
+{% from "macros.html" import avatar %}
 {% block title %}Game #{{ game.id }} — Chess Federation{% endblock %}
 
 {% block content %}
-<div class="game-page">
-    <div class="game-layout">
-        <div class="game-board-col">
-            <div class="player-bar opponent-bar">
-                {% if player_color == 'black' or (not player_color and true) %}
-                {{ player_card(game.white, 'sm') }}
-                {% else %}
-                {{ player_card(game.black, 'sm') }}
-                {% endif %}
-            </div>
+<div class="gv">
+    {# ── Move notation strip ── #}
+    <div class="gv-moves-strip" id="movesStrip">
+        {% for move in moves %}
+            {% if move.color == 'white' %}
+                <span class="gv-mn">{{ move.move_number }}.</span>
+                <span class="gv-ms">{{ move.move_san }}</span>
+            {% else %}
+                <span class="gv-ms gv-ms-b">{{ move.move_san }}</span>
+            {% endif %}
+        {% endfor %}
+        {% if not moves %}<span class="gv-ms-empty">No moves yet</span>{% endif %}
+    </div>
 
-            <div class="board-wrapper">
-                <div class="board" id="chessBoard"></div>
-            </div>
-
-            <div class="player-bar self-bar">
-                {% if player_color == 'black' %}
-                {{ player_card(game.black, 'sm') }}
-                {% else %}
-                {{ player_card(game.white, 'sm') }}
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="game-info-col">
-            <div class="card game-status-card">
-                {% if game.status in ('completed', 'forfeited') %}
-                <div class="game-result">
-                    <span class="result-label">{{ game.result }}</span>
-                    <span class="result-type">{{ game.result_type }}</span>
-                </div>
+    {# ── Opponent bar (top) ── #}
+    {% set top_player = opponent if is_participant else game.white %}
+    <div class="gv-player-bar">
+        <a href="{{ url_for('players.player_profile', username=top_player.username) }}" class="gv-player-link">
+            {{ avatar(top_player, 'sm') }}
+            <span class="gv-player-name">{{ top_player.username }}</span>
+            <span class="gv-player-rating">({{ top_player.rating }})</span>
+        </a>
+        <div class="gv-bar-right">
+            {% if game.status in ('completed', 'forfeited') %}
                 {% if game.rating_change_white is not none %}
-                <div class="rating-changes">
-                    <span>{{ game.white.username }}: {{ '%+.1f'|format(game.rating_change_white) }}</span>
-                    <span>{{ game.black.username }}: {{ '%+.1f'|format(game.rating_change_black) }}</span>
-                </div>
+                    {% set opp_change = game.rating_change_black if player_color == 'white' else game.rating_change_white %}
+                    <span class="gv-delta {{ 'rating-up' if opp_change >= 0 else 'rating-down' }}">{{ '%+.0f'|format(opp_change) }}</span>
                 {% endif %}
-                {% else %}
-                <div class="turn-indicator" id="turnIndicator">
-                    {% if is_player_turn %}
-                    <span class="turn-yours">Your turn</span>
-                    {% else %}
-                    <span class="turn-waiting">Waiting for opponent</span>
-                    {% endif %}
-                </div>
-                <div class="deadline-display" data-deadline="{{ deadline_iso or '' }}">
-                    <span id="deadlineTimer"></span>
-                </div>
+            {% else %}
+                <span class="gv-time" id="deadlineTimer" data-deadline="{{ deadline_iso or '' }}"></span>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Board ── #}
+    <div class="gv-board-wrap">
+        <div class="board" id="chessBoard"></div>
+    </div>
+
+    {# ── Player bar (bottom) ── #}
+    {% set bottom_player = me if is_participant else game.black %}
+    <div class="gv-player-bar">
+        <a href="{{ url_for('players.player_profile', username=bottom_player.username) }}" class="gv-player-link">
+            {{ avatar(bottom_player, 'sm') }}
+            <span class="gv-player-name">{{ bottom_player.username }}</span>
+            <span class="gv-player-rating">({{ bottom_player.rating }})</span>
+        </a>
+        <div class="gv-bar-right">
+            {% if game.status in ('completed', 'forfeited') %}
+                {% if game.rating_change_white is not none %}
+                    {% set my_change = game.rating_change_white if player_color == 'white' else game.rating_change_black %}
+                    <span class="gv-delta {{ 'rating-up' if my_change >= 0 else 'rating-down' }}">{{ '%+.0f'|format(my_change) }}</span>
                 {% endif %}
-            </div>
+            {% endif %}
+        </div>
+    </div>
 
-            <div class="card moves-card">
-                <h3>Moves</h3>
-                <div class="move-list" id="moveList">
-                    {% for move in moves %}
-                    {% if move.color == 'white' %}
-                    <div class="move-row">
-                        <span class="move-num">{{ move.move_number }}.</span>
-                        <span class="move-san white-move">{{ move.move_san }}</span>
-                    {% else %}
-                        <span class="move-san black-move">{{ move.move_san }}</span>
-                    </div>
-                    {% endif %}
-                    {% endfor %}
-                    {% if moves and moves[-1].color == 'white' %}
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+    {# ── Status / result bar ── #}
+    <div class="gv-status" id="turnIndicator">
+        {% if game.status in ('completed', 'forfeited') %}
+            <span class="game-over-text">{{ game.result }} — {{ game.result_type }}</span>
+            {% if game.rating_change_white is not none and is_participant %}
+                {% set my_rc = game.rating_change_white if player_color == 'white' else game.rating_change_black %}
+                <span class="rating-impact {{ 'rating-up' if my_rc >= 0 else 'rating-down' }}">{{ '%+.1f'|format(my_rc) }} rating</span>
+            {% endif %}
+        {% elif is_player_turn %}
+            <span class="turn-yours">Your turn</span>
+        {% else %}
+            <span class="turn-waiting">Waiting for opponent</span>
+        {% endif %}
+    </div>
 
-            {% if is_participant and game.status in ('pending', 'active') %}
-            <div class="game-actions">
-                <button class="btn btn-danger btn-sm" id="resignBtn">Resign</button>
+    {# ── Bottom toolbar ── #}
+    <div class="gv-toolbar">
+        <button class="gv-tool-btn" id="toggleMovesBtn" title="Moves">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        </button>
+        {% if is_participant and game.status in ('pending', 'active') %}
+        <button class="gv-tool-btn gv-resign-btn" id="resignBtn" title="Resign">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        </button>
+        {% endif %}
+        <a href="{{ url_for('main.standings') }}" class="gv-tool-btn" title="Back to Standings">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        </a>
+    </div>
+
+    {# ── Expandable move list ── #}
+    <div class="gv-movelist-panel" id="moveListPanel">
+        <div class="move-list" id="moveList">
+            {% for move in moves %}
+            {% if move.color == 'white' %}
+            <div class="move-row">
+                <span class="move-num">{{ move.move_number }}.</span>
+                <span class="move-san white-move">{{ move.move_san }}</span>
+            {% else %}
+                <span class="move-san black-move">{{ move.move_san }}</span>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% if moves and moves[-1].color == 'white' %}
             </div>
             {% endif %}
         </div>
@@ -99,6 +127,7 @@
         legalMoves: {{ legal_moves | tojson }},
         gameOver: {{ 'true' if game.status in ('completed', 'forfeited') else 'false' }},
         isParticipant: {{ 'true' if is_participant else 'false' }},
+        lastMoveUci: {{ last_move_uci | tojson if last_move_uci else 'null' }},
     };
 </script>
 {% endautoescape %}

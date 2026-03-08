@@ -72,6 +72,16 @@ def upload_avatar():
     return redirect(url_for('players.my_account'))
 
 
+@players_bp.route('/account/bio', methods=['POST'])
+@login_required
+def update_bio():
+    bio = request.form.get('bio', '').strip()[:300]
+    current_user.bio = bio
+    db.session.commit()
+    flash('Bio updated.', 'success')
+    return redirect(url_for('players.my_account'))
+
+
 @players_bp.route('/account/toggle-naming', methods=['POST'])
 @login_required
 def toggle_naming():

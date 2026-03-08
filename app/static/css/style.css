@@ -947,6 +947,7 @@ a:hover { text-decoration: underline; }
 .profile-header h1 { font-size: 1.6rem; margin-bottom: 0.2rem; }
 .profile-title { font-size: 0.82rem; color: var(--yellow); font-style: italic; margin-bottom: 0.25rem; }
 .profile-tier-desc { font-size: 0.75rem; color: var(--text-muted); font-style: italic; margin-bottom: 0.75rem; max-width: 420px; margin-left: auto; margin-right: auto; }
+.profile-bio { font-size: 0.88rem; color: var(--text); font-style: italic; margin-bottom: 0.75rem; max-width: 420px; margin-left: auto; margin-right: auto; line-height: 1.55; }
 .account-tier-desc { font-size: 0.75rem; color: var(--text-muted); font-style: italic; margin-top: 0.75rem; }
 .profile-stats-row {
     display: flex;
@@ -1130,6 +1131,9 @@ a:hover { text-decoration: underline; }
 .avatar-form { text-align: center; }
 .avatar-choose-btn { cursor: pointer; }
 .avatar-hint { font-size: 0.72rem; margin-top: 0.4rem; }
+
+.account-bio-form { margin-top: 0.75rem; }
+.account-bio-form .form-textarea { font-size: 0.88rem; }
 
 .account-info { display: flex; flex-direction: column; gap: 0.6rem; }
 .info-row { display: flex; justify-content: space-between; align-items: center; }

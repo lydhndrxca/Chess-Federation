@@ -31,7 +31,9 @@ def register():
             flash('Username already taken.', 'error')
             return render_template('auth/register.html')
 
-        user = User(username=username)
+        bio = request.form.get('bio', '').strip()[:300]
+
+        user = User(username=username, bio=bio)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()

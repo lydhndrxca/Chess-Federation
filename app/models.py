@@ -19,6 +19,7 @@ class User(UserMixin, db.Model):
     avatar_filename = db.Column(db.String(120))
     is_active_player = db.Column(db.Boolean, default=True)
     can_name_openings = db.Column(db.Boolean, default=True)
+    bio = db.Column(db.Text, default='')
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def set_password(self, password):

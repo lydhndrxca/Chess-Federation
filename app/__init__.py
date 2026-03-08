@@ -25,6 +25,8 @@ def _migrate_db(app):
         cur.execute('ALTER TABLE user ADD COLUMN avatar_filename VARCHAR(120)')
     if 'can_name_openings' not in user_cols:
         cur.execute('ALTER TABLE user ADD COLUMN can_name_openings BOOLEAN DEFAULT 1')
+    if 'bio' not in user_cols:
+        cur.execute("ALTER TABLE user ADD COLUMN bio TEXT DEFAULT ''")
 
     game_cols = {row[1] for row in cur.execute('PRAGMA table_info(game)').fetchall()}
     if 'power_holder_id' not in game_cols:

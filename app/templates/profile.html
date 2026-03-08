@@ -9,6 +9,9 @@
         <h1>{{ player.username }}</h1>
         <p class="profile-title">{{ player.tier.name }}</p>
         <p class="profile-tier-desc">{{ player.tier.desc }}</p>
+        {% if player.bio %}
+        <p class="profile-bio">"{{ player.bio }}"</p>
+        {% endif %}
         <div class="profile-stats-row">
             <div class="stat-block">
                 <span class="stat-value">{{ player.rating }}</span>

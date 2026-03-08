@@ -114,6 +114,11 @@ def standings():
     from app.services.enoch_ai import get_current_mood
     enoch_mood = get_current_mood()
 
+    from app.models import FourPlayerGame
+    active_reckoning = FourPlayerGame.query.filter(
+        FourPlayerGame.status.in_(['waiting', 'active'])
+    ).order_by(FourPlayerGame.created_at.desc()).first()
+
     weekly_rule = None
     try:
         from app.services.weekly_rule import (
@@ -145,6 +150,7 @@ def standings():
         next_holder=next_holder,
         enoch_mood=enoch_mood,
         weekly_rule=weekly_rule,
+        active_reckoning=active_reckoning,
     )
 
 

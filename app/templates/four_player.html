@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% from "macros.html" import avatar %}
+{% block title %}The Reckoning — Chess Federation{% endblock %}
+
+{% block content %}
+{# ══════════════════════════════════════════════════════════════ #}
+{# LOBBY — no active game                                       #}
+{# ══════════════════════════════════════════════════════════════ #}
+{% if mode == 'lobby' %}
+<div class="rk-lobby">
+    <div class="rk-emblem">&#9876;</div>
+    <h1 class="rk-title">The Reckoning</h1>
+    <p class="rk-subtitle">Four souls. One table. One survivor.</p>
+    <p class="rk-flavor">"I have cleared the large table and lit all four candles. Sit down. The spiders are already placing bets."<br><em>— Enoch</em></p>
+    <button class="btn btn-reckoning" id="btnJoinReckoning">Take a Seat</button>
+    <p class="rk-rules-brief">
+        Enoch sits at the north edge. Three challengers claim south, west, and east.
+        Standard piece movement on a grand 14&times;14 cross-shaped board.
+        Lose all your pieces and you are out. Last one standing wins.
+        <br><strong>1st:</strong> 100 pts &middot; <strong>2nd:</strong> 50 pts &middot; <strong>3rd:</strong> 25 pts
+    </p>
+</div>
+
+{# ══════════════════════════════════════════════════════════════ #}
+{# WAITING — game created, waiting for players                   #}
+{# ══════════════════════════════════════════════════════════════ #}
+{% elif mode == 'waiting' %}
+<div class="rk-lobby" id="rkWaiting" data-game-id="{{ game.id }}">
+    <h1 class="rk-title">The Reckoning</h1>
+    <p class="rk-subtitle">Waiting for challengers&hellip; ({{ game.filled_seats() }}/4)</p>
+    <div class="rk-seats">
+        {% for seat in ['south','west','north','east'] %}
+        <div class="rk-seat {{ 'rk-seat-filled' if players.get(seat) else 'rk-seat-empty' }} {{ 'rk-seat-mine' if my_seat == seat }}">
+            <span class="rk-seat-label">{{ seat|capitalize }}</span>
+            {% if players.get(seat) %}
+                {% if players[seat].is_bot %}
+                <img src="{{ url_for('static', filename='img/enoch.png') }}" class="avatar avatar-sm avatar-enoch" alt="Enoch">
+                <span class="rk-seat-name">Enoch</span>
+                {% else %}
+                {{ avatar(players[seat], 'sm') }}
+                <span class="rk-seat-name">{{ players[seat].username }}</span>
+                {% endif %}
+            {% else %}
+                <span class="rk-seat-empty-icon">&#9723;</span>
+                <span class="rk-seat-name rk-seat-open">Open</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% if not my_seat %}
+    <button class="btn btn-reckoning" id="btnJoinReckoning">Take a Seat</button>
+    {% else %}
+    <p class="rk-wait-msg">You are seated at <strong>{{ my_seat|capitalize }}</strong>. Waiting for others&hellip;</p>
+    {% endif %}
+</div>
+
+{# ══════════════════════════════════════════════════════════════ #}
+{# GAME — active / completed                                    #}
+{# ══════════════════════════════════════════════════════════════ #}
+{% elif mode == 'game' %}
+<div class="rk-game" id="rkGame"
+     data-game-id="{{ game.id }}"
+     data-my-seat="{{ my_seat or '' }}"
+     data-current-turn="{{ state.turn }}"
+     data-status="{{ game.status }}"
+     data-legal='{{ legal_moves|safe }}'>
+
+    <div class="rk-header-bar">
+        <h2 class="rk-header">
+            <span class="rk-header-icon">&#9876;</span>
+            The Reckoning
+            <span class="rk-move-count">#{{ game.move_count }}</span>
+        </h2>
+        <button class="rk-mute-btn" id="rkMuteBtn" title="Mute / Unmute Enoch">&#128264;</button>
+    </div>
+
+    {# ── Enoch commentary bar ── #}
+    <div class="rk-enoch-bar" id="rkEnochBar" style="display:none">
+        <img src="{{ url_for('static', filename='img/enoch.png') }}" class="rk-enoch-tiny" alt="">
+        <span class="rk-enoch-text" id="rkEnochText"></span>
+    </div>
+
+    {# ── Player bars ── #}
+    <div class="rk-players">
+        {% for seat in ['south','west','north','east'] %}
+        {% set p = players.get(seat) %}
+        <div class="rk-player {{ 'rk-player-turn' if state.turn == seat and game.status == 'active' }} {{ 'rk-player-eliminated' if seat in state.eliminated }}"
+             data-seat="{{ seat }}" id="rkPlayer-{{ seat }}">
+            <span class="rk-player-dot" style="background:{{ color_map[seat] }}"></span>
+            {% if p and p.is_bot %}
+            <img src="{{ url_for('static', filename='img/enoch.png') }}" class="avatar avatar-xs avatar-enoch" alt="Enoch">
+            <span class="rk-player-name">Enoch</span>
+            <span class="rk-player-mood rk-mood-{{ enoch_mood.key }}">{{ enoch_mood.icon }}</span>
+            {% elif p %}
+            {{ avatar(p, 'xs') }}
+            <span class="rk-player-name">{{ p.username }}</span>
+            {% else %}
+            <span class="rk-player-name rk-empty">—</span>
+            {% endif %}
+            {% if seat not in state.eliminated %}
+            <span class="rk-player-mat" id="rkMat-{{ seat }}">{{ material.get(seat, 0) }}</span>
+            {% else %}
+            <span class="rk-player-out">OUT</span>
+            {% endif %}
+            {% if state.turn == seat and game.status == 'active' %}
+            <span class="rk-turn-indicator">&#9654;</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {# ── Board ── #}
+    <div class="rk-board-wrap">
+        <div class="rk-board" id="rkBoard">
+            {% for row in grid %}
+            {% set outer_r = loop.index0 %}
+            {% for cell in row %}
+                {% if cell is none %}
+                <div class="rk-cell rk-cell-void"></div>
+                {% elif cell.get('empty') %}
+                <div class="rk-cell rk-cell-sq {{ 'rk-cell-light' if (cell.r + cell.c) % 2 == 0 else 'rk-cell-dark' }}"
+                     data-r="{{ cell.r }}" data-c="{{ cell.c }}"></div>
+                {% else %}
+                <div class="rk-cell rk-cell-sq {{ 'rk-cell-light' if (cell.r + cell.c) % 2 == 0 else 'rk-cell-dark' }}"
+                     data-r="{{ cell.r }}" data-c="{{ cell.c }}">
+                    <span class="rk-piece rk-piece-{{ cell.color }}"
+                          data-code="{{ cell.code }}">{{ cell.symbol }}</span>
+                </div>
+                {% endif %}
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+
+    {# ── Turn / status banner ── #}
+    <div class="rk-status" id="rkStatus">
+        {% if game.status == 'completed' %}
+            <span class="rk-status-done">The Reckoning is complete.</span>
+        {% elif is_my_turn %}
+            <span class="rk-status-turn">Your move ({{ my_seat|capitalize }})</span>
+        {% else %}
+            <span class="rk-status-wait">{{ state.turn|capitalize }}'s turn&hellip;</span>
+        {% endif %}
+    </div>
+
+    {# ── Results overlay ── #}
+    {% if game_over and rankings %}
+    <div class="rk-results" id="rkResults">
+        <h3 class="rk-results-title">Final Standings</h3>
+        {% for color in rankings %}
+        {% set rank = loop.index %}
+        {% set p = players.get(color) %}
+        <div class="rk-result-row rk-result-{{ rank }}">
+            <span class="rk-result-place">#{{ rank }}</span>
+            <span class="rk-result-name" style="color:{{ color_map[color] }}">
+                {{ p.username if p else color|capitalize }}
+            </span>
+            {% if scores %}
+            <span class="rk-result-pts">+{{ scores.get(color, 0) }} pts</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <a href="{{ url_for('main.standings') }}" class="btn btn-sm rk-result-back">Return to Standings</a>
+    </div>
+    {% endif %}
+
+    {# ── Move log ── #}
+    <div class="rk-log" id="rkLog">
+        {% for m in recent_moves %}
+        <div class="rk-log-entry">
+            <span class="rk-log-num">{{ m.move_number }}.</span>
+            <span class="rk-log-color" style="color:{{ color_map.get(m.color, '#aaa') }}">{{ m.color|capitalize }}</span>
+            <span class="rk-log-move">{{ m.move_str }}</span>
+            {% if m.commentary %}
+            <span class="rk-log-commentary">"{{ m.commentary }}"</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if mode == 'game' %}
+<script>
+window.RK_AUDIO_CONFIG = {
+    manifestUrl: "{{ url_for('static', filename='audio/enoch/manifest.json') }}",
+    audioBase: "{{ url_for('static', filename='audio/enoch/') }}",
+};
+</script>
+{% endif %}
+<script src="{{ url_for('static', filename='js/four_player.js') }}"></script>
+{% endblock %}

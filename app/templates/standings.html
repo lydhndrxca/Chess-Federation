@@ -158,6 +158,34 @@
         </div>
     </div>
 
+    {# ── The Reckoning (4-player) ── #}
+    <div class="sp-section">
+        <h3 class="sp-section-title">The Reckoning</h3>
+        {% if active_reckoning %}
+        <a href="{{ url_for('four_player.view_reckoning', game_id=active_reckoning.id) }}" class="sp-reckoning-card">
+            <span class="sp-reckoning-icon">&#9876;</span>
+            <div class="sp-reckoning-info">
+                <span class="sp-reckoning-name">The Reckoning</span>
+                <span class="sp-reckoning-sub">Four-player chess &middot; Enoch sits at the table</span>
+            </div>
+            {% if active_reckoning.status == 'waiting' %}
+            <span class="sp-reckoning-badge">{{ active_reckoning.filled_seats() }}/4 seated</span>
+            {% else %}
+            <span class="sp-reckoning-badge">In progress</span>
+            {% endif %}
+        </a>
+        {% else %}
+        <a href="{{ url_for('four_player.reckoning_lobby') }}" class="sp-reckoning-card">
+            <span class="sp-reckoning-icon">&#9876;</span>
+            <div class="sp-reckoning-info">
+                <span class="sp-reckoning-name">The Reckoning</span>
+                <span class="sp-reckoning-sub">"I have cleared the large table. Sit down."</span>
+            </div>
+            <span class="sp-reckoning-badge">Join</span>
+        </a>
+        {% endif %}
+    </div>
+
     {# ── Practice Opponents ── #}
     <div class="sp-section sp-practice">
         <h3 class="sp-section-title">Practice Opponents</h3>

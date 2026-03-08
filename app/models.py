@@ -168,6 +168,62 @@ class PlayerCollectible(db.Model):
     game = db.relationship('Game', foreign_keys=[game_id])
 
 
+class FourPlayerGame(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    south_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    west_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    north_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    east_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    board_state = db.Column(db.Text)
+    status = db.Column(db.String(20), default='waiting')
+    eliminated = db.Column(db.Text, default='[]')
+    result_order = db.Column(db.Text)
+    scores = db.Column(db.Text)
+    week_number = db.Column(db.Integer)
+    season = db.Column(db.Integer, default=1)
+    move_count = db.Column(db.Integer, default=0)
+    current_turn = db.Column(db.String(10), default='south')
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    started_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
+    deadline = db.Column(db.DateTime)
+
+    south = db.relationship('User', foreign_keys=[south_id])
+    west = db.relationship('User', foreign_keys=[west_id])
+    north = db.relationship('User', foreign_keys=[north_id])
+    east = db.relationship('User', foreign_keys=[east_id])
+    fp_moves = db.relationship('FourPlayerMove', backref='fp_game',
+                               order_by='FourPlayerMove.id')
+
+    def seat_for_user(self, user_id):
+        if self.south_id == user_id:
+            return 'south'
+        if self.west_id == user_id:
+            return 'west'
+        if self.north_id == user_id:
+            return 'north'
+        if self.east_id == user_id:
+            return 'east'
+        return None
+
+    def player_ids(self):
+        return [self.south_id, self.west_id, self.north_id, self.east_id]
+
+    def filled_seats(self):
+        return sum(1 for pid in self.player_ids() if pid is not None)
+
+
+class FourPlayerMove(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('four_player_game.id'), nullable=False)
+    move_number = db.Column(db.Integer, nullable=False)
+    color = db.Column(db.String(10), nullable=False)
+    move_str = db.Column(db.String(20), nullable=False)
+    captured = db.Column(db.String(5))
+    commentary = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 class EnochWager(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

@@ -1059,7 +1059,57 @@ CATALOG = [
      'trigger': 'wager_10_wins',
      'trigger_text': 'Win 10 wagers against Enoch.',
      'enoch': 'Ten victories. I have broken three quills and one counting device recording your theft.'},
+    # ── XIII. THE RECKONING TABLE (171–178) ──────────────────────
+    {'id': 171, 'name': 'The Four-Cornered Scar', 'collection': 'The Reckoning Table',
+     'desc': 'A deep gouge in the shape of a cross, burned into a square of walnut.',
+     'trigger': 'reckoning_win',
+     'trigger_text': 'Win a Reckoning (finish 1st in a four-player game).',
+     'enoch': 'You sat at my table and did not leave until everyone else was gone. Noted.'},
+
+    {'id': 172, 'name': 'Enoch\'s Overturned Chair', 'collection': 'The Reckoning Table',
+     'desc': 'A small, crudely whittled chair, lying on its side.',
+     'trigger': 'reckoning_beat_enoch',
+     'trigger_text': 'Eliminate Enoch from a Reckoning.',
+     'enoch': 'You removed me from my own table. The spiders will hear about this.'},
+
+    {'id': 173, 'name': 'The Silver Medal (Tarnished)', 'collection': 'The Reckoning Table',
+     'desc': 'A disc of once-silver metal, now brown and pitted.',
+     'trigger': 'reckoning_second',
+     'trigger_text': 'Finish 2nd in a Reckoning.',
+     'enoch': 'So close, and yet the chair is still warm from someone else\'s victory.'},
+
+    {'id': 174, 'name': 'First Blood Splinter', 'collection': 'The Reckoning Table',
+     'desc': 'A shard of the board, stained dark from the first capture.',
+     'trigger': 'reckoning_first_capture',
+     'trigger_text': 'Make the first capture in a Reckoning.',
+     'enoch': 'The table remembers who draws first blood. So do I.'},
+
+    {'id': 175, 'name': 'The Lone Crown', 'collection': 'The Reckoning Table',
+     'desc': 'A tiny crown fashioned from bent wire and desperation.',
+     'trigger': 'reckoning_win_king_only',
+     'trigger_text': 'Win a Reckoning with only your King remaining.',
+     'enoch': 'Your army was dust. Your king crawled through the ashes alone. Extraordinary.'},
+
+    {'id': 176, 'name': 'The Quick Exit Receipt', 'collection': 'The Reckoning Table',
+     'desc': 'A hastily scribbled note reading "REMOVED — first."',
+     'trigger': 'reckoning_first_out',
+     'trigger_text': 'Be the first player eliminated from a Reckoning.',
+     'enoch': 'You arrived, sat down, and were immediately devoured. I barely had time to light the candle.'},
+
+    {'id': 177, 'name': 'The Reckoning Veteran\'s Callus', 'collection': 'The Reckoning Table',
+     'desc': 'A thick callus on the index finger from sliding pieces across the grand table.',
+     'trigger': 'reckoning_play_5',
+     'trigger_text': 'Play in 5 Reckonings.',
+     'enoch': 'Five times at the table. The wood knows your fingerprints now.'},
+
+    {'id': 178, 'name': 'Enoch\'s Table Candle (Stub)', 'collection': 'The Reckoning Table',
+     'desc': 'The blackened remnant of a candle that burned through an entire Reckoning.',
+     'trigger': 'reckoning_win_no_losses',
+     'trigger_text': 'Win a Reckoning without losing a single piece.',
+     'enoch': 'Not one piece lost. The candle burned the entire time and you never needed its light.'},
 ]
+
+COLLECTIONS.append('The Reckoning Table')
 
 CATALOG_BY_ID = {item['id']: item for item in CATALOG}
 CATALOG_BY_TRIGGER = {item['trigger']: item for item in CATALOG}

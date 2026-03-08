@@ -3244,3 +3244,173 @@ a:hover { text-decoration: underline; }
     color: var(--text-muted);
     margin-top: 0.6rem;
 }
+
+/* ════════════════════════════════════════════════════════════════
+   THE RECKONING — four-player chess
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Lobby / waiting ── */
+.rk-lobby { text-align: center; padding: 2rem 1rem; max-width: 480px; margin: 0 auto; }
+.rk-emblem { font-size: 3rem; margin-bottom: 0.5rem; filter: drop-shadow(0 0 8px rgba(201,168,76,0.3)); }
+.rk-title { font-family: var(--font-heading); font-size: 1.8rem; color: #c9a84c; margin: 0 0 0.3rem; }
+.rk-subtitle { color: var(--text-muted); font-size: 0.95rem; margin: 0 0 1rem; }
+.rk-flavor { font-style: italic; color: #c8b889; font-size: 0.85rem; line-height: 1.5; margin: 0 0 1.5rem;
+    padding: 0.8rem; background: rgba(201,168,76,0.06); border-radius: 8px;
+    border-left: 3px solid rgba(201,168,76,0.25); text-align: left; }
+.rk-rules-brief { font-size: 0.78rem; color: var(--text-dim); line-height: 1.6; margin-top: 1.2rem; }
+
+.btn-reckoning {
+    background: linear-gradient(135deg, #2a2216, #3a2f1d); color: #c9a84c;
+    border: 1px solid rgba(201,168,76,0.4); padding: 0.7rem 2.5rem;
+    font-size: 1rem; font-weight: 600; border-radius: 8px; cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+.btn-reckoning:hover { background: linear-gradient(135deg, #3a2f1d, #4a3f2d); transform: scale(1.03); }
+
+/* seats grid */
+.rk-seats { display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; margin: 1.2rem 0; }
+.rk-seat {
+    display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+    padding: 0.7rem; background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 8px; min-width: 100px;
+}
+.rk-seat-filled { border-color: rgba(201,168,76,0.35); }
+.rk-seat-mine { border-color: rgba(201,168,76,0.7); box-shadow: 0 0 8px rgba(201,168,76,0.15); }
+.rk-seat-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+.rk-seat-name { font-size: 0.85rem; color: var(--text); }
+.rk-seat-open { color: var(--text-dim); }
+.rk-seat-empty-icon { font-size: 1.5rem; color: var(--text-dim); }
+.rk-wait-msg { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.8rem; }
+
+/* ── Game layout ── */
+.rk-game { max-width: 640px; margin: 0 auto; padding: 0.5rem; }
+.rk-header { text-align: center; font-family: var(--font-heading); font-size: 1.1rem; color: #c9a84c;
+    margin: 0 0 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+.rk-header-icon { font-size: 1.3rem; }
+.rk-move-count { font-size: 0.75rem; color: var(--text-muted); }
+.rk-header-bar { display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.3rem; }
+.rk-mute-btn {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 1rem; padding: 0.2rem 0.5rem; cursor: pointer; color: var(--text-muted);
+    transition: background 0.15s;
+}
+.rk-mute-btn:hover { background: rgba(201,168,76,0.1); }
+
+/* Enoch commentary bar */
+.rk-enoch-bar {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.4rem 0.6rem; background: rgba(201,168,76,0.06);
+    border: 1px solid rgba(201,168,76,0.2); border-radius: 8px;
+    margin-bottom: 0.4rem; min-height: 36px;
+}
+.rk-enoch-tiny { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; }
+.rk-enoch-text { font-style: italic; font-size: 0.8rem; color: #c8b889; line-height: 1.4; }
+.rk-enoch-fade { animation: rk-fade-in 0.3s ease; }
+@keyframes rk-fade-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── Player bars ── */
+.rk-players { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; }
+.rk-player {
+    display: flex; align-items: center; gap: 0.35rem; flex: 1 1 45%;
+    padding: 0.35rem 0.5rem; background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 0.8rem; position: relative; min-width: 0;
+}
+.rk-player-turn { border-color: rgba(201,168,76,0.5); background: rgba(201,168,76,0.06); }
+.rk-player-eliminated { opacity: 0.4; text-decoration: line-through; }
+.rk-player-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.rk-player-name { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rk-player-mood { font-size: 0.9rem; }
+.rk-player-mat { margin-left: auto; font-weight: 600; color: var(--text-muted); font-size: 0.75rem; }
+.rk-player-out { margin-left: auto; font-weight: 700; color: #d45555; font-size: 0.7rem; text-transform: uppercase; }
+.rk-turn-indicator { margin-left: 0.15rem; color: #c9a84c; font-size: 0.65rem; }
+.rk-empty { color: var(--text-dim); }
+.avatar-xs { width: 22px; height: 22px; border-radius: 50%; }
+
+/* ── Board ── */
+.rk-board-wrap { overflow-x: auto; margin: 0 auto 0.5rem; }
+.rk-board {
+    display: grid;
+    grid-template-columns: repeat(14, 1fr);
+    grid-template-rows: repeat(14, 1fr);
+    width: min(100%, 560px);
+    aspect-ratio: 1;
+    margin: 0 auto;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+}
+.rk-cell { display: flex; align-items: center; justify-content: center; position: relative; }
+.rk-cell-void { background: transparent; }
+.rk-cell-light { background: #b7b2a5; }
+.rk-cell-dark { background: #8a8477; }
+.rk-cell-selected { box-shadow: inset 0 0 0 2px #c9a84c; z-index: 2; }
+.rk-cell-legal { box-shadow: inset 0 0 0 2px rgba(100,200,100,0.7); z-index: 1; cursor: pointer; }
+.rk-cell-legal::after {
+    content: ''; position: absolute; width: 30%; height: 30%;
+    border-radius: 50%; background: rgba(100,200,100,0.45);
+}
+
+.rk-piece {
+    font-size: clamp(16px, 3vw, 28px); line-height: 1; cursor: default;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5); user-select: none;
+}
+.rk-piece-south { color: #f0ece4; }
+.rk-piece-west { color: #5b8dd9; }
+.rk-piece-north { color: #c9a84c; }
+.rk-piece-east { color: #d45555; }
+
+/* ── Status bar ── */
+.rk-status { text-align: center; padding: 0.4rem; font-size: 0.85rem; }
+.rk-status-turn { color: #c9a84c; font-weight: 600; }
+.rk-status-wait { color: var(--text-muted); }
+.rk-status-done { color: var(--text-dim); font-style: italic; }
+
+/* ── Results overlay ── */
+.rk-results {
+    background: var(--card-bg); border: 1px solid rgba(201,168,76,0.35);
+    border-radius: 10px; padding: 1.2rem; margin: 0.8rem 0; text-align: center;
+}
+.rk-results-title { font-family: var(--font-heading); color: #c9a84c; font-size: 1.1rem; margin: 0 0 0.8rem; }
+.rk-result-row {
+    display: flex; align-items: center; justify-content: center; gap: 0.8rem;
+    padding: 0.4rem 0; font-size: 0.9rem;
+}
+.rk-result-place { font-weight: 700; color: var(--text-muted); min-width: 28px; text-align: right; }
+.rk-result-1 .rk-result-place { color: #c9a84c; }
+.rk-result-name { font-weight: 600; }
+.rk-result-pts { font-size: 0.78rem; color: #6ecf6e; }
+.rk-result-back { margin-top: 0.8rem; }
+
+/* ── Move log ── */
+.rk-log {
+    max-height: 200px; overflow-y: auto; background: var(--card-bg);
+    border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem;
+    margin-top: 0.5rem; font-size: 0.78rem;
+}
+.rk-log-entry { padding: 0.2rem 0; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.rk-log-num { color: var(--text-dim); min-width: 26px; }
+.rk-log-color { font-weight: 600; min-width: 44px; }
+.rk-log-move { color: var(--text); font-family: monospace; }
+.rk-log-commentary { color: #c8b889; font-style: italic; font-size: 0.72rem; }
+
+/* ── Standings integration — Reckoning card ── */
+.sp-reckoning-card {
+    display: flex; align-items: center; gap: 0.8rem;
+    padding: 0.8rem; background: rgba(201,168,76,0.05);
+    border: 1px solid rgba(201,168,76,0.25); border-radius: 10px;
+    margin-top: 0.5rem; cursor: pointer; transition: background 0.15s;
+}
+.sp-reckoning-card:hover { background: rgba(201,168,76,0.1); text-decoration: none; }
+.sp-reckoning-icon { font-size: 1.8rem; filter: drop-shadow(0 0 4px rgba(201,168,76,0.2)); }
+.sp-reckoning-info { flex: 1; }
+.sp-reckoning-name { display: block; font-weight: 600; color: #c9a84c; font-size: 0.95rem; }
+.sp-reckoning-sub { display: block; font-size: 0.78rem; color: var(--text-muted); }
+.sp-reckoning-badge {
+    font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px;
+    background: rgba(201,168,76,0.15); color: #c9a84c; font-weight: 600;
+}
+
+@media (max-width: 500px) {
+    .rk-board { width: 100%; }
+    .rk-player { flex: 1 1 100%; }
+}

@@ -133,6 +133,36 @@ def _migrate_db(app):
             FOREIGN KEY(game_id) REFERENCES game(id)
         )''')
 
+    if 'four_player_game' not in tables:
+        cur.execute('''CREATE TABLE four_player_game (
+            id INTEGER PRIMARY KEY,
+            south_id INTEGER, west_id INTEGER,
+            north_id INTEGER, east_id INTEGER,
+            board_state TEXT, status VARCHAR(20) DEFAULT 'waiting',
+            eliminated TEXT DEFAULT '[]', result_order TEXT, scores TEXT,
+            week_number INTEGER, season INTEGER DEFAULT 1,
+            move_count INTEGER DEFAULT 0, current_turn VARCHAR(10) DEFAULT 'south',
+            created_at DATETIME, started_at DATETIME,
+            completed_at DATETIME, deadline DATETIME,
+            FOREIGN KEY(south_id) REFERENCES user(id),
+            FOREIGN KEY(west_id) REFERENCES user(id),
+            FOREIGN KEY(north_id) REFERENCES user(id),
+            FOREIGN KEY(east_id) REFERENCES user(id)
+        )''')
+
+    if 'four_player_move' not in tables:
+        cur.execute('''CREATE TABLE four_player_move (
+            id INTEGER PRIMARY KEY,
+            game_id INTEGER NOT NULL,
+            move_number INTEGER NOT NULL,
+            color VARCHAR(10) NOT NULL,
+            move_str VARCHAR(20) NOT NULL,
+            captured VARCHAR(5),
+            commentary TEXT,
+            timestamp DATETIME,
+            FOREIGN KEY(game_id) REFERENCES four_player_game(id)
+        )''')
+
     if '_migration_flags' not in tables:
         cur.execute('''CREATE TABLE _migration_flags (
             flag VARCHAR(100) PRIMARY KEY
@@ -173,6 +203,7 @@ def create_app():
     from app.routes.admin import admin_bp
     from app.routes.decree import decree_bp
     from app.routes.hall import hall_bp
+    from app.routes.four_player import fp_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -181,6 +212,7 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(decree_bp)
     app.register_blueprint(hall_bp)
+    app.register_blueprint(fp_bp)
 
     _migrate_db(app)
 

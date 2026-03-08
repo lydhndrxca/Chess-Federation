@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ player.username }} — Chess Federation{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="profile-header">
+        <h1>{{ player.username }}</h1>
+        <div class="profile-stats-row">
+            <div class="stat-block">
+                <span class="stat-value">{{ player.rating }}</span>
+                <span class="stat-label">Rating</span>
+            </div>
+            <div class="stat-block">
+                <span class="stat-value tier-name">{{ player.tier.name }}</span>
+                <span class="stat-label">{{ player.tier.tier }}</span>
+            </div>
+            <div class="stat-block">
+                <span class="stat-value">{{ player.total_games }}</span>
+                <span class="stat-label">Games</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-grid">
+        <div class="card">
+            <h2>Record</h2>
+            <div class="record-bars">
+                <div class="record-row">
+                    <span class="record-label">Wins</span>
+                    <span class="record-value win">{{ player.wins }}</span>
+                </div>
+                <div class="record-row">
+                    <span class="record-label">Losses</span>
+                    <span class="record-value loss">{{ player.losses }}</span>
+                </div>
+                <div class="record-row">
+                    <span class="record-label">Draws</span>
+                    <span class="record-value draw">{{ player.draws }}</span>
+                </div>
+                {% if player.forfeits > 0 %}
+                <div class="record-row">
+                    <span class="record-label">Forfeits</span>
+                    <span class="record-value forfeit">{{ player.forfeits }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Match History</h2>
+            {% if games %}
+            <div class="history-list">
+                {% for game in games %}
+                <a href="{{ url_for('game.view_game', game_id=game.id) }}" class="history-row">
+                    <div class="history-players">
+                        <span class="{{ 'winner' if game.result == '1-0' else '' }}">{{ game.white.username }}</span>
+                        <span class="history-result">{{ game.result }}</span>
+                        <span class="{{ 'winner' if game.result == '0-1' else '' }}">{{ game.black.username }}</span>
+                    </div>
+                    <div class="history-meta">
+                        <span class="badge badge-sm">{{ game.result_type }}</span>
+                        <span class="text-muted">Wk {{ game.week_number }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">No completed games yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Match History — Chess Federation{% endblock %}
+
+{% block content %}
+<div class="history-page">
+    <h1>Match History</h1>
+
+    {% if games.items %}
+    <div class="card">
+        <div class="history-list">
+            {% for game in games.items %}
+            <a href="{{ url_for('game.view_game', game_id=game.id) }}" class="history-row">
+                <div class="history-players">
+                    <span class="{{ 'winner' if game.result == '1-0' else '' }}">
+                        {{ game.white.username }} ({{ game.white.rating }})
+                    </span>
+                    <span class="history-result">{{ game.result }}</span>
+                    <span class="{{ 'winner' if game.result == '0-1' else '' }}">
+                        {{ game.black.username }} ({{ game.black.rating }})
+                    </span>
+                </div>
+                <div class="history-meta">
+                    <span class="badge badge-sm">{{ game.result_type }}</span>
+                    <span class="text-muted">Season {{ game.season }}, Wk {{ game.week_number }}</span>
+                    {% if game.rating_change_white is not none %}
+                    <span class="rating-delta">
+                        {{ game.white.username }}: {{ '%+.1f'|format(game.rating_change_white) }}
+                        / {{ game.black.username }}: {{ '%+.1f'|format(game.rating_change_black) }}
+                    </span>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if games.pages > 1 %}
+    <div class="pagination">
+        {% if games.has_prev %}
+        <a href="{{ url_for('players.match_history', page=games.prev_num) }}" class="btn btn-sm">&laquo; Prev</a>
+        {% endif %}
+        <span class="page-info">Page {{ games.page }} of {{ games.pages }}</span>
+        {% if games.has_next %}
+        <a href="{{ url_for('players.match_history', page=games.next_num) }}" class="btn btn-sm">Next &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="card">
+        <p class="text-muted">No completed games in the federation yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

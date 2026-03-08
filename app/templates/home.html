@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Chess Federation{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="hero-content">
+        <h1>Chess Federation</h1>
+        <p class="hero-subtitle">A private correspondence chess league with weekly matches, persistent rankings, and evolving rules.</p>
+        <div class="hero-actions">
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Join the Federation</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">Sign In</a>
+        </div>
+    </div>
+    <div class="hero-board">
+        <div class="deco-board">
+            {% for r in range(8) %}
+            {% for c in range(8) %}
+            <div class="deco-sq {{ 'light' if (r + c) % 2 == 0 else 'dark' }}"></div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="features">
+    <div class="feature-card">
+        <h3>Weekly Matches</h3>
+        <p>One match per week. Play on your schedule within a 7-day window.</p>
+    </div>
+    <div class="feature-card">
+        <h3>Federation Rankings</h3>
+        <p>Custom 10-tier rating system. Climb from Initiate to Lord of Schools.</p>
+    </div>
+    <div class="feature-card">
+        <h3>Full History</h3>
+        <p>Every game permanently recorded with notation, stats, and rating changes.</p>
+    </div>
+</div>
+{% endblock %}

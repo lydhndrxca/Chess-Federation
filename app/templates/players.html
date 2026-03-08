@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Players — Chess Federation{% endblock %}
+
+{% block content %}
+<div class="players-page">
+    <h1>Federation Members</h1>
+    <div class="player-grid">
+        {% for player in players %}
+        <a href="{{ url_for('players.player_profile', username=player.username) }}" class="player-card">
+            <div class="player-card-header">
+                <span class="player-name">{{ player.username }}</span>
+                <span class="player-rating-lg">{{ player.rating }}</span>
+            </div>
+            <div class="player-card-tier">
+                <span class="tier-badge">{{ player.tier.name }}</span>
+            </div>
+            <div class="player-card-stats">
+                <span>{{ player.wins }}W</span>
+                <span>{{ player.losses }}L</span>
+                <span>{{ player.draws }}D</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

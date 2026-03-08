@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Chess Federation{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dash-header">
+        <h1>Season {{ season }} — Week {{ week }}</h1>
+    </div>
+
+    {% if current_game %}
+    <div class="card highlight-card">
+        <h2>Your Match</h2>
+        <div class="matchup-display">
+            <div class="matchup-player {{ 'active-turn' if current_game.current_turn == 'white' }}">
+                <span class="piece-icon">♔</span>
+                <a href="{{ url_for('players.player_profile', username=current_game.white.username) }}">
+                    {{ current_game.white.username }}
+                </a>
+                <span class="player-rating">{{ current_game.white.rating }}</span>
+            </div>
+            <span class="matchup-vs">vs</span>
+            <div class="matchup-player {{ 'active-turn' if current_game.current_turn == 'black' }}">
+                <span class="piece-icon">♚</span>
+                <a href="{{ url_for('players.player_profile', username=current_game.black.username) }}">
+                    {{ current_game.black.username }}
+                </a>
+                <span class="player-rating">{{ current_game.black.rating }}</span>
+            </div>
+        </div>
+        <div class="matchup-status">
+            {% if current_game.status == 'pending' %}
+            <span class="badge badge-pending">Waiting for first move</span>
+            {% elif current_game.status == 'active' %}
+            <span class="badge badge-active">
+                {% if (current_user.id == current_game.white_id and current_game.current_turn == 'white') or
+                      (current_user.id == current_game.black_id and current_game.current_turn == 'black') %}
+                    Your turn
+                {% else %}
+                    Opponent's turn
+                {% endif %}
+            </span>
+            {% elif current_game.status == 'completed' %}
+            <span class="badge badge-completed">{{ current_game.result }} — {{ current_game.result_type }}</span>
+            {% elif current_game.status == 'forfeited' %}
+            <span class="badge badge-forfeited">Forfeit — {{ current_game.result }}</span>
+            {% endif %}
+        </div>
+        {% if current_game.status in ('pending', 'active') %}
+        <a href="{{ url_for('game.view_game', game_id=current_game.id) }}" class="btn btn-primary">Play</a>
+        {% else %}
+        <a href="{{ url_for('game.view_game', game_id=current_game.id) }}" class="btn btn-outline">Review</a>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="card">
+        <p class="text-muted">No match scheduled for you this week.</p>
+    </div>
+    {% endif %}
+
+    <div class="dash-grid">
+        <div class="card">
+            <h2>All Matches This Week</h2>
+            {% if weekly_games %}
+            <div class="matchup-list">
+                {% for game in weekly_games %}
+                <div class="matchup-row">
+                    <div class="matchup-players">
+                        <span>{{ game.white.username }}</span>
+                        <span class="vs-sm">vs</span>
+                        <span>{{ game.black.username }}</span>
+                    </div>
+                    <div class="matchup-meta">
+                        {% if game.status == 'pending' %}
+                        <span class="badge badge-pending">Pending</span>
+                        {% elif game.status == 'active' %}
+                        <span class="badge badge-active">{{ game.current_turn }}'s turn</span>
+                        {% elif game.status == 'completed' %}
+                        <span class="badge badge-completed">{{ game.result }}</span>
+                        {% elif game.status == 'forfeited' %}
+                        <span class="badge badge-forfeited">Forfeit</span>
+                        {% endif %}
+                        {% if game.status != 'pending' %}
+                        <a href="{{ url_for('game.view_game', game_id=game.id) }}" class="link-sm">View</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">No matches generated yet this week.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h2>Standings</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Player</th>
+                        <th>Rating</th>
+                        <th>Tier</th>
+                        <th>W-L-D</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player in standings %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <a href="{{ url_for('players.player_profile', username=player.username) }}">
+                                {{ player.username }}
+                            </a>
+                        </td>
+                        <td>{{ player.rating }}</td>
+                        <td><span class="tier-badge">{{ player.tier.name }}</span></td>
+                        <td>{{ player.wins }}-{{ player.losses }}-{{ player.draws }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <h3>Federation Controls</h3>
+        <div class="admin-actions">
+            <form action="{{ url_for('admin.generate_week') }}" method="post">
+                <button class="btn btn-sm">Generate Weekly Pairings</button>
+            </form>
+            <form action="{{ url_for('admin.run_forfeit_check') }}" method="post">
+                <button class="btn btn-sm btn-outline">Check Forfeits</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

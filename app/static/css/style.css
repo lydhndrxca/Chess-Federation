@@ -2773,3 +2773,61 @@ a:hover { text-decoration: underline; }
     .mstats-split { flex-direction: column; gap: 0.5rem; }
     .mhist-tabs { flex-wrap: wrap; }
 }
+
+/* ── Enoch Login Greeting Toast ── */
+.enoch-login-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    max-width: 460px;
+    width: calc(100% - 2rem);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem;
+    background: linear-gradient(135deg, #1a1712 0%, #231f1a 100%);
+    border: 1px solid rgba(227,179,65,0.3);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 12px rgba(227,179,65,0.08);
+    z-index: 9999;
+    opacity: 0;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+}
+.enoch-login-toast.active {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+.enoch-login-sigil {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1px solid rgba(227,179,65,0.4);
+}
+.enoch-login-body { flex: 1; min-width: 0; }
+.enoch-login-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(227,179,65,0.7);
+    margin-bottom: 0.2rem;
+}
+.enoch-login-text {
+    font-size: 0.88rem;
+    color: #e3d8c8;
+    line-height: 1.45;
+    font-style: italic;
+}
+.enoch-login-close {
+    background: none;
+    border: none;
+    color: rgba(227,179,65,0.5);
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0 0.2rem;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.15s;
+}
+.enoch-login-close:hover { color: rgba(227,179,65,0.9); }

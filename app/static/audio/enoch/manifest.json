@@ -9202,5 +9202,65 @@
   "practice_lore_milestones/005": {
     "text": "You have slaughtered him fifty times over. He offers no resistance now, only a fresh page of ink.",
     "file": "practice_lore_milestones/005.mp3"
+  },
+  "login_bundabomber69/001": {
+    "text": "Ah… BundaBomber69. A name that makes the ink in my ledger curdle. Welcome back to the damp.",
+    "file": "login_bundabomber69/001.mp3"
+  },
+  "login_bundabomber69/002": {
+    "text": "The floorboards groan under the weight of that ridiculous name. BundaBomber69 has returned.",
+    "file": "login_bundabomber69/002.mp3"
+  },
+  "login_bundabomber69/003": {
+    "text": "I wrote your name in the ledger once. The quill snapped. I blame you entirely, BundaBomber69.",
+    "file": "login_bundabomber69/003.mp3"
+  },
+  "login_bundabomber69/004": {
+    "text": "BundaBomber69. You left no biography. An empty page. I stared at it for hours. It was the most honest thing in the archive.",
+    "file": "login_bundabomber69/004.mp3"
+  },
+  "login_bundabomber69/005": {
+    "text": "The spiders scattered when they heard you were coming. Even they have standards, BundaBomber69.",
+    "file": "login_bundabomber69/005.mp3"
+  },
+  "login_andrewmuckerofstalls/001": {
+    "text": "The stable boy returns. I can smell the hay and horse sweat from down here, andrewmuckerofstalls.",
+    "file": "login_andrewmuckerofstalls/001.mp3"
+  },
+  "login_andrewmuckerofstalls/002": {
+    "text": "Ah, the mucker of stalls. You tend the knight stables above while I tend the records below. We are both servants of the filth.",
+    "file": "login_andrewmuckerofstalls/002.mp3"
+  },
+  "login_andrewmuckerofstalls/003": {
+    "text": "andrewmuckerofstalls. An honest title. The bishops' vestments will not clean themselves, and neither will this board.",
+    "file": "login_andrewmuckerofstalls/003.mp3"
+  },
+  "login_andrewmuckerofstalls/004": {
+    "text": "I see the ordained laborer has left his pitchfork by the door. Welcome back to a different kind of muck.",
+    "file": "login_andrewmuckerofstalls/004.mp3"
+  },
+  "login_andrewmuckerofstalls/005": {
+    "text": "You reek of the stables, andrewmuckerofstalls. Down here, we only reek of ink and regret. Sit. Play.",
+    "file": "login_andrewmuckerofstalls/005.mp3"
+  },
+  "login_defenderofknight/001": {
+    "text": "The knight's champion returns. Your treasonous little biography still keeps me up at night, defenderofknight.",
+    "file": "login_defenderofknight/001.mp3"
+  },
+  "login_defenderofknight/002": {
+    "text": "Ah, defenderofknight. Still dreaming of bishops bending knees and knights rising above their station. Dangerous words in these vaults.",
+    "file": "login_defenderofknight/002.mp3"
+  },
+  "login_defenderofknight/003": {
+    "text": "I read your manifesto again last night. The Lord of Schools bending his knee… the very thought made my candle flicker, defenderofknight.",
+    "file": "login_defenderofknight/003.mp3"
+  },
+  "login_defenderofknight/004": {
+    "text": "The defender of knights has arrived. The pawns in your little revolution will not protect themselves. Sit down.",
+    "file": "login_defenderofknight/004.mp3"
+  },
+  "login_defenderofknight/005": {
+    "text": "defenderofknight. You speak of restoring order, but I have seen your games. You cannot even restore your own back rank.",
+    "file": "login_defenderofknight/005.mp3"
   }
 }

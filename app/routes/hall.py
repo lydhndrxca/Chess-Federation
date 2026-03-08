@@ -119,3 +119,30 @@ def poll_messages():
         })
 
     return jsonify({'messages': result})
+
+
+@hall_bp.route('/hall/login-greeting')
+@login_required
+def login_greeting():
+    from app.services.login_greetings import get_login_greeting, PLAYER_GREETINGS
+    from flask import url_for as _url
+    import json, os
+
+    line = get_login_greeting(current_user.username)
+    if not line:
+        return jsonify({'greeting': None})
+
+    audio_url = None
+    manifest_path = os.path.join(
+        os.path.dirname(__file__), '..', 'static', 'audio', 'enoch', 'manifest.json')
+    try:
+        with open(manifest_path, 'r', encoding='utf-8') as f:
+            manifest = json.load(f)
+        for entry in manifest.values():
+            if entry.get('text') == line:
+                audio_url = _url('static', filename='audio/enoch/' + entry['file'])
+                break
+    except Exception:
+        pass
+
+    return jsonify({'greeting': line, 'audio_url': audio_url})

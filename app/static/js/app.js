@@ -61,6 +61,59 @@ document.addEventListener('DOMContentLoaded', () => {
         setInterval(checkUnread, 15000);
     }
 
+    /* ── Enoch daily login greeting (runs once per day) ── */
+    if (chatBadge) {
+        const today = new Date().toDateString();
+        const lastGreeting = localStorage.getItem('enochGreetingDate');
+        if (lastGreeting !== today) {
+            setTimeout(async () => {
+                try {
+                    const resp = await fetch('/hall/login-greeting');
+                    const data = await resp.json();
+                    if (data.greeting) {
+                        localStorage.setItem('enochGreetingDate', today);
+                        showEnochGreeting(data.greeting, data.audio_url);
+                    }
+                } catch (e) { /* ignore */ }
+            }, 1500);
+        }
+    }
+
+    function showEnochGreeting(text, audioUrl) {
+        const toast = document.createElement('div');
+        toast.className = 'enoch-login-toast';
+        toast.innerHTML = `
+            <img src="/static/img/enoch.png" class="enoch-login-sigil" alt="Enoch">
+            <div class="enoch-login-body">
+                <div class="enoch-login-label">Enoch mutters…</div>
+                <div class="enoch-login-text">${text}</div>
+            </div>
+            <button class="enoch-login-close" aria-label="Dismiss">&times;</button>`;
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('active'));
+
+        toast.querySelector('.enoch-login-close').addEventListener('click', () => {
+            toast.classList.remove('active');
+            setTimeout(() => toast.remove(), 400);
+        });
+
+        if (audioUrl) {
+            const audio = new Audio(audioUrl);
+            audio.play().catch(() => {});
+            audio.addEventListener('ended', () => {
+                setTimeout(() => {
+                    toast.classList.remove('active');
+                    setTimeout(() => toast.remove(), 400);
+                }, 1500);
+            });
+        } else {
+            setTimeout(() => {
+                toast.classList.remove('active');
+                setTimeout(() => toast.remove(), 400);
+            }, 8000);
+        }
+    }
+
     const deadlineEl = document.querySelector('.deadline-display');
     if (deadlineEl) {
         const iso = deadlineEl.dataset.deadline;

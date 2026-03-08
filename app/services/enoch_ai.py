@@ -11,6 +11,7 @@ mood-dependent depth/noise/blunder rates calibrated against real Elo.
 
 import hashlib
 import random
+import time
 from datetime import datetime, timezone
 
 import chess
@@ -110,20 +111,25 @@ _MOOD_PARAMS = {
         'noise': 120,
         'blunder_chance': 0.20,
         'top_n': 6,
+        'time_limit': 0.8,
     },
     'annoyed': {
         'depth': 3,
         'noise': 50,
         'blunder_chance': 0.06,
         'top_n': 3,
+        'time_limit': 1.2,
     },
     'angry': {
         'depth': 4,
         'noise': 15,
         'blunder_chance': 0.01,
         'top_n': 2,
+        'time_limit': 1.5,
     },
 }
+
+_search_deadline = 0
 
 
 # ── Piece values (centipawns) ────────────────────────────────────
@@ -281,22 +287,11 @@ def _evaluate_board(board, engine_color):
                 pst_bonus = pst_table[sq]
             score -= val + pst_bonus
 
-    w_mobility = 0
-    b_mobility = 0
-    try:
-        if board.turn == chess.WHITE:
-            w_mobility = len(list(board.legal_moves))
-            board.push(chess.Move.null())
-            b_mobility = len(list(board.legal_moves))
-            board.pop()
-        else:
-            b_mobility = len(list(board.legal_moves))
-            board.push(chess.Move.null())
-            w_mobility = len(list(board.legal_moves))
-            board.pop()
-    except Exception:
-        pass
-    score += (w_mobility - b_mobility) * 5
+    mobility = sum(1 for _ in board.legal_moves)
+    if board.turn == chess.WHITE:
+        score += mobility * 5
+    else:
+        score -= mobility * 5
 
     if board.has_castling_rights(chess.WHITE):
         score += 15
@@ -348,8 +343,8 @@ def _order_moves(board):
 
 
 def _alphabeta(board, depth, alpha, beta, engine_color, maximizing):
-    """Minimax with alpha-beta pruning."""
-    if depth == 0 or board.is_game_over():
+    """Minimax with alpha-beta pruning and time cutoff."""
+    if time.time() > _search_deadline or depth == 0 or board.is_game_over():
         return _evaluate_board(board, engine_color)
 
     if maximizing:
@@ -380,16 +375,37 @@ def _alphabeta(board, depth, alpha, beta, engine_color, maximizing):
         return min_eval
 
 
-def _find_best_moves(board, engine_color, depth):
-    """Return all legal moves scored by minimax, sorted best-first."""
-    results = []
-    for move in _order_moves(board):
-        board.push(move)
-        val = _alphabeta(board, depth - 1, -100000, 100000, engine_color, False)
-        board.pop()
-        results.append((val, move))
-    results.sort(key=lambda x: -x[0])
-    return results
+def _find_best_moves(board, engine_color, max_depth, time_limit):
+    """Iterative-deepening search with time limit. Maintains alpha across
+    root moves for efficient pruning. Returns scored moves best-first."""
+    global _search_deadline
+    _search_deadline = time.time() + time_limit
+
+    ordered = _order_moves(board)
+    best_results = [(0, m) for m in ordered]
+
+    for depth in range(1, max_depth + 1):
+        if time.time() > _search_deadline:
+            break
+        results = []
+        alpha = -100000
+        timed_out = False
+        for move in ordered:
+            if time.time() > _search_deadline:
+                timed_out = True
+                break
+            board.push(move)
+            val = _alphabeta(board, depth - 1, alpha, 100000, engine_color, False)
+            board.pop()
+            results.append((val, move))
+            if val > alpha:
+                alpha = val
+        if not timed_out and len(results) == len(ordered):
+            results.sort(key=lambda x: -x[0])
+            best_results = results
+            ordered = [m for _, m in results]
+
+    return best_results
 
 
 def pick_move(fen, mood_key=None):
@@ -432,7 +448,7 @@ def pick_move(fen, mood_key=None):
         board.pop()
         return chosen, mv_mood
 
-    scored = _find_best_moves(board, engine_color, params['depth'])
+    scored = _find_best_moves(board, engine_color, params['depth'], params['time_limit'])
 
     for i in range(len(scored)):
         noise = random.gauss(0, params['noise'])

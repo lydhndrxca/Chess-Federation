@@ -109,6 +109,14 @@ def generate_weekly_pairings(week=None, season=None):
 
     decree_text = schedule.rule_declaration or ''
 
+    active_rule = None
+    try:
+        from app.services.weekly_rule import RULE_ACTIVE, RULE_TITLE
+        if RULE_ACTIVE:
+            active_rule = RULE_TITLE
+    except ImportError:
+        pass
+
     for pa, pb in combinations(players, 2):
         white, black = _assign_colors(pa, pb)
 
@@ -120,6 +128,7 @@ def generate_weekly_pairings(week=None, season=None):
             deadline=deadline,
             power_holder_id=power_holder_id,
             rule_snapshot=decree_text if decree_text else None,
+            custom_rule_name=active_rule,
         )
         db.session.add(game)
         games_created += 1

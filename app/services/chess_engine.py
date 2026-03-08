@@ -99,8 +99,10 @@ class ChessEngine:
             f'[White "{game.white.username}"]',
             f'[Black "{game.black.username}"]',
             f'[Result "{game.result or "*"}"]',
-            '',
         ]
+        if getattr(game, 'custom_rule_name', None):
+            headers.append(f'[Variant "Custom: {game.custom_rule_name}"]')
+        headers.append('')
         pgn_parts = []
         for move in moves:
             if move.color == 'white':

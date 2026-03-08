@@ -29,6 +29,41 @@
                 <span class="stat-label">Contests</span>
             </div>
         </div>
+
+        {# ── Rank Progression ── #}
+        {% if progression %}
+        <div class="prog-section">
+            <div class="prog-current">
+                <span class="prog-level">{{ progression.current.tier }}</span>
+                <span class="prog-title">{{ progression.current.name }}</span>
+            </div>
+
+            {% if progression.at_max %}
+            <div class="prog-bar-wrap">
+                <div class="prog-bar">
+                    <div class="prog-bar-fill prog-bar-max" style="width:100%"></div>
+                </div>
+                <p class="prog-max-text">Supreme rank attained. The Federation kneels.</p>
+            </div>
+            {% else %}
+            <div class="prog-bar-wrap">
+                <div class="prog-bar">
+                    <div class="prog-bar-fill" style="width:{{ progression.pct }}%"></div>
+                    <span class="prog-bar-label">{{ player.rating }} / {{ progression.next_threshold }}</span>
+                </div>
+                <div class="prog-details">
+                    <span class="prog-remaining">{{ progression.points_needed }} rating to next rank</span>
+                </div>
+            </div>
+            <div class="prog-next">
+                <span class="prog-next-label">Next:</span>
+                <span class="prog-next-level">{{ progression.next.tier }}</span>
+                <span class="prog-next-title">{{ progression.next.name }}</span>
+            </div>
+            <p class="prog-next-desc">{{ progression.next.desc }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 
     <div class="profile-grid">
@@ -187,6 +222,9 @@
                         <span class="badge badge-sm">{{ game.result_type or game.status }}</span>
                         {% if game.is_practice %}
                         <span class="badge badge-sm badge-practice">Enoch</span>
+                        {% endif %}
+                        {% if game.custom_rule_name %}
+                        <span class="badge badge-sm badge-rule" title="{{ game.custom_rule_name }}">{{ game.custom_rule_name }}</span>
                         {% endif %}
                         <span class="text-muted">
                             {{ game.move_count }} moves

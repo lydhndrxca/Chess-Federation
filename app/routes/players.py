@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 
 from app.models import Commendation, EnochWager, Game, PlayerCollectible, User, db
 from app.services.collectibles_catalog import CATALOG, CATALOG_BY_ID, COLLECTIONS
+from app.services.rating import get_progression
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
@@ -50,13 +51,15 @@ def player_profile(username):
     wager_history = EnochWager.query.filter_by(user_id=player.id)\
         .order_by(EnochWager.created_at.desc()).limit(10).all()
 
+    progression = get_progression(player.rating)
+
     return render_template(
         'profile.html', player=player,
         all_games=all_games, fed_games=fed_games,
         practice_games=practice_games, match_stats=match_stats,
         commendations=commendations, condemnations=condemnations,
         drawer=drawer, collections=COLLECTIONS, catalog=CATALOG,
-        wager_history=wager_history,
+        wager_history=wager_history, progression=progression,
     )
 
 

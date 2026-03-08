@@ -75,6 +75,9 @@
             </div>
             <div class="arch-game-meta">
                 <span class="arch-move-count">{{ g.move_count }} move{{ 's' if g.move_count != 1 }}</span>
+                {% if g.custom_rule_name %}
+                <span class="badge badge-rule" title="{{ g.custom_rule_name }}">{{ g.custom_rule_name }}</span>
+                {% endif %}
             </div>
             <div class="arch-game-result">
                 {% if g.status == 'completed' %}

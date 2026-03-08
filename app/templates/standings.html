@@ -70,6 +70,9 @@
                     {% endif %}
                 </div>
                 <div class="gc-status">
+                    {% if g.custom_rule_name %}
+                    <span class="badge badge-rule" title="{{ g.custom_rule_name }}">{{ g.custom_rule_name }}</span>
+                    {% endif %}
                     {% if g.status == 'pending' %}
                         <span class="badge badge-pending">New</span>
                     {% elif g.status == 'active' %}
@@ -101,6 +104,9 @@
         {% for g in other_games %}
         <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="sp-other-row">
             <span>{{ g.white.username }} vs {{ g.black.username }}</span>
+            {% if g.custom_rule_name %}
+            <span class="badge badge-rule">{{ g.custom_rule_name }}</span>
+            {% endif %}
             {% if g.status == 'completed' %}
             <span class="badge badge-completed">{{ g.result }}</span>
             {% elif g.status == 'active' %}
@@ -208,6 +214,25 @@
         </form>
     </div>
 </div>
+
+{# ── Weekly Rule Popup ── #}
+{% if weekly_rule %}
+<div class="wr-overlay" id="weeklyRuleOverlay">
+    <div class="wr-modal">
+        <div class="wr-header">
+            <img src="{{ url_for('static', filename='img/enoch.png') }}" class="wr-enoch-avatar" alt="Enoch">
+            <h2 class="wr-title">{{ weekly_rule.title }}</h2>
+            <span class="wr-subtitle">Weekly Decree</span>
+        </div>
+        <div class="wr-body">
+            <p class="wr-description">{{ weekly_rule.description }}</p>
+            <p class="wr-enoch-text">"{{ weekly_rule.enoch_text }}"</p>
+        </div>
+        <button class="btn wr-dismiss" id="weeklyRuleDismiss">Understood</button>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}
 
 {% block scripts %}
@@ -235,6 +260,23 @@ document.addEventListener('DOMContentLoaded', function() {
     var dc = document.getElementById('decreeCountdown');
     if (mc) tickCountdown(mc.dataset.deadline, document.getElementById('matchTimer'));
     if (dc) tickCountdown(dc.dataset.deadline, document.getElementById('decreeTimer'));
+
+    var wrOverlay = document.getElementById('weeklyRuleOverlay');
+    var wrDismiss = document.getElementById('weeklyRuleDismiss');
+    if (wrOverlay) {
+        var wrKey = 'weeklyRuleSeen_{{ weekly_rule.title|default("") }}';
+        if (localStorage.getItem(wrKey)) {
+            wrOverlay.style.display = 'none';
+        } else {
+            wrOverlay.style.display = 'flex';
+        }
+        if (wrDismiss) {
+            wrDismiss.addEventListener('click', function() {
+                localStorage.setItem(wrKey, '1');
+                wrOverlay.style.display = 'none';
+            });
+        }
+    }
 
     var btnChallenge = document.getElementById('btnChallengeEnoch');
     var offerPanel = document.getElementById('wagerOffer');

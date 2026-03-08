@@ -20,6 +20,16 @@ from app.services.practice_dialogue import (
 import random
 import chess
 
+from app.services.weekly_rule import (
+    RULE_ACTIVE as _WEEKLY_RULE_ACTIVE,
+    RULE_TITLE as _WEEKLY_RULE_TITLE,
+    RULE_DESCRIPTION as _WEEKLY_RULE_DESCRIPTION,
+    RULE_REMINDER as _WEEKLY_RULE_REMINDER,
+    get_custom_legal_moves as _get_custom_legal_moves,
+    make_custom_move as _make_custom_move,
+    is_custom_game_over as _is_custom_game_over,
+)
+
 game_bp = Blueprint('game', __name__)
 
 PIECE_SYMBOLS = {
@@ -74,6 +84,11 @@ def _get_captures(fen):
     }
 
 
+def _use_custom_rules(game):
+    """True if this game should use the weekly custom rule."""
+    return _WEEKLY_RULE_ACTIVE and not game.is_practice
+
+
 def _player_color(game):
     if current_user.id == game.white_id:
         return 'white'
@@ -112,11 +127,14 @@ def view_game(game_id):
     game = Game.query.get_or_404(game_id)
     player_color = _player_color(game)
 
+    custom = _use_custom_rules(game)
+
     legal_moves = []
     is_player_turn = False
     if game.status in ('pending', 'active') and player_color \
        and game.current_turn == player_color:
-        legal_moves = ChessEngine.get_legal_moves(game.fen_current)
+        legal_moves = (_get_custom_legal_moves(game.fen_current)
+                       if custom else ChessEngine.get_legal_moves(game.fen_current))
         is_player_turn = True
 
     board_state = ChessEngine.get_board_state(game.fen_current)
@@ -166,7 +184,7 @@ def view_game(game_id):
         if last_san:
             enoch_line = get_move_commentary(
                 last_san, len(moves), is_over, game.result_type,
-                opening_name=opening_name)
+                opening_name=opening_name, custom_rule=custom)
         elif game.move_count == 0:
             enoch_line = comment_game_start()
 
@@ -187,6 +205,14 @@ def view_game(game_id):
 
     starting_fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
     replay_fens = [starting_fen] + [m.fen_after for m in moves]
+
+    weekly_rule = None
+    if custom:
+        weekly_rule = {
+            'title': _WEEKLY_RULE_TITLE,
+            'description': _WEEKLY_RULE_DESCRIPTION,
+            'reminder': _WEEKLY_RULE_REMINDER,
+        }
 
     return render_template(
         'game.html',
@@ -210,6 +236,7 @@ def view_game(game_id):
         active_wager=active_wager,
         replay_fens=replay_fens,
         captures=_get_captures(game.fen_current),
+        weekly_rule=weekly_rule,
     )
 
 
@@ -230,8 +257,11 @@ def make_move(game_id):
     if not uci_move:
         return jsonify({'error': 'No move provided'}), 400
 
+    custom = _use_custom_rules(game)
+
     try:
-        result = ChessEngine.make_move(game.fen_current, uci_move)
+        result = (_make_custom_move(game.fen_current, uci_move)
+                  if custom else ChessEngine.make_move(game.fen_current, uci_move))
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
 
@@ -253,13 +283,15 @@ def make_move(game_id):
     game.current_turn = result['turn']
     game.move_count += 1
 
-    is_over, result_type = ChessEngine.is_game_over(result['fen'])
+    is_over, result_type = (_is_custom_game_over(result['fen'])
+                            if custom else ChessEngine.is_game_over(result['fen']))
     if is_over:
         _finish_game(game, result_type, player_color)
 
     # --- Practice mode: Enoch auto-reply ---
     enoch_reply = None
     practice_line = None
+    player_fen = game.fen_current
     if game.is_practice and not is_over:
         enoch_reply = _make_enoch_reply(game)
         if enoch_reply:
@@ -282,6 +314,7 @@ def make_move(game_id):
         resp = {
             'success': True,
             'fen': game.fen_current,
+            'player_fen': player_fen,
             'san': result['san'],
             'turn': game.current_turn,
             'game_over': is_over,
@@ -319,9 +352,10 @@ def make_move(game_id):
     seq = get_sequence_info(game.id)
     opening_name = seq['match']['name'] if seq.get('match') else None
 
+    custom = _use_custom_rules(game)
     enoch_line = get_move_commentary(
         result['san'], game.move_count, is_over, result_type,
-        opening_name=opening_name)
+        opening_name=opening_name, custom_rule=custom)
 
     resp = {
         'success': True,
@@ -395,12 +429,15 @@ def game_state(game_id):
     game = Game.query.get_or_404(game_id)
     player_color = _player_color(game)
 
+    custom = _use_custom_rules(game)
+
     is_your_turn = False
     legal_moves = []
     if player_color and game.current_turn == player_color \
        and game.status in ('pending', 'active'):
         is_your_turn = True
-        legal_moves = ChessEngine.get_legal_moves(game.fen_current)
+        legal_moves = (_get_custom_legal_moves(game.fen_current)
+                       if custom else ChessEngine.get_legal_moves(game.fen_current))
 
     last_move = Move.query.filter_by(
         game_id=game.id
@@ -410,11 +447,12 @@ def game_state(game_id):
     opening_name = seq['match']['name'] if seq.get('match') else None
     is_over = game.status in ('completed', 'forfeited')
 
+    custom = _use_custom_rules(game)
     enoch_line = None
     if last_move:
         enoch_line = get_move_commentary(
             last_move.move_san, game.move_count, is_over, game.result_type,
-            opening_name=opening_name)
+            opening_name=opening_name, custom_rule=custom)
 
     resp = {
         'fen': game.fen_current,

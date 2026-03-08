@@ -9262,5 +9262,105 @@
   "login_defenderofknight/005": {
     "text": "defenderofknight. You speak of restoring order, but I have seen your games. You cannot even restore your own back rank.",
     "file": "login_defenderofknight/005.mp3"
+  },
+  "custom_knight_rule/001": {
+    "text": "The knights ride longer this week. Three and two. The old step is forbidden.",
+    "file": "custom_knight_rule/001.mp3"
+  },
+  "custom_knight_rule/002": {
+    "text": "An extended gallop across the board. The horses have been fed well.",
+    "file": "custom_knight_rule/002.mp3"
+  },
+  "custom_knight_rule/003": {
+    "text": "Three squares forward, two to the side. The geometry of this week's decree.",
+    "file": "custom_knight_rule/003.mp3"
+  },
+  "custom_knight_rule/004": {
+    "text": "The knight leaps far. Farther than it should. The decree allows it.",
+    "file": "custom_knight_rule/004.mp3"
+  },
+  "custom_knight_rule/005": {
+    "text": "A longer stride from the cavalry. The board feels smaller now.",
+    "file": "custom_knight_rule/005.mp3"
+  },
+  "custom_knight_rule/006": {
+    "text": "The extended knight lands with authority. The position trembles.",
+    "file": "custom_knight_rule/006.mp3"
+  },
+  "custom_knight_rule/007": {
+    "text": "That knight covers ground like a horse that has tasted open field.",
+    "file": "custom_knight_rule/007.mp3"
+  },
+  "custom_knight_rule/008": {
+    "text": "Three and two. The knights have forgotten their old L-shape entirely.",
+    "file": "custom_knight_rule/008.mp3"
+  },
+  "custom_knight_rule/009": {
+    "text": "A wide arc from the steed. The decree reshapes the battlefield.",
+    "file": "custom_knight_rule/009.mp3"
+  },
+  "custom_knight_rule/010": {
+    "text": "The knight stretches its legs. The enemy must recalculate everything.",
+    "file": "custom_knight_rule/010.mp3"
+  },
+  "custom_knight_rule/011": {
+    "text": "An ambitious leap. The extended knight knows no modesty this week.",
+    "file": "custom_knight_rule/011.mp3"
+  },
+  "custom_knight_rule/012": {
+    "text": "The cavalry charge covers more ground than expected. As decreed.",
+    "file": "custom_knight_rule/012.mp3"
+  },
+  "custom_knight_rule/013": {
+    "text": "The knight crashes down three squares away. A heavy, deliberate landing.",
+    "file": "custom_knight_rule/013.mp3"
+  },
+  "custom_knight_rule/014": {
+    "text": "Longer strides mean deeper threats. The knight proves it.",
+    "file": "custom_knight_rule/014.mp3"
+  },
+  "custom_knight_rule/015": {
+    "text": "The extended reach of that knight changes the texture of the position.",
+    "file": "custom_knight_rule/015.mp3"
+  },
+  "custom_knight_rule/016": {
+    "text": "A knight reborn under new law. Its shadow falls across distant squares.",
+    "file": "custom_knight_rule/016.mp3"
+  },
+  "custom_knight_rule/017": {
+    "text": "Three forward. Two sideways. The knight obeys the decree without question.",
+    "file": "custom_knight_rule/017.mp3"
+  },
+  "custom_knight_rule/018": {
+    "text": "The board groans under the weight of extended cavalry movement.",
+    "file": "custom_knight_rule/018.mp3"
+  },
+  "custom_knight_rule/019": {
+    "text": "That knight moved like something unshackled. The decree is generous to the horses.",
+    "file": "custom_knight_rule/019.mp3"
+  },
+  "custom_knight_rule/020": {
+    "text": "A leap of unusual proportion. The decree has made the knights bold.",
+    "file": "custom_knight_rule/020.mp3"
+  },
+  "custom_knight_rule/021": {
+    "text": "The extended knight finds a square that should have been safe. Nothing is safe this week.",
+    "file": "custom_knight_rule/021.mp3"
+  },
+  "custom_knight_rule/022": {
+    "text": "The old L-shape gathers dust. The knights ride three and two now.",
+    "file": "custom_knight_rule/022.mp3"
+  },
+  "custom_knight_rule/023": {
+    "text": "I watch the knight soar across the board. The decree has given it wings.",
+    "file": "custom_knight_rule/023.mp3"
+  },
+  "custom_knight_rule/024": {
+    "text": "The knight lands on a square the opponent forgot to guard. The new geometry is cruel.",
+    "file": "custom_knight_rule/024.mp3"
+  },
+  "custom_knight_rule/025": {
+    "text": "Every knight move this week rewrites the tactical vocabulary. Three and two. Remember it.",
+    "file": "custom_knight_rule/025.mp3"
   }
 }

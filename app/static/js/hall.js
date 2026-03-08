@@ -100,10 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, delay);
                 }
 
-                if (data.earned_items && data.earned_items.length) {
-                    for (const item of data.earned_items) {
-                        showCollectibleToast(item);
-                    }
+                if (data.earned_items && data.earned_items.length && window.showAwardQueue) {
+                    window.showAwardQueue(data.earned_items);
                 }
             }
         } catch (e) {
@@ -132,24 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {
             console.error('Poll failed:', e);
         }
-    }
-
-    function showCollectibleToast(item) {
-        const toast = document.createElement('div');
-        toast.className = 'enoch-toast';
-        toast.innerHTML = `
-            <img src="/static/img/enoch.png" class="enoch-toast-sigil" alt="Enoch">
-            <div class="enoch-toast-body">
-                <div class="enoch-toast-title">${escapeHtml(item.name)}</div>
-                <div class="enoch-toast-sub">${escapeHtml(item.collection)}</div>
-                <div class="enoch-toast-quote">"${escapeHtml(item.enoch)}"</div>
-            </div>`;
-        document.body.appendChild(toast);
-        requestAnimationFrame(() => toast.classList.add('active'));
-        setTimeout(() => {
-            toast.classList.remove('active');
-            setTimeout(() => toast.remove(), 400);
-        }, 6000);
     }
 
     setInterval(poll, 3000);

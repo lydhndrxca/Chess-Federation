@@ -60,6 +60,52 @@ def get_tier(rating):
     return {'level': level, 'name': name, 'desc': desc, 'tier': f'Level {level}'}
 
 
+def get_progression(rating):
+    """Return progression info: current tier, next tier, points needed, percentage."""
+    current = get_tier(rating)
+    current_idx = current['level'] - 1
+    current_threshold = TIERS[current_idx][1]
+
+    if current_idx >= len(TIERS) - 1:
+        return {
+            'current': current,
+            'current_threshold': current_threshold,
+            'next': None,
+            'next_threshold': None,
+            'points_needed': 0,
+            'points_into': 0,
+            'tier_span': 0,
+            'pct': 100,
+            'at_max': True,
+        }
+
+    next_tier = TIERS[current_idx + 1]
+    next_threshold = next_tier[1]
+    next_info = {
+        'level': next_tier[0],
+        'name': next_tier[2],
+        'desc': next_tier[3],
+        'tier': f'Level {next_tier[0]}',
+    }
+
+    tier_span = next_threshold - current_threshold
+    points_into = rating - current_threshold
+    points_needed = next_threshold - rating
+    pct = round(100 * points_into / tier_span) if tier_span > 0 else 100
+
+    return {
+        'current': current,
+        'current_threshold': current_threshold,
+        'next': next_info,
+        'next_threshold': next_threshold,
+        'points_needed': points_needed,
+        'points_into': points_into,
+        'tier_span': tier_span,
+        'pct': max(0, min(100, pct)),
+        'at_max': False,
+    }
+
+
 def expected_score(player_rating, opponent_rating):
     return 1.0 / (1.0 + math.pow(10, (opponent_rating - player_rating) / 400.0))
 

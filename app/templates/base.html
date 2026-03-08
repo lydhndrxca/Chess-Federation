@@ -51,6 +51,24 @@
         {% block content %}{% endblock %}
     </main>
 
+    {# ── Universal Award Modal (available on all pages) ── #}
+    {% if current_user.is_authenticated %}
+    <div class="award-modal" id="awardModal">
+        <div class="award-modal-overlay"></div>
+        <div class="award-modal-content">
+            <img src="{{ url_for('static', filename='img/enoch.png') }}" class="award-modal-sigil" alt="Enoch">
+            <div class="award-modal-inner">
+                <h3 class="award-modal-name" id="awardName"></h3>
+                <p class="award-modal-collection" id="awardCollection"></p>
+                <p class="award-modal-desc" id="awardDesc"></p>
+                <p class="award-modal-quote" id="awardQuote"></p>
+            </div>
+            <button class="award-modal-dismiss" id="awardDismiss">OK</button>
+            <p class="award-modal-counter" id="awardCounter"></p>
+        </div>
+    </div>
+    {% endif %}
+
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>

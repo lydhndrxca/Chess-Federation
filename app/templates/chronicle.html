@@ -23,6 +23,9 @@
                 </div>
                 <div class="history-meta">
                     <span class="badge badge-sm">{{ game.result_type }}</span>
+                    {% if game.custom_rule_name %}
+                    <span class="badge badge-sm badge-rule" title="{{ game.custom_rule_name }}">{{ game.custom_rule_name }}</span>
+                    {% endif %}
                     <span class="text-muted">Wk {{ game.week_number }} · {{ game.move_count }} moves</span>
                     {% if game.rating_change_white is not none %}
                     <span class="rating-delta">

@@ -70,6 +70,7 @@ class Game(db.Model):
     completed_at = db.Column(db.DateTime)
     deadline = db.Column(db.DateTime)
     is_practice = db.Column(db.Boolean, default=False)
+    custom_rule_name = db.Column(db.String(100))
 
     white = db.relationship('User', foreign_keys=[white_id], backref='games_as_white')
     black = db.relationship('User', foreign_keys=[black_id], backref='games_as_black')

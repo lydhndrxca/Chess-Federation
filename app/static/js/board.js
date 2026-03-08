@@ -39,20 +39,19 @@ function unlockAudio() {
     }
 }
 
-async function loadAudioManifest() {
+function loadAudioManifest() {
     const cfg = window.GAME_CONFIG;
-    if (!cfg || !cfg.audioManifestUrl) return;
-    try {
-        const resp = await fetch(cfg.audioManifestUrl);
-        const manifest = await resp.json();
-        const base = cfg.audioBaseUrl || '/static/audio/enoch/';
-        audioTextToUrl = new Map();
-        for (const [, entry] of Object.entries(manifest)) {
-            audioTextToUrl.set(entry.text, base + entry.file);
-        }
-    } catch (e) {
-        console.warn('Audio manifest unavailable:', e);
-    }
+    if (!cfg || !cfg.audioManifestUrl) return Promise.resolve();
+    return fetch(cfg.audioManifestUrl)
+        .then(r => r.json())
+        .then(manifest => {
+            const base = cfg.audioBaseUrl || '/static/audio/enoch/';
+            audioTextToUrl = new Map();
+            for (const [, entry] of Object.entries(manifest)) {
+                audioTextToUrl.set(entry.text, base + entry.file);
+            }
+        })
+        .catch(e => console.warn('Audio manifest unavailable:', e));
 }
 
 function _drainQueue() {
@@ -123,12 +122,23 @@ const chessSounds = {};
 
 function initChessSounds() {
     const base = '/static/audio/chess/';
-    const files = { move: 'Move.mp3', capture: 'Capture.mp3', check: 'GenericNotify.mp3', end: 'Confirmation.mp3' };
+    const files = {
+        move: 'Move.mp3', capture: 'Capture.mp3',
+        check: 'GenericNotify.mp3', end: 'Confirmation.mp3',
+        win: 'Win.wav', lose: 'Lose.wav',
+    };
+    const promises = [];
     for (const [key, file] of Object.entries(files)) {
         const a = new Audio(base + file);
         a.preload = 'auto';
         chessSounds[key] = a;
+        promises.push(new Promise(resolve => {
+            if (a.readyState >= 4) { resolve(); return; }
+            a.addEventListener('canplaythrough', resolve, { once: true });
+            a.addEventListener('error', resolve, { once: true });
+        }));
     }
+    return Promise.all(promises);
 }
 
 function playMoveSound(san, gameOver) {
@@ -138,6 +148,22 @@ function playMoveSound(san, gameOver) {
     else if (san.includes('+'))          key = 'check';
     else if (san.includes('x'))          key = 'capture';
     else                                 key = 'move';
+    const s = chessSounds[key];
+    if (!s) return;
+    s.currentTime = 0;
+    s.play().catch(() => {});
+}
+
+function playResultSound(result, playerColor) {
+    if (!result || !playerColor) return;
+    const whiteWins = result === '1-0';
+    const blackWins = result === '0-1';
+    const isDraw = result === '1/2-1/2';
+    let key;
+    if (isDraw)                                              key = 'end';
+    else if ((whiteWins && playerColor === 'white') ||
+             (blackWins && playerColor === 'black'))         key = 'win';
+    else                                                     key = 'lose';
     const s = chessSounds[key];
     if (!s) return;
     s.currentTime = 0;
@@ -333,6 +359,15 @@ class ChessBoard {
     }
 
     async sendMove(uci) {
+        if (this.isPractice) {
+            updateTurn('thinking');
+            setEnochThinking(true);
+            this.ground.set({
+                movable: { color: undefined, dests: new Map() },
+                viewOnly: true,
+            });
+        }
+
         try {
             const resp = await fetch(`/game/${this.gameId}/move`, {
                 method: 'POST',
@@ -348,23 +383,24 @@ class ChessBoard {
                 this.legalMoves = [];
 
                 if (data.is_practice && data.enoch_move) {
+                    const playerFen = data.player_fen || data.fen;
                     this.ground.set({
-                        fen: data.enoch_move.fen,
+                        fen: playerFen,
                         lastMove: uciToLastMove(uci),
-                        turnColor: this.playerColor,
-                        movable: { color: undefined, dests: new Map() },
+                        turnColor: this.otherColor(),
                         viewOnly: false,
+                        animation: { enabled: true, duration: 150 },
                     });
                     appendMove(data.move_number, data.san, this.playerColor);
                     playMoveSound(data.san, false);
 
-                    const thinkTime = 500 + Math.random() * 1000;
-                    await new Promise(r => setTimeout(r, thinkTime));
+                    await new Promise(r => setTimeout(r, 300));
+                    setEnochThinking(false);
 
                     this.ground.set({
                         fen: data.fen,
                         lastMove: uciToLastMove(data.enoch_move.uci),
-                        animation: { enabled: true, duration: 300 },
+                        animation: { enabled: true, duration: 200 },
                     });
                     appendMove(null, data.enoch_move.san, this.otherColor());
                     playMoveSound(data.enoch_move.san, data.game_over);
@@ -395,6 +431,7 @@ class ChessBoard {
                         updateTurn(true);
                     }
                 } else if (data.is_practice && !data.enoch_move) {
+                    setEnochThinking(false);
                     this.ground.set({
                         fen: data.fen,
                         lastMove: uciToLastMove(uci),
@@ -435,6 +472,7 @@ class ChessBoard {
                     }
                 }
             } else {
+                if (this.isPractice) setEnochThinking(false);
                 this.ground.set({
                     fen: this.fen,
                     lastMove: uciToLastMove(this.lastMoveUci),
@@ -442,10 +480,14 @@ class ChessBoard {
                         color: this.playerColor,
                         dests: buildDests(this.legalMoves),
                     },
+                    viewOnly: false,
                 });
+                updateTurn(true);
                 console.error('Move rejected:', data.error);
             }
         } catch (err) {
+            if (this.isPractice) setEnochThinking(false);
+            updateTurn(true);
             console.error('Move failed:', err);
         }
     }
@@ -621,12 +663,33 @@ function appendMove(moveNum, san, color) {
     list.scrollTop = list.scrollHeight;
 }
 
-function updateTurn(isYourTurn) {
+function setEnochThinking(active) {
+    const bars = document.querySelectorAll('.gv-player-bar');
+    const bar = bars.length > 0 ? bars[0] : null;
+    if (!bar) return;
+    const nameEl = bar.querySelector('.gv-player-name');
+    if (!nameEl) return;
+    const existing = bar.querySelector('.gv-thinking-tag');
+    if (active && !existing) {
+        const tag = document.createElement('span');
+        tag.className = 'gv-thinking-tag';
+        tag.innerHTML = 'thinking<span class="gv-thinking-dots"></span>';
+        nameEl.parentNode.insertBefore(tag, nameEl.nextSibling);
+    } else if (!active && existing) {
+        existing.remove();
+    }
+}
+
+function updateTurn(state) {
     const el = document.getElementById('turnIndicator');
     if (!el) return;
-    el.innerHTML = isYourTurn
-        ? '<span class="turn-yours">Your turn</span>'
-        : '<span class="turn-waiting">Waiting for opponent</span>';
+    if (state === 'thinking') {
+        el.innerHTML = '<span class="enoch-thinking">Enoch is thinking<span class="gv-thinking-dots"></span></span>';
+    } else if (state === true || state === 'yours') {
+        el.innerHTML = '<span class="turn-yours">Your turn</span>';
+    } else {
+        el.innerHTML = '<span class="turn-waiting">Waiting for opponent</span>';
+    }
 }
 
 function showResult(result, resultType, ratingChange) {
@@ -760,8 +823,12 @@ function showCommendPrompt(gameId) {
                 body: JSON.stringify({ kind: selectedKind, text }),
             });
             const data = await resp.json();
-            if (data.success) close();
-            else {
+            if (data.success) {
+                close();
+                if (data.earned_items && data.earned_items.length) {
+                    await showEnochQueue(data.earned_items);
+                }
+            } else {
                 textarea.value = '';
                 textarea.placeholder = data.error || 'Try again…';
             }
@@ -774,44 +841,16 @@ function showCommendPrompt(gameId) {
     setTimeout(() => modal.classList.add('active'), 600);
 }
 
-/* ── Enoch Intervention Modal ── */
-
-function showEnochItem(item) {
-    return new Promise(resolve => {
-        const modal = document.getElementById('enochModal');
-        if (!modal) { resolve(); return; }
-
-        document.getElementById('enochItemIcon').textContent = '';
-        document.getElementById('enochItemName').textContent = item.name;
-        document.getElementById('enochItemCollection').textContent = item.collection;
-        document.getElementById('enochItemDesc').textContent = item.desc;
-        document.getElementById('enochItemQuote').textContent = `"${item.enoch}"`;
-
-        const dismiss = document.getElementById('enochModalDismiss');
-        modal.classList.add('active');
-
-        const close = () => {
-            modal.classList.remove('active');
-            resolve();
-        };
-        dismiss.onclick = close;
-    });
-}
+/* ── Enoch Intervention Modal (delegates to universal award popup) ── */
 
 async function showEnochQueue(items) {
-    const counter = document.getElementById('enochModalCounter');
-    for (let i = 0; i < items.length; i++) {
-        if (counter && items.length > 1) {
-            counter.textContent = `${i + 1} of ${items.length}`;
-            counter.style.display = '';
-        } else if (counter) {
-            counter.style.display = 'none';
-        }
-        await showEnochItem(items[i]);
+    if (window.showAwardQueue) {
+        await window.showAwardQueue(items);
     }
 }
 
 async function runEndSequence(data, gameId, hasCommended) {
+    setTimeout(() => playResultSound(data.result, window.GAME_CONFIG.playerColor), 350);
     const items = data.earned_items || [];
     if (items.length > 0) {
         await showEnochQueue(items);
@@ -823,6 +862,7 @@ async function runEndSequence(data, gameId, hasCommended) {
 /* ── Practice Mode: End Summary ── */
 
 async function runPracticeEnd(data) {
+    setTimeout(() => playResultSound(data.result, window.GAME_CONFIG.playerColor), 350);
     const summary = data.practice_summary;
     const settlement = data.wager_settlement;
     const modal = document.getElementById('practiceSummaryModal');
@@ -834,8 +874,10 @@ async function runPracticeEnd(data) {
     showResult(data.result, data.result_type, null);
 
     const wagerItems = (settlement && settlement.earned_items) || [];
-    if (wagerItems.length > 0) {
-        await showEnochQueue(wagerItems);
+    const loreItems = (summary && summary.earned_lore) || [];
+    const allItems = wagerItems.concat(loreItems);
+    if (allItems.length > 0) {
+        await showEnochQueue(allItems);
     }
 
     const titleEl = document.getElementById('practiceSummaryTitle');
@@ -869,14 +911,6 @@ async function runPracticeEnd(data) {
             html += `<p class="practice-lore-next">Next Milestone: ${summary.next_milestone.title} (${summary.next_milestone.wins} Wins)</p>`;
         } else {
             html += `<p class="practice-lore-next">All Enoch milestones achieved.</p>`;
-        }
-        if (summary.earned_lore && summary.earned_lore.length > 0) {
-            for (const item of summary.earned_lore) {
-                html += `<div class="practice-lore-earned">
-                    <span class="practice-lore-title">${item.name}</span>
-                    <span class="practice-lore-desc">"${item.enoch}"</span>
-                </div>`;
-            }
         }
         loreEl.innerHTML = html;
     }
@@ -984,7 +1018,45 @@ function initPgnCopy() {
 
 /* ── Init ── */
 
+const _loadBar = document.getElementById('loadingBarFill');
+let _loadPct = 0;
+function _setLoadPct(pct) {
+    _loadPct = Math.min(100, Math.max(_loadPct, pct));
+    if (_loadBar) _loadBar.style.width = _loadPct + '%';
+}
+
+function dismissLoading() {
+    _setLoadPct(100);
+    const overlay = document.getElementById('gameLoading');
+    const container = document.getElementById('gameContainer');
+    if (container) container.style.visibility = '';
+    setTimeout(() => { if (overlay) overlay.classList.add('done'); }, 120);
+}
+
+function preloadPieceImages() {
+    const BASE = 'https://lichess1.org/assets/piece/cburnett/';
+    const pieces = ['wK','wQ','wR','wB','wN','wP','bK','bQ','bR','bB','bN','bP'];
+    const exts = ['.svg'];
+    const promises = pieces.flatMap(p =>
+        exts.map(ext => new Promise(resolve => {
+            const img = new Image();
+            img.onload = resolve;
+            img.onerror = resolve;
+            img.src = BASE + p + ext;
+        }))
+    );
+    return Promise.all(promises);
+}
+
 const cfg = window.GAME_CONFIG;
+
+_setLoadPct(5);
+const soundsReady = initChessSounds().then(() => _setLoadPct(40));
+const manifestReady = loadAudioManifest().then(() => _setLoadPct(65));
+const piecesReady = preloadPieceImages().then(() => _setLoadPct(85));
+const MIN_DISPLAY = 800;
+const minTimer = new Promise(resolve => setTimeout(resolve, MIN_DISPLAY));
+
 if (cfg) {
     const board = new ChessBoard(cfg);
     window._cg = board.ground;
@@ -996,9 +1068,18 @@ if (cfg) {
 }
 initReplay();
 initPgnCopy();
-initChessSounds();
-loadAudioManifest().then(() => {
-    const initialLine = window.GAME_CONFIG && window.GAME_CONFIG.initialEnochLine;
+initMuteButton();
+_setLoadPct(20);
+
+const MAX_WAIT = 6000;
+const timeout = new Promise(resolve => setTimeout(resolve, MAX_WAIT));
+
+Promise.race([
+    Promise.all([soundsReady, manifestReady, piecesReady]),
+    timeout,
+]).then(() => Promise.race([minTimer, timeout])).then(() => {
+    dismissLoading();
+    const initialLine = cfg && cfg.initialEnochLine;
     if (initialLine) {
         if (audioUnlocked) {
             playEnochAudio(initialLine);
@@ -1007,4 +1088,3 @@ loadAudioManifest().then(() => {
         }
     }
 });
-initMuteButton();

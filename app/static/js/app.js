@@ -114,6 +114,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /* ── Universal Award Popup (available globally) ── */
+    window._awardBell = new Audio('/static/audio/chess/Bell.wav');
+    window._awardBell.preload = 'auto';
+
+    window.showAwardItem = function(item) {
+        return new Promise(resolve => {
+            const modal = document.getElementById('awardModal');
+            if (!modal) { resolve(); return; }
+
+            document.getElementById('awardName').textContent = item.name;
+            document.getElementById('awardCollection').textContent = item.collection;
+            document.getElementById('awardDesc').textContent = item.desc;
+            document.getElementById('awardQuote').textContent = '"' + item.enoch + '"';
+
+            modal.classList.add('active');
+            if (window._awardBell) {
+                window._awardBell.currentTime = 0;
+                window._awardBell.play().catch(() => {});
+            }
+
+            const dismiss = document.getElementById('awardDismiss');
+            dismiss.onclick = () => {
+                modal.classList.remove('active');
+                resolve();
+            };
+        });
+    };
+
+    window.showAwardQueue = async function(items) {
+        const counter = document.getElementById('awardCounter');
+        for (let i = 0; i < items.length; i++) {
+            if (counter && items.length > 1) {
+                counter.textContent = (i + 1) + ' of ' + items.length;
+                counter.style.display = '';
+            } else if (counter) {
+                counter.style.display = 'none';
+            }
+            await window.showAwardItem(items[i]);
+        }
+    };
+
     const deadlineEl = document.querySelector('.deadline-display');
     if (deadlineEl) {
         const iso = deadlineEl.dataset.deadline;

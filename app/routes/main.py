@@ -114,6 +114,22 @@ def standings():
     from app.services.enoch_ai import get_current_mood
     enoch_mood = get_current_mood()
 
+    weekly_rule = None
+    try:
+        from app.services.weekly_rule import (
+            RULE_ACTIVE, RULE_TITLE, RULE_DESCRIPTION, RULE_ENOCH_ANNOUNCEMENT,
+            ensure_chat_announcement,
+        )
+        if RULE_ACTIVE:
+            weekly_rule = {
+                'title': RULE_TITLE,
+                'description': RULE_DESCRIPTION,
+                'enoch_text': RULE_ENOCH_ANNOUNCEMENT,
+            }
+            ensure_chat_announcement()
+    except ImportError:
+        pass
+
     return render_template(
         'standings.html',
         week=week,
@@ -128,6 +144,7 @@ def standings():
         decree_deadline_iso=decree_deadline_iso,
         next_holder=next_holder,
         enoch_mood=enoch_mood,
+        weekly_rule=weekly_rule,
     )
 
 

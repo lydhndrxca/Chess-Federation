@@ -13,6 +13,7 @@ from app.services.dialogue import (
     CHECK, CHECKMATE, BLUNDER, MATCH_RESULT_WIN, MATCH_RESULT_DRAW,
     PROMOTION, FORFEIT, DOUBLE_FORFEIT, POWER_ROTATION, DECREE,
     IDLE_COMMENTARY, TAUNTS, NEW_SEQUENCE, RATING_CHANGE, MODAL_DISMISS,
+    CUSTOM_KNIGHT_RULE,
 )
 
 BOT_NAME = 'Enoch'
@@ -173,16 +174,29 @@ def comment_taunt(player_name):
     return _pick(TAUNTS, player=player_name)
 
 
+def _is_knight_move(san):
+    """True if the SAN describes a knight move (e.g. Ne3, Nxd4, Nbc6)."""
+    clean = san.replace('+', '').replace('#', '')
+    return clean[:1] == 'N'
+
+
 def get_move_commentary(san, move_number, is_game_over, result_type,
-                        opening_name=None):
+                        opening_name=None, custom_rule=False):
     """Generate Enoch's in-game commentary for a move.
 
-    Returns a string or None. Prioritizes the most dramatic event."""
+    Returns a string or None. Prioritizes the most dramatic event.
+    When custom_rule is True, knight moves get special rule commentary
+    instead of normal knight/capture lines."""
     if is_game_over and result_type == 'checkmate':
         return comment_checkmate()
 
     if '+' in san:
+        if custom_rule and _is_knight_move(san):
+            return _pick(CUSTOM_KNIGHT_RULE)
         return comment_check()
+
+    if custom_rule and _is_knight_move(san):
+        return _pick(CUSTOM_KNIGHT_RULE)
 
     if 'x' in san:
         return comment_capture(san)

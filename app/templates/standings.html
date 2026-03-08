@@ -170,10 +170,19 @@
             </div>
             <button class="btn btn-sm btn-practice" id="btnChallengeEnoch">Challenge</button>
         </div>
-        <div class="sp-practice-disclaimer" id="practiceDisclaimer" style="display:none;">
-            <p>&ldquo;This match will not stain the official Ledger. It is for your practice, and my amusement.&rdquo;</p>
-            <button class="btn btn-sm" id="btnConfirmPractice">Knock on the Floorboards</button>
-            <button class="btn btn-sm btn-outline" id="btnCancelPractice">Retreat</button>
+        <div class="sp-wager-offer" id="wagerOffer" style="display:none;">
+            <div class="sp-wager-dialogue" id="wagerDialogue"></div>
+            <div class="sp-wager-details" id="wagerDetails">
+                <span class="sp-wager-label">Wager:</span>
+                <span class="sp-wager-amount" id="wagerAmount"></span>
+                <span class="sp-wager-label">rating points</span>
+            </div>
+            <div class="sp-wager-actions">
+                <button class="btn btn-sm btn-wager" id="btnAcceptWager">Play for Points</button>
+                <button class="btn btn-sm" id="btnDeclineWager">Just Practice</button>
+                <button class="btn btn-sm btn-outline" id="btnCancelPractice">Retreat</button>
+            </div>
+            <div class="sp-wager-limit" id="wagerLimitMsg" style="display:none;"></div>
         </div>
     </div>
 
@@ -228,31 +237,93 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dc) tickCountdown(dc.dataset.deadline, document.getElementById('decreeTimer'));
 
     var btnChallenge = document.getElementById('btnChallengeEnoch');
-    var disclaimer = document.getElementById('practiceDisclaimer');
-    var btnConfirm = document.getElementById('btnConfirmPractice');
+    var offerPanel = document.getElementById('wagerOffer');
+    var btnAccept = document.getElementById('btnAcceptWager');
+    var btnDecline = document.getElementById('btnDeclineWager');
     var btnCancel = document.getElementById('btnCancelPractice');
+    var dialogueEl = document.getElementById('wagerDialogue');
+    var amountEl = document.getElementById('wagerAmount');
+    var detailsEl = document.getElementById('wagerDetails');
+    var limitEl = document.getElementById('wagerLimitMsg');
+
+    var currentOffer = null;
+
     if (btnChallenge) {
         btnChallenge.addEventListener('click', function() {
-            disclaimer.style.display = 'block';
             btnChallenge.disabled = true;
+            btnChallenge.textContent = 'Asking\u2026';
+            fetch('/practice/offer', {method: 'POST', headers: {'Content-Type': 'application/json'}})
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    currentOffer = data;
+                    dialogueEl.textContent = data.dialogue;
+                    if (data.is_anomaly) {
+                        dialogueEl.classList.add('sp-wager-anomaly');
+                        offerPanel.classList.add('sp-wager-anomaly-panel');
+                    } else {
+                        dialogueEl.classList.remove('sp-wager-anomaly');
+                        offerPanel.classList.remove('sp-wager-anomaly-panel');
+                    }
+                    amountEl.textContent = data.wager;
+                    detailsEl.style.display = data.can_wager ? '' : 'none';
+                    btnAccept.style.display = data.can_wager ? '' : 'none';
+                    if (data.daily_limit_msg) {
+                        limitEl.textContent = data.daily_limit_msg;
+                        limitEl.style.display = 'block';
+                    } else {
+                        limitEl.style.display = 'none';
+                    }
+                    offerPanel.style.display = 'block';
+                    btnChallenge.textContent = 'Challenge';
+                });
         });
     }
     if (btnCancel) {
         btnCancel.addEventListener('click', function() {
-            disclaimer.style.display = 'none';
+            offerPanel.style.display = 'none';
             btnChallenge.disabled = false;
         });
     }
-    if (btnConfirm) {
-        btnConfirm.addEventListener('click', function() {
-            btnConfirm.disabled = true;
-            btnConfirm.textContent = 'Descending\u2026';
+    if (btnDecline) {
+        btnDecline.addEventListener('click', function() {
+            btnDecline.disabled = true;
+            btnDecline.textContent = 'Descending\u2026';
             fetch('/practice/new', {method: 'POST', headers: {'Content-Type': 'application/json'}})
                 .then(function(r) { return r.json(); })
                 .then(function(d) {
                     if (d.url) window.location.href = d.url;
-                    else { alert(d.error || 'Failed'); btnConfirm.disabled = false; }
+                    else { btnDecline.disabled = false; btnDecline.textContent = 'Just Practice'; }
                 });
+        });
+    }
+    if (btnAccept) {
+        btnAccept.addEventListener('click', function() {
+            if (!currentOffer) return;
+            btnAccept.disabled = true;
+            btnAccept.textContent = 'Signing\u2026';
+            fetch('/practice/wager', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    wager: currentOffer.wager,
+                    mood_key: currentOffer.mood_key,
+                    is_anomaly: currentOffer.is_anomaly,
+                }),
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.url) window.location.href = d.url;
+                else if (d.error === 'daily_limit') {
+                    limitEl.textContent = d.dialogue || 'Already wagered today.';
+                    limitEl.style.display = 'block';
+                    btnAccept.style.display = 'none';
+                    detailsEl.style.display = 'none';
+                } else {
+                    alert(d.error || 'Failed');
+                }
+                btnAccept.disabled = false;
+                btnAccept.textContent = 'Play for Points';
+            });
         });
     }
 });

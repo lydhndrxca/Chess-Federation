@@ -15,6 +15,9 @@
         <div class="profile-stats-row">
             <div class="stat-block">
                 <span class="stat-value">{{ player.rating }}</span>
+                {% if player.enoch_points != 0 %}
+                <span class="stat-enoch-pts {{ 'rating-up' if player.enoch_points > 0 else 'rating-down' }}">{{ '%+d'|format(player.enoch_points) }} Enoch</span>
+                {% endif %}
                 <span class="stat-label">Rating</span>
             </div>
             <div class="stat-block">
@@ -52,6 +55,53 @@
                 {% endif %}
             </div>
         </div>
+
+        {% if player.enoch_wager_wins or player.enoch_wager_losses or player.enoch_wager_draws %}
+        <div class="card">
+            <h2>Basement Gambling</h2>
+            <p class="drawer-subtitle">Wager record against Enoch</p>
+            <div class="record-bars">
+                <div class="record-row">
+                    <span class="record-label">Net Points</span>
+                    <span class="record-value {{ 'win' if player.enoch_points > 0 else ('loss' if player.enoch_points < 0 else 'draw') }}">
+                        {{ '%+d'|format(player.enoch_points) }}
+                    </span>
+                </div>
+                <div class="record-row">
+                    <span class="record-label">Wager Wins</span>
+                    <span class="record-value win">{{ player.enoch_wager_wins }}</span>
+                </div>
+                <div class="record-row">
+                    <span class="record-label">Wager Losses</span>
+                    <span class="record-value loss">{{ player.enoch_wager_losses }}</span>
+                </div>
+                {% if player.enoch_wager_draws > 0 %}
+                <div class="record-row">
+                    <span class="record-label">Wager Draws</span>
+                    <span class="record-value draw">{{ player.enoch_wager_draws }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% if wager_history %}
+            <div class="wager-history">
+                <h3 class="wager-history-title">Recent Wagers</h3>
+                {% for w in wager_history %}
+                <div class="wager-history-row wager-{{ w.result or 'pending' }}">
+                    <span class="wager-hist-mood">{{ w.mood }}</span>
+                    <span class="wager-hist-amount">{{ w.wager_amount }} pts</span>
+                    <span class="wager-hist-result">
+                        {% if w.result == 'win' %}Won +{{ w.wager_amount }}
+                        {% elif w.result == 'loss' %}Lost -{{ w.wager_amount }}
+                        {% elif w.result == 'draw' %}Draw
+                        {% else %}In Progress{% endif %}
+                    </span>
+                    {% if w.is_anomaly %}<span class="wager-hist-anomaly">Anomaly</span>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
 
         {% if commendations or condemnations %}
         <div class="card">

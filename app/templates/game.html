@@ -13,7 +13,12 @@
     {% if is_practice %}
     <div class="gv-practice-label">
         <img src="{{ url_for('static', filename='img/enoch.png') }}" class="gv-practice-icon" alt="Enoch">
+        {% if active_wager %}
+        <span>Wager Match &mdash; vs Enoch</span>
+        <span class="gv-wager-badge {{ 'gv-wager-anomaly' if active_wager.is_anomaly }}">{{ active_wager.amount }} pts</span>
+        {% else %}
         <span>Scrapbook Match &mdash; vs Enoch</span>
+        {% endif %}
         {% if enoch_mood %}
         <span class="gv-practice-mood gv-mood-{{ enoch_mood.key }}">{{ enoch_mood.icon }} {{ enoch_mood.label }}</span>
         {% endif %}
@@ -246,6 +251,7 @@
         lastMoveUci: {{ last_move_uci | tojson if last_move_uci else 'null' }},
         hasCommended: {{ 'true' if has_commended else 'false' }},
         isPractice: {{ 'true' if is_practice else 'false' }},
+        activeWager: {{ active_wager | tojson if active_wager else 'null' }},
     };
 </script>
 {% endautoescape %}

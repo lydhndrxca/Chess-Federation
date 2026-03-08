@@ -29,6 +29,14 @@ def _migrate_db(app):
         cur.execute("ALTER TABLE user ADD COLUMN bio TEXT DEFAULT ''")
     if 'is_bot' not in user_cols:
         cur.execute('ALTER TABLE user ADD COLUMN is_bot BOOLEAN DEFAULT 0')
+    if 'enoch_points' not in user_cols:
+        cur.execute('ALTER TABLE user ADD COLUMN enoch_points INTEGER DEFAULT 0')
+    if 'enoch_wager_wins' not in user_cols:
+        cur.execute('ALTER TABLE user ADD COLUMN enoch_wager_wins INTEGER DEFAULT 0')
+    if 'enoch_wager_losses' not in user_cols:
+        cur.execute('ALTER TABLE user ADD COLUMN enoch_wager_losses INTEGER DEFAULT 0')
+    if 'enoch_wager_draws' not in user_cols:
+        cur.execute('ALTER TABLE user ADD COLUMN enoch_wager_draws INTEGER DEFAULT 0')
 
     game_cols = {row[1] for row in cur.execute('PRAGMA table_info(game)').fetchall()}
     if 'power_holder_id' not in game_cols:
@@ -106,6 +114,21 @@ def _migrate_db(app):
             games_count INTEGER DEFAULT 0,
             avg_diff REAL DEFAULT 0,
             FOREIGN KEY(user_id) REFERENCES user(id)
+        )''')
+
+    if 'enoch_wager' not in tables:
+        cur.execute('''CREATE TABLE enoch_wager (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            game_id INTEGER NOT NULL,
+            mood VARCHAR(20) NOT NULL,
+            wager_amount INTEGER NOT NULL,
+            is_anomaly BOOLEAN DEFAULT 0,
+            result VARCHAR(10),
+            points_change INTEGER,
+            created_at DATETIME,
+            FOREIGN KEY(user_id) REFERENCES user(id),
+            FOREIGN KEY(game_id) REFERENCES game(id)
         )''')
 
     if '_migration_flags' not in tables:

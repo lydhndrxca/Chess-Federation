@@ -596,6 +596,7 @@ async function runEndSequence(data, gameId, hasCommended) {
 
 function runPracticeEnd(data) {
     const summary = data.practice_summary;
+    const settlement = data.wager_settlement;
     const modal = document.getElementById('practiceSummaryModal');
     if (!modal || !summary) {
         showResult(data.result, data.result_type, null);
@@ -604,16 +605,29 @@ function runPracticeEnd(data) {
 
     showResult(data.result, data.result_type, null);
 
+    const titleEl = document.getElementById('practiceSummaryTitle');
     const resultEl = document.getElementById('practiceSummaryResult');
     const movesEl = document.getElementById('practiceSummaryMoves');
     const enochEl = document.getElementById('practiceSummaryEnoch');
     const loreEl = document.getElementById('practiceSummaryLore');
 
-    if (resultEl) resultEl.textContent = `Result: ${summary.result}`;
-    if (movesEl) movesEl.textContent = `Moves: ${summary.move_count}`;
-
-    if (enochEl && data.enoch) {
-        enochEl.innerHTML = `<em>"${data.enoch}"</em>`;
+    if (settlement) {
+        if (titleEl) titleEl.textContent = 'Wager Settled';
+        if (resultEl) {
+            const sign = settlement.points_change >= 0 ? '+' : '';
+            const cls = settlement.points_change > 0 ? 'rating-up' : (settlement.points_change < 0 ? 'rating-down' : '');
+            resultEl.innerHTML = `<span class="wager-settlement-line ${cls}">${sign}${settlement.points_change} rating points</span>`;
+        }
+        if (enochEl) {
+            enochEl.innerHTML = `<em>"${settlement.dialogue}"</em>`;
+        }
+        if (movesEl) movesEl.textContent = `Moves: ${summary.move_count} · New Rating: ${settlement.new_rating}`;
+    } else {
+        if (resultEl) resultEl.textContent = `Result: ${summary.result}`;
+        if (movesEl) movesEl.textContent = `Moves: ${summary.move_count}`;
+        if (enochEl && data.enoch) {
+            enochEl.innerHTML = `<em>"${data.enoch}"</em>`;
+        }
     }
 
     if (loreEl) {

@@ -1956,6 +1956,184 @@ a:hover { text-decoration: underline; }
     margin: 0 0.25rem;
 }
 
+/* ── Wager System ── */
+
+.sp-wager-offer {
+    margin-top: 0.5rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #151210 0%, #1a1410 100%);
+    border: 1px solid #3a2f24;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.sp-wager-anomaly-panel {
+    border-color: #8a3030 !important;
+    box-shadow: 0 0 20px rgba(180, 60, 40, 0.15);
+    animation: anomaly-pulse 2s ease-in-out infinite;
+}
+
+@keyframes anomaly-pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(180, 60, 40, 0.1); }
+    50% { box-shadow: 0 0 30px rgba(180, 60, 40, 0.25); }
+}
+
+.sp-wager-dialogue {
+    font-size: 0.88rem;
+    color: #b4a078;
+    font-style: italic;
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
+
+.sp-wager-dialogue.sp-wager-anomaly {
+    color: #c87060;
+    text-shadow: 0 0 8px rgba(200, 80, 60, 0.3);
+}
+
+.sp-wager-details {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+}
+
+.sp-wager-label { color: #7a7672; }
+
+.sp-wager-amount {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #e8dcc8;
+    padding: 0.15rem 0.5rem;
+    background: rgba(180, 160, 120, 0.12);
+    border: 1px solid rgba(180, 160, 120, 0.25);
+    border-radius: 6px;
+}
+
+.sp-wager-actions {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-wager {
+    background: linear-gradient(135deg, #5a3020 0%, #7a4030 100%) !important;
+    border: 1px solid #8a5040 !important;
+    color: #e8dcc8 !important;
+    font-weight: 600 !important;
+}
+.btn-wager:hover {
+    background: linear-gradient(135deg, #7a4030 0%, #9a5040 100%) !important;
+}
+
+.sp-wager-limit {
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+    color: #8a6a5a;
+    font-style: italic;
+    padding: 0.4rem 0.6rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
+
+/* ── Wager badge on game board ── */
+
+.gv-wager-badge {
+    margin-left: 0.4rem;
+    padding: 0.12rem 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #5a3020 0%, #7a4030 100%);
+    border: 1px solid #8a5040;
+    border-radius: 8px;
+    color: #e8dcc8;
+    font-style: normal;
+    letter-spacing: 0.04em;
+}
+
+.gv-wager-anomaly {
+    border-color: #aa4040 !important;
+    box-shadow: 0 0 10px rgba(180, 60, 40, 0.3);
+    animation: anomaly-pulse 2s ease-in-out infinite;
+}
+
+/* ── Wager settlement in practice summary ── */
+
+.wager-settlement-line {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+/* ── Wager stats on profile ── */
+
+.stat-enoch-pts {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+}
+
+.wager-history {
+    margin-top: 0.75rem;
+    border-top: 1px solid #2a2420;
+    padding-top: 0.5rem;
+}
+
+.wager-history-title {
+    font-size: 0.75rem;
+    color: #7a7672;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+}
+
+.wager-history-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0;
+    font-size: 0.78rem;
+    border-bottom: 1px solid #1a1614;
+}
+
+.wager-hist-mood {
+    text-transform: capitalize;
+    color: #7a7672;
+    min-width: 60px;
+}
+
+.wager-hist-amount {
+    color: #e8dcc8;
+    font-weight: 600;
+    min-width: 50px;
+}
+
+.wager-hist-result {
+    flex: 1;
+    text-align: right;
+}
+
+.wager-win .wager-hist-result { color: #8aab8a; }
+.wager-loss .wager-hist-result { color: #c87060; }
+.wager-draw .wager-hist-result { color: #b4a078; }
+
+.wager-hist-anomaly {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.35rem;
+    background: rgba(180, 60, 40, 0.15);
+    border: 1px solid rgba(180, 60, 40, 0.3);
+    border-radius: 4px;
+    color: #c87060;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
 /* ── Practice Summary Modal ── */
 
 .practice-summary-modal {

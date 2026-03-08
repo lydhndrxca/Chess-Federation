@@ -21,6 +21,10 @@ class User(UserMixin, db.Model):
     can_name_openings = db.Column(db.Boolean, default=True)
     bio = db.Column(db.Text, default='')
     is_bot = db.Column(db.Boolean, default=False)
+    enoch_points = db.Column(db.Integer, default=0)
+    enoch_wager_wins = db.Column(db.Integer, default=0)
+    enoch_wager_losses = db.Column(db.Integer, default=0)
+    enoch_wager_draws = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def set_password(self, password):
@@ -158,6 +162,21 @@ class PlayerCollectible(db.Model):
     item_id = db.Column(db.Integer, nullable=False)
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=True)
     acquired_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = db.relationship('User', foreign_keys=[user_id])
+    game = db.relationship('Game', foreign_keys=[game_id])
+
+
+class EnochWager(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
+    mood = db.Column(db.String(20), nullable=False)
+    wager_amount = db.Column(db.Integer, nullable=False)
+    is_anomaly = db.Column(db.Boolean, default=False)
+    result = db.Column(db.String(10))
+    points_change = db.Column(db.Integer)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     user = db.relationship('User', foreign_keys=[user_id])
     game = db.relationship('Game', foreign_keys=[game_id])

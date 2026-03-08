@@ -43,6 +43,59 @@ def get_current_mood():
     return schedule[segment]
 
 
+# ── Wager System ─────────────────────────────────────────────────
+
+WAGER_BANDS = {
+    'chill':   {'min': 5,  'max': 10},
+    'annoyed': {'min': 10, 'max': 15},
+    'angry':   {'min': 15, 'max': 25},
+}
+
+ANOMALY_CHANCE = 0.01
+ANOMALY_WAGER_RANGE = (30, 50)
+ANOMALY_ELO = 1500
+
+
+def generate_wager_offer():
+    """Generate today's wager parameters based on current mood.
+
+    Returns a dict:
+        mood_key, mood_label, mood_icon, elo, wager, is_anomaly, dialogue
+    """
+    from app.services.wager_dialogue import WAGER_OFFER_BY_MOOD
+
+    mood = get_current_mood()
+
+    is_anomaly = random.random() < ANOMALY_CHANCE
+    if is_anomaly:
+        wager = random.randint(*ANOMALY_WAGER_RANGE)
+        elo = ANOMALY_ELO
+        pool = WAGER_OFFER_BY_MOOD['anomaly']
+        mood_label = 'Unhinged'
+        mood_icon = '\U0001f480'
+        mood_key = mood['key']
+    else:
+        band = WAGER_BANDS[mood['key']]
+        wager = random.randint(band['min'], band['max'])
+        elo = mood['rating']
+        pool = WAGER_OFFER_BY_MOOD[mood['key']]
+        mood_label = mood['label']
+        mood_icon = mood['icon']
+        mood_key = mood['key']
+
+    line = random.choice(pool).replace('[Wager]', str(wager))
+
+    return {
+        'mood_key': mood_key,
+        'mood_label': mood_label,
+        'mood_icon': mood_icon,
+        'elo': elo,
+        'wager': wager,
+        'is_anomaly': is_anomaly,
+        'dialogue': line,
+    }
+
+
 # ── Mood-dependent AI parameters ────────────────────────────────
 
 _MOOD_PARAMS = {

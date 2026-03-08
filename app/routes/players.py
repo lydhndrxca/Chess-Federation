@@ -6,7 +6,7 @@ from flask import (Blueprint, render_template, request, redirect, url_for,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
-from app.models import Commendation, Game, PlayerCollectible, User, db
+from app.models import Commendation, EnochWager, Game, PlayerCollectible, User, db
 from app.services.collectibles_catalog import CATALOG, CATALOG_BY_ID, COLLECTIONS
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
@@ -40,10 +40,14 @@ def player_profile(username):
         .order_by(PlayerCollectible.acquired_at.desc()).all()
     drawer = _build_drawer(collectible_rows)
 
+    wager_history = EnochWager.query.filter_by(user_id=player.id)\
+        .order_by(EnochWager.created_at.desc()).limit(10).all()
+
     return render_template(
         'profile.html', player=player, games=games,
         commendations=commendations, condemnations=condemnations,
         drawer=drawer, collections=COLLECTIONS, catalog=CATALOG,
+        wager_history=wager_history,
     )
 
 

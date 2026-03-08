@@ -3267,12 +3267,27 @@ a:hover { text-decoration: underline; }
 }
 .btn-reckoning:hover { background: linear-gradient(135deg, #3a2f1d, #4a3f2d); transform: scale(1.03); }
 
-/* seats grid */
-.rk-seats { display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; margin: 1.2rem 0; }
+/* seats — cross layout: north top-center, west left, east right, south bottom-center */
+.rk-seats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+        ".     north ."
+        "west  .     east"
+        ".     south .";
+    gap: 0.6rem;
+    max-width: 340px;
+    margin: 1.5rem auto;
+}
+.rk-seat-north { grid-area: north; }
+.rk-seat-south { grid-area: south; }
+.rk-seat-west  { grid-area: west; }
+.rk-seat-east  { grid-area: east; }
 .rk-seat {
     display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
-    padding: 0.7rem; background: var(--card-bg); border: 1px solid var(--border);
-    border-radius: 8px; min-width: 100px;
+    padding: 0.7rem 0.5rem; background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 8px;
 }
 .rk-seat-filled { border-color: rgba(201,168,76,0.35); }
 .rk-seat-mine { border-color: rgba(201,168,76,0.7); box-shadow: 0 0 8px rgba(201,168,76,0.15); }

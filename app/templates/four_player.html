@@ -29,16 +29,17 @@
     <h1 class="rk-title">The Reckoning</h1>
     <p class="rk-subtitle">Waiting for challengers&hellip; ({{ game.filled_seats() }}/4)</p>
     <div class="rk-seats">
-        {% for seat in ['south','west','north','east'] %}
-        <div class="rk-seat {{ 'rk-seat-filled' if players.get(seat) else 'rk-seat-empty' }} {{ 'rk-seat-mine' if my_seat == seat }}">
+        {% for seat in ['north','west','east','south'] %}
+        {% set p = players.get(seat) %}
+        <div class="rk-seat rk-seat-{{ seat }} {{ 'rk-seat-filled' if p else 'rk-seat-empty' }} {{ 'rk-seat-mine' if my_seat == seat }}">
             <span class="rk-seat-label">{{ seat|capitalize }}</span>
-            {% if players.get(seat) %}
-                {% if players[seat].is_bot %}
+            {% if p %}
+                {% if p.is_bot %}
                 <img src="{{ url_for('static', filename='img/enoch.png') }}" class="avatar avatar-sm avatar-enoch" alt="Enoch">
                 <span class="rk-seat-name">Enoch</span>
                 {% else %}
-                {{ avatar(players[seat], 'sm') }}
-                <span class="rk-seat-name">{{ players[seat].username }}</span>
+                {{ avatar(p, 'sm') }}
+                <span class="rk-seat-name">{{ p.username }}</span>
                 {% endif %}
             {% else %}
                 <span class="rk-seat-empty-icon">&#9723;</span>

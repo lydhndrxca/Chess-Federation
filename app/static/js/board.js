@@ -355,7 +355,7 @@ class ChessBoard {
                     appendMove(data.move_number, data.san, this.playerColor);
                     playMoveSound(data.san, false);
 
-                    const thinkTime = 1200 + Math.random() * 2300;
+                    const thinkTime = 500 + Math.random() * 1000;
                     await new Promise(r => setTimeout(r, thinkTime));
 
                     this.ground.set({

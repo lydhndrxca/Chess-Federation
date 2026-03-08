@@ -15,6 +15,7 @@ COLLECTIONS = [
     'The Rehearsal Logs',
     'The Vermin & the Dark',
     "The Steward's Lore",
+    'The Gambling Debts',
 ]
 
 CATALOG = [
@@ -966,6 +967,98 @@ CATALOG = [
      'trigger': 'lore_beat_enoch_50',
      'trigger_text': 'Defeat Enoch 50 times.',
      'enoch': 'You have slaughtered him fifty times over. He offers no resistance now, only a fresh page of ink.'},
+
+    # ── XII. THE GAMBLING DEBTS (156–170) ── Wager vs Enoch ──
+
+    {'id': 156, 'name': 'A Smudged IOU', 'collection': 'The Gambling Debts',
+     'desc': 'A scrap of parchment with your name and a number. The ink is still wet.',
+     'trigger': 'wager_first_bet',
+     'trigger_text': 'Place your first wager with Enoch.',
+     'enoch': 'The first mark in a long, sad ledger.'},
+
+    {'id': 157, 'name': 'The Iron Coin', 'collection': 'The Gambling Debts',
+     'desc': 'Heavy, cold, and stamped with a face that does not look human.',
+     'trigger': 'wager_first_win',
+     'trigger_text': 'Win your first wager against Enoch.',
+     'enoch': 'You won once. The basement does not forget.'},
+
+    {'id': 158, 'name': 'A Crumpled Receipt', 'collection': 'The Gambling Debts',
+     'desc': 'Proof that you lost something you cannot get back.',
+     'trigger': 'wager_first_loss',
+     'trigger_text': 'Lose your first wager to Enoch.',
+     'enoch': 'The house collects. The house always collects.'},
+
+    {'id': 159, 'name': 'The Compulsive Visitor', 'collection': 'The Gambling Debts',
+     'desc': 'A tally scratch on the wall. Five marks. One for each time you returned.',
+     'trigger': 'wager_5_bets',
+     'trigger_text': 'Place 5 wagers with Enoch.',
+     'enoch': 'You keep coming back. I keep the door unlocked now.'},
+
+    {'id': 160, 'name': 'Enoch\'s Favourite Mark', 'collection': 'The Gambling Debts',
+     'desc': 'A chair with your name carved into the armrest. Enoch did it while you slept.',
+     'trigger': 'wager_15_bets',
+     'trigger_text': 'Place 15 wagers with Enoch.',
+     'enoch': 'You have a permanent seat in my parlour. I did not give you permission to leave.'},
+
+    {'id': 161, 'name': 'A Pouch of Stolen Brass', 'collection': 'The Gambling Debts',
+     'desc': 'Enough illicit winnings to weigh down your pocket.',
+     'trigger': 'wager_net_plus_25',
+     'trigger_text': 'Accumulate +25 net Enoch points from wagers.',
+     'enoch': 'You are bleeding me dry. I can hear the coins rattling in your coat.'},
+
+    {'id': 162, 'name': 'The Sinking Ledger', 'collection': 'The Gambling Debts',
+     'desc': 'A page of your debts so heavy the table bows beneath it.',
+     'trigger': 'wager_net_minus_25',
+     'trigger_text': 'Lose a net total of 25 Enoch points from wagers.',
+     'enoch': 'You owe the basement. The basement is patient, but it does not forget.'},
+
+    {'id': 163, 'name': 'A Hot Streak Candle', 'collection': 'The Gambling Debts',
+     'desc': 'A candle that burns sideways. It only appears during improbable winning runs.',
+     'trigger': 'wager_3_wins_streak',
+     'trigger_text': 'Win 3 wagers in a row.',
+     'enoch': 'I am beginning to suspect the candles are conspiring against me.'},
+
+    {'id': 164, 'name': 'The Debtor\'s Bruise', 'collection': 'The Gambling Debts',
+     'desc': 'A dark purple mark on the back of your hand. It appeared after you lost.',
+     'trigger': 'wager_3_losses_streak',
+     'trigger_text': 'Lose 3 wagers in a row.',
+     'enoch': 'The bruise fades. The debt does not.'},
+
+    {'id': 165, 'name': 'The Anomaly Chip', 'collection': 'The Gambling Debts',
+     'desc': 'A shard of strange, iridescent metal that fell from the ceiling during a blood pact.',
+     'trigger': 'wager_survive_anomaly',
+     'trigger_text': 'Win an Anomaly wager.',
+     'enoch': 'You walked into the impossible and walked out with my money. The geometry weeps.'},
+
+    {'id': 166, 'name': 'Charred Parchment Fragment', 'collection': 'The Gambling Debts',
+     'desc': 'All that remains of the contract. Enoch burned it after you won.',
+     'trigger': 'wager_win_angry',
+     'trigger_text': 'Win a wager while Enoch is Angry.',
+     'enoch': 'You beat me at my most furious. I set fire to the receipt out of spite.'},
+
+    {'id': 167, 'name': 'The Easy Grift', 'collection': 'The Gambling Debts',
+     'desc': 'A tiny lock of Enoch\'s hair, snatched during his nap.',
+     'trigger': 'wager_win_chill',
+     'trigger_text': 'Win a wager while Enoch is Chill.',
+     'enoch': 'I was asleep. That hardly counts.'},
+
+    {'id': 168, 'name': 'A Jar of Copper Dust', 'collection': 'The Gambling Debts',
+     'desc': 'The fine residue of coins ground down by a hundred small transactions.',
+     'trigger': 'wager_net_plus_50',
+     'trigger_text': 'Accumulate +50 net Enoch points from wagers.',
+     'enoch': 'My coffers are empty. You have turned the Steward into a beggar.'},
+
+    {'id': 169, 'name': 'The Gambler\'s Callus', 'collection': 'The Gambling Debts',
+     'desc': 'A thick patch of skin on your writing hand from signing too many contracts.',
+     'trigger': 'wager_30_bets',
+     'trigger_text': 'Place 30 wagers with Enoch.',
+     'enoch': 'Thirty blood pacts. Your hand is more ink than flesh now.'},
+
+    {'id': 170, 'name': 'Enoch\'s Broken Abacus', 'collection': 'The Gambling Debts',
+     'desc': 'The beads are cracked and the frame is warped. He threw it at the wall after tallying your winnings.',
+     'trigger': 'wager_10_wins',
+     'trigger_text': 'Win 10 wagers against Enoch.',
+     'enoch': 'Ten victories. I have broken three quills and one counting device recording your theft.'},
 ]
 
 CATALOG_BY_ID = {item['id']: item for item in CATALOG}

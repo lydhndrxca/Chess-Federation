@@ -798,6 +798,15 @@ def _settle_wager(game):
         user.enoch_wager_losses += 1
         line = random.choice(WAGER_ENOCH_WINS).replace('[Wager]', str(wager.wager_amount))
 
+    earned_gambling = []
+    try:
+        from app.services.collectibles_engagement import evaluate_wager_triggers
+        earned_gambling = evaluate_wager_triggers(
+            user.id, game.id, wager.result, wager.mood, wager.is_anomaly
+        ) or []
+    except Exception:
+        pass
+
     return {
         'wager_amount': wager.wager_amount,
         'result': wager.result,
@@ -805,6 +814,11 @@ def _settle_wager(game):
         'is_anomaly': wager.is_anomaly,
         'dialogue': line,
         'new_rating': user.rating,
+        'earned_items': [{
+            'id': it['id'], 'name': it['name'],
+            'collection': it['collection'], 'desc': it['desc'],
+            'enoch': it['enoch'],
+        } for it in earned_gambling],
     }
 
 

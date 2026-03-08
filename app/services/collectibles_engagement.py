@@ -7,8 +7,9 @@ commendation submit, etc.)."""
 
 from datetime import datetime, timezone
 
-from app.models import (ChatMessage, Commendation, Game, NamedSequence,
-                        PlayerCollectible, PowerRotationOrder, User, db)
+from app.models import (ChatMessage, Commendation, EnochWager, Game,
+                        NamedSequence, PlayerCollectible, PowerRotationOrder,
+                        User, db)
 from app.services.collectibles_catalog import CATALOG, CATALOG_BY_TRIGGER, COLLECTIONS
 
 
@@ -371,3 +372,83 @@ def evaluate_tier_promotion(user_id, game_id=None):
         except Exception:
             pass
     return r
+
+
+# ══════════════════════════════════════════════════════════════
+# GAMBLING TRIGGERS — call after a wager is settled
+# ══════════════════════════════════════════════════════════════
+
+def evaluate_wager_triggers(user_id, game_id, wager_result, wager_mood, is_anomaly):
+    """Check all gambling collectible triggers after a wager settles.
+
+    wager_result: 'win', 'loss', or 'draw'
+    wager_mood:   'chill', 'annoyed', or 'angry'
+    is_anomaly:   bool
+    Returns list of newly earned catalog item dicts.
+    """
+    earned = []
+
+    def _try(trigger_key):
+        r = _check_and_award(user_id, trigger_key, game_id)
+        if r:
+            earned.append(r)
+
+    user = db.session.get(User, user_id)
+    if not user:
+        return earned
+
+    total_bets = user.enoch_wager_wins + user.enoch_wager_losses + user.enoch_wager_draws
+    total_wins = user.enoch_wager_wins
+
+    _try('wager_first_bet')
+
+    if wager_result == 'win':
+        _try('wager_first_win')
+    elif wager_result == 'loss':
+        _try('wager_first_loss')
+
+    if total_bets >= 5:
+        _try('wager_5_bets')
+    if total_bets >= 15:
+        _try('wager_15_bets')
+    if total_bets >= 30:
+        _try('wager_30_bets')
+
+    if total_wins >= 10:
+        _try('wager_10_wins')
+
+    if user.enoch_points >= 25:
+        _try('wager_net_plus_25')
+    if user.enoch_points >= 50:
+        _try('wager_net_plus_50')
+    if user.enoch_points <= -25:
+        _try('wager_net_minus_25')
+
+    if is_anomaly and wager_result == 'win':
+        _try('wager_survive_anomaly')
+
+    if wager_result == 'win' and wager_mood == 'angry':
+        _try('wager_win_angry')
+    if wager_result == 'win' and wager_mood == 'chill':
+        _try('wager_win_chill')
+
+    if wager_result == 'win':
+        recent = EnochWager.query.filter_by(user_id=user_id)\
+            .filter(EnochWager.result.isnot(None))\
+            .order_by(EnochWager.created_at.desc()).limit(3).all()
+        if len(recent) >= 3 and all(w.result == 'win' for w in recent):
+            _try('wager_3_wins_streak')
+
+    if wager_result == 'loss':
+        recent = EnochWager.query.filter_by(user_id=user_id)\
+            .filter(EnochWager.result.isnot(None))\
+            .order_by(EnochWager.created_at.desc()).limit(3).all()
+        if len(recent) >= 3 and all(w.result == 'loss' for w in recent):
+            _try('wager_3_losses_streak')
+
+    try:
+        db.session.flush()
+    except Exception:
+        pass
+
+    return earned

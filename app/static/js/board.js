@@ -594,7 +594,7 @@ async function runEndSequence(data, gameId, hasCommended) {
 
 /* ── Practice Mode: End Summary ── */
 
-function runPracticeEnd(data) {
+async function runPracticeEnd(data) {
     const summary = data.practice_summary;
     const settlement = data.wager_settlement;
     const modal = document.getElementById('practiceSummaryModal');
@@ -604,6 +604,11 @@ function runPracticeEnd(data) {
     }
 
     showResult(data.result, data.result_type, null);
+
+    const wagerItems = (settlement && settlement.earned_items) || [];
+    if (wagerItems.length > 0) {
+        await showEnochQueue(wagerItems);
+    }
 
     const titleEl = document.getElementById('practiceSummaryTitle');
     const resultEl = document.getElementById('practiceSummaryResult');

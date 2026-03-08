@@ -1,10 +1,15 @@
-{% macro avatar(user, size='md') %}
+{% macro avatar(user, size='md', show_online=false) %}
+<span class="avatar-wrap avatar-wrap-{{ size }}">
 {% if user.avatar_filename %}
 <img src="{{ url_for('static', filename='uploads/avatars/' + user.avatar_filename) }}"
      alt="{{ user.username }}" class="avatar avatar-{{ size }}">
 {% else %}
 <span class="avatar avatar-{{ size }} avatar-placeholder">{{ user.username[0]|upper }}</span>
 {% endif %}
+{% if show_online and user.is_online %}
+<span class="online-dot"></span>
+{% endif %}
+</span>
 {% endmacro %}
 
 {% macro player_card(user, size='md', link=true) %}

@@ -22,14 +22,14 @@
         <p class="text-muted">No decree has been issued yet this week.</p>
         {% endif %}
 
-        {% if current_user.id == schedule.power_position_holder_id and not schedule.rule_declaration %}
+        {% if current_user.id == schedule.power_position_holder_id %}
         <form method="post" action="{{ url_for('decree.post_decree') }}" class="decree-form">
             <div class="form-group">
-                <label for="decree">Issue your decree</label>
+                <label for="decree">{{ 'Amend your decree' if schedule.rule_declaration else 'Issue your decree' }}</label>
                 <textarea id="decree" name="decree" rows="3" class="form-textarea"
-                          placeholder="State the new rule change..."></textarea>
+                          placeholder="State the new rule change...">{{ schedule.rule_declaration or '' }}</textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Issue Decree</button>
+            <button type="submit" class="btn btn-primary">{{ 'Update Decree' if schedule.rule_declaration else 'Issue Decree' }}</button>
         </form>
         {% endif %}
         {% else %}

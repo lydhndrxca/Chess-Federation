@@ -30,8 +30,15 @@ RULE_ENOCH_ANNOUNCEMENT = (
 )
 
 RULE_REMINDER = (
-    "Remember… the knights ride long this week. Three and two. "
-    "Do not disgrace yourself with the old step."
+    "Knights move 3+2 instead of the standard 2+1 this week."
+)
+
+RULE_EXPLANATION = (
+    "This week's custom rule changes how knights move. Instead of the "
+    "standard L-shape (2 squares in one direction, 1 to the side), "
+    "knights now move in an extended L-shape: 3 squares in one direction "
+    "and 2 to the side. This applies to all player-vs-player Federation "
+    "matches. Enoch practice matches use standard rules."
 )
 
 _CHAT_ANNOUNCED = False

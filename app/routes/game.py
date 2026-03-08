@@ -25,6 +25,7 @@ from app.services.weekly_rule import (
     RULE_TITLE as _WEEKLY_RULE_TITLE,
     RULE_DESCRIPTION as _WEEKLY_RULE_DESCRIPTION,
     RULE_REMINDER as _WEEKLY_RULE_REMINDER,
+    RULE_EXPLANATION as _WEEKLY_RULE_EXPLANATION,
     get_custom_legal_moves as _get_custom_legal_moves,
     make_custom_move as _make_custom_move,
     is_custom_game_over as _is_custom_game_over,
@@ -212,6 +213,7 @@ def view_game(game_id):
             'title': _WEEKLY_RULE_TITLE,
             'description': _WEEKLY_RULE_DESCRIPTION,
             'reminder': _WEEKLY_RULE_REMINDER,
+            'explanation': _WEEKLY_RULE_EXPLANATION,
         }
 
     return render_template(

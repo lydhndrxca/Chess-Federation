@@ -70,6 +70,7 @@
     {% endif %}
 
     <script>window.STATIC_BASE = "{{ url_for('static', filename='') }}";</script>
+    <script src="{{ url_for('static', filename='js/audio-cache.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>

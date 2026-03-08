@@ -5,7 +5,7 @@
 {% block content %}
 <div class="profile-page">
     <div class="profile-header">
-        {{ avatar(player, 'xl') }}
+        {{ avatar(player, 'xl', show_online=true) }}
         <h1>{{ player.username }}</h1>
         <p class="profile-title">{{ player.tier.name }}</p>
         <p class="profile-tier-desc">{{ player.tier.desc }}</p>

@@ -42,10 +42,12 @@ function unlockAudio() {
 function loadAudioManifest() {
     const cfg = window.GAME_CONFIG;
     if (!cfg || !cfg.audioManifestUrl) return Promise.resolve();
-    return fetch(cfg.audioManifestUrl)
-        .then(r => r.json())
+    const base = cfg.audioBaseUrl || '/static/audio/enoch/';
+    const loader = (window.EnochCache && window.EnochCache.getManifest)
+        ? window.EnochCache.getManifest(cfg.audioManifestUrl, cfg.manifestVersion || '1')
+        : fetch(cfg.audioManifestUrl).then(r => r.json());
+    return loader
         .then(manifest => {
-            const base = cfg.audioBaseUrl || '/static/audio/enoch/';
             audioTextToUrl = new Map();
             for (const [, entry] of Object.entries(manifest)) {
                 audioTextToUrl.set(entry.text, base + entry.file);
@@ -58,20 +60,30 @@ function _drainQueue() {
     if (audioPlaying || enochMuted || audioQueue.length === 0) return;
 
     const url = audioQueue.shift();
-    const audio = new Audio(url);
     audioPlaying = true;
-    currentAudio = audio;
 
-    const done = () => {
-        audio.removeEventListener('ended', done);
-        audio.removeEventListener('error', done);
-        audioPlaying = false;
-        currentAudio = null;
-        _drainQueue();
+    const play = (audio) => {
+        currentAudio = audio;
+        const done = () => {
+            audio.removeEventListener('ended', done);
+            audio.removeEventListener('error', done);
+            audioPlaying = false;
+            currentAudio = null;
+            _drainQueue();
+        };
+        audio.addEventListener('ended', done);
+        audio.addEventListener('error', done);
+        audio.play().catch(() => { done(); });
     };
-    audio.addEventListener('ended', done);
-    audio.addEventListener('error', done);
-    audio.play().catch(() => { done(); });
+
+    if (window.EnochCache) {
+        window.EnochCache.getAudio(url).then(play).catch(() => {
+            audioPlaying = false;
+            _drainQueue();
+        });
+    } else {
+        play(new Audio(url));
+    }
 }
 
 function playEnochAudio(line) {
@@ -129,7 +141,8 @@ function initChessSounds() {
     };
     const promises = [];
     for (const [key, file] of Object.entries(files)) {
-        const a = new Audio(base + file);
+        const url = base + file;
+        const a = new Audio(url);
         a.preload = 'auto';
         chessSounds[key] = a;
         promises.push(new Promise(resolve => {
@@ -150,7 +163,7 @@ function playMoveSound(san, gameOver) {
     else                                 key = 'move';
     const s = chessSounds[key];
     if (!s) return;
-    s.currentTime = 0;
+    try { s.currentTime = 0; } catch (e) {}
     s.play().catch(() => {});
 }
 
@@ -302,11 +315,14 @@ class ChessBoard {
 
         const matchingMoves = this.legalMoves.filter(m => m.from === orig && m.to === dest);
         const hasPromo = matchingMoves.some(m => m.promotion);
+        const isCapture = matchingMoves.some(m => m.san && m.san.includes('x'));
+
+        playMoveSound(isCapture ? 'x' : 'e4', false);
 
         if (hasPromo) {
             this.showPromotionDialog(orig, dest);
         } else {
-            this.sendMove(`${orig}${dest}`);
+            this.sendMove(`${orig}${dest}`, true);
         }
     }
 
@@ -350,7 +366,8 @@ class ChessBoard {
             btn.appendChild(img);
             btn.addEventListener('click', () => {
                 modal.classList.remove('active');
-                this.sendMove(`${from}${to}${p.letter}`);
+                playMoveSound('e4', false);
+                this.sendMove(`${from}${to}${p.letter}`, true);
             });
             choices.appendChild(btn);
         }
@@ -358,7 +375,7 @@ class ChessBoard {
         modal.classList.add('active');
     }
 
-    async sendMove(uci) {
+    async sendMove(uci, soundPlayed = false) {
         if (this.isPractice) {
             updateTurn('thinking');
             setEnochThinking(true);
@@ -392,7 +409,7 @@ class ChessBoard {
                         animation: { enabled: true, duration: 150 },
                     });
                     appendMove(data.move_number, data.san, this.playerColor);
-                    playMoveSound(data.san, false);
+                    if (!soundPlayed) playMoveSound(data.san, false);
 
                     await new Promise(r => setTimeout(r, 300));
                     setEnochThinking(false);
@@ -438,7 +455,7 @@ class ChessBoard {
                         viewOnly: true,
                     });
                     appendMove(data.move_number, data.san, this.playerColor);
-                    playMoveSound(data.san, data.game_over);
+                    if (!soundPlayed) playMoveSound(data.san, data.game_over);
                     updateCaptures(data.captures);
                     if (data.enoch) updateEnoch(data.enoch);
                     if (data.game_over) {
@@ -455,7 +472,7 @@ class ChessBoard {
                     });
 
                     appendMove(data.move_number, data.san, this.playerColor);
-                    playMoveSound(data.san, data.game_over);
+                    if (!soundPlayed) playMoveSound(data.san, data.game_over);
                     updateCaptures(data.captures);
 
                     if (data.enoch) updateEnoch(data.enoch);

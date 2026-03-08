@@ -98,14 +98,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (audioUrl) {
-            const audio = new Audio(audioUrl);
-            audio.play().catch(() => {});
-            audio.addEventListener('ended', () => {
-                setTimeout(() => {
-                    toast.classList.remove('active');
-                    setTimeout(() => toast.remove(), 400);
-                }, 1500);
-            });
+            const playGreeting = (audio) => {
+                audio.play().catch(() => {});
+                audio.addEventListener('ended', () => {
+                    setTimeout(() => {
+                        toast.classList.remove('active');
+                        setTimeout(() => toast.remove(), 400);
+                    }, 1500);
+                });
+            };
+            if (window.EnochCache) {
+                window.EnochCache.getAudio(audioUrl).then(playGreeting).catch(() => {});
+            } else {
+                playGreeting(new Audio(audioUrl));
+            }
         } else {
             setTimeout(() => {
                 toast.classList.remove('active');

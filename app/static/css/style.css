@@ -20,6 +20,8 @@
     --board-hl-dark: #baca44;
     --board-target-light: rgba(20, 85, 30, 0.35);
     --board-target-dark: rgba(20, 85, 30, 0.35);
+    --card-bg: #3a3835;
+    --font-heading: Georgia, 'Times New Roman', serif;
     --radius: 8px;
     --radius-sm: 4px;
 }
@@ -207,7 +209,14 @@ a:hover { text-decoration: underline; }
 }
 .badge-pending  { background: rgba(210,153,34,0.15); color: var(--yellow); }
 .badge-active   { background: rgba(129,182,76,0.12); color: var(--text-muted); }
-.badge-your-turn { background: var(--accent); color: #fff; }
+.badge-your-turn {
+    background: var(--accent); color: #fff; font-weight: 700;
+    animation: pulse-turn 2s ease-in-out infinite;
+}
+@keyframes pulse-turn {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(129,182,76,0.5); }
+    50% { box-shadow: 0 0 8px 3px rgba(129,182,76,0.35); }
+}
 .badge-completed { background: rgba(106,159,91,0.15); color: var(--green); }
 .badge-forfeited { background: rgba(238,85,85,0.15); color: var(--red); }
 
@@ -403,6 +412,23 @@ a:hover { text-decoration: underline; }
     box-shadow: 0 0 4px rgba(0,0,0,0.5);
 }
 
+.avatar-wrap { position: relative; display: inline-flex; flex-shrink: 0; }
+.avatar-wrap-xs { width: 22px; height: 22px; }
+.avatar-wrap-sm { width: 32px; height: 32px; }
+.avatar-wrap-md { width: 44px; height: 44px; }
+.avatar-wrap-xl { width: 88px; height: 88px; }
+.online-dot {
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 10px; height: 10px;
+    background: #43b581;
+    border: 2px solid var(--bg);
+    border-radius: 50%;
+    z-index: 1;
+}
+.avatar-wrap-sm .online-dot { width: 9px; height: 9px; }
+.avatar-wrap-xl .online-dot { width: 14px; height: 14px; bottom: 2px; right: 2px; }
+
 .nav-user-link { display: flex; align-items: center; gap: 0.35rem; }
 
 /* ── Player Card Component ─────────────── */
@@ -450,6 +476,10 @@ a:hover { text-decoration: underline; }
     align-items: center;
 }
 .gc:hover { background: var(--bg-card); text-decoration: none; color: var(--text); }
+.gc-your-turn {
+    border-left: 3px solid var(--accent);
+    background: rgba(129,182,76,0.06);
+}
 
 .gc-board {
     position: relative;
@@ -3119,9 +3149,39 @@ a:hover { text-decoration: underline; }
     font-size: 0.8rem;
     color: #c8b889;
     line-height: 1.4;
+    cursor: pointer;
+    transition: background 0.15s;
 }
+.gv-rule-banner:hover { background: rgba(227,179,65,0.18); }
 .gv-rule-banner svg { flex-shrink: 0; color: #e3b341; }
 .gv-rule-banner strong { color: #e3b341; }
+.gv-rule-chevron { margin-left: auto; opacity: 0.5; }
+.gv-rule-detail {
+    display: none;
+    background: var(--bg-card);
+    border: 1px solid rgba(227,179,65,0.3);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.6rem;
+    animation: ruleSlide 0.2s ease-out;
+}
+.gv-rule-detail.open { display: block; }
+.gv-rule-detail h4 {
+    color: #e3b341;
+    font-size: 0.95rem;
+    margin: 0 0 0.5rem;
+}
+.gv-rule-detail p {
+    color: var(--text);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin: 0 0 0.75rem;
+}
+.gv-rule-close { margin-top: 0.25rem; }
+@keyframes ruleSlide {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 
 /* ── Custom Rule Badge (history views) ── */
 .badge-rule {

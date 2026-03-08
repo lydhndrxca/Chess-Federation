@@ -1,8 +1,10 @@
+import hashlib
 import os
 import sqlite3
+from datetime import datetime, timezone
 
 from flask import Flask
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 
 from app.config import Config
 from app.models import db, User
@@ -37,6 +39,8 @@ def _migrate_db(app):
         cur.execute('ALTER TABLE user ADD COLUMN enoch_wager_losses INTEGER DEFAULT 0')
     if 'enoch_wager_draws' not in user_cols:
         cur.execute('ALTER TABLE user ADD COLUMN enoch_wager_draws INTEGER DEFAULT 0')
+    if 'last_seen' not in user_cols:
+        cur.execute('ALTER TABLE user ADD COLUMN last_seen DATETIME')
 
     game_cols = {row[1] for row in cur.execute('PRAGMA table_info(game)').fetchall()}
     if 'power_holder_id' not in game_cols:
@@ -215,6 +219,24 @@ def create_app():
     app.register_blueprint(fp_bp)
 
     _migrate_db(app)
+
+    @app.context_processor
+    def _inject_manifest_version():
+        return {'manifest_version': app.config.get('MANIFEST_VERSION', '1')}
+
+    @app.before_request
+    def _touch_last_seen():
+        if current_user.is_authenticated and not current_user.is_bot:
+            current_user.last_seen = datetime.now(timezone.utc)
+            db.session.commit()
+
+    manifest_path = os.path.join(
+        app.static_folder, 'audio', 'enoch', 'manifest.json')
+    try:
+        with open(manifest_path, 'rb') as f:
+            app.config['MANIFEST_VERSION'] = hashlib.md5(f.read()).hexdigest()[:8]
+    except OSError:
+        app.config['MANIFEST_VERSION'] = '1'
 
     with app.app_context():
         db.create_all()

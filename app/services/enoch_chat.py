@@ -6,14 +6,14 @@ Rate-limited to feel natural, not scripted."""
 import random
 import re
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
-from app.models import ChatMessage, Game, User, db
+from app.models import ChatMessage, db
 from app.services.dialogue import (
     CHAT_GREETING, CHAT_SMALLTALK, CHAT_GAME_COMMENTARY, CHAT_WHO_WINNING,
     CHAT_STRATEGY, CHAT_BRAGGING, CHAT_COMPLAINING, CHAT_INSULTS,
     CHAT_ORCHESTRA, CHAT_PHILOSOPHY, CHAT_IDLE, CHAT_HUMOR,
-    CHAT_FEDERATION_LORE, CHAT_LURKING,
+    CHAT_FEDERATION_LORE,
     CMD_STANDINGS, CMD_RATING, CMD_DECREE, CMD_HELP,
 )
 
@@ -21,15 +21,10 @@ BOT_NAME = 'Enoch'
 
 _last_reply_ts = 0.0
 _last_idle_ts = 0.0
-_last_lurk_ts = 0.0
 
 REPLY_COOLDOWN = 600
 IDLE_MIN_SILENCE = 86400
 IDLE_COOLDOWN = 86400
-LURK_COOLDOWN = 43200
-LURK_MSG_THRESHOLD = 12
-LURK_WINDOW = 300
-LURK_CHANCE = 0.03
 
 _TRIGGER_PATTERNS = [
     (re.compile(r'@\s*enoch\s+standings?\b', re.I), 'cmd_standings'),
@@ -107,11 +102,15 @@ def _handle_command(category, user):
 
     if category == 'cmd_decree':
         try:
-            from app.services.matchmaking import get_current_week
-            from app.models import Game as G
+            from app.services.matchmaking import get_current_week, get_current_season
+            from app.models import WeeklySchedule
             week = get_current_week()
-            game = G.query.filter_by(week=week).first()
-            decree_text = game.rule_snapshot if game and game.rule_snapshot else 'No decree this week.'
+            year, month = get_current_season()
+            season_key = year * 100 + month
+            sched = WeeklySchedule.query.filter_by(
+                week_number=week, season=season_key
+            ).first()
+            decree_text = sched.rule_declaration if sched and sched.rule_declaration else 'No decree this week.'
         except Exception:
             decree_text = 'The archives are momentarily unclear.'
         template = random.choice(CMD_DECREE)
@@ -121,48 +120,6 @@ def _handle_command(category, user):
         return random.choice(CMD_HELP)
 
     return None
-
-
-def _maybe_lurk():
-    """Check if Enoch should drop an ambient lurking line during busy chat.
-    Returns a ChatMessage or None."""
-    global _last_lurk_ts
-    now = time.time()
-
-    if now - _last_lurk_ts < LURK_COOLDOWN:
-        return None
-    if now - _last_reply_ts < REPLY_COOLDOWN:
-        return None
-
-    cutoff = datetime.now(timezone.utc) - timedelta(seconds=LURK_WINDOW)
-    recent_count = ChatMessage.query.filter(
-        ChatMessage.timestamp >= cutoff,
-        ChatMessage.is_bot == False,  # noqa: E712
-    ).count()
-
-    if recent_count < LURK_MSG_THRESHOLD:
-        return None
-
-    if random.random() > LURK_CHANCE:
-        return None
-
-    _last_lurk_ts = now
-    _mark_replied()
-
-    try:
-        from app.services.collectibles_engagement import award_enoch_lurked
-        cutoff_inner = datetime.now(timezone.utc) - timedelta(seconds=LURK_WINDOW)
-        active_users = ChatMessage.query.filter(
-            ChatMessage.timestamp >= cutoff_inner,
-            ChatMessage.is_bot == False,
-        ).with_entities(ChatMessage.user_id).distinct().all()
-        for (uid,) in active_users:
-            if uid:
-                award_enoch_lurked(uid)
-    except Exception:
-        pass
-
-    return _post_bot(random.choice(CHAT_LURKING))
 
 
 def process_message(user, text):

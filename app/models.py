@@ -25,7 +25,15 @@ class User(UserMixin, db.Model):
     enoch_wager_wins = db.Column(db.Integer, default=0)
     enoch_wager_losses = db.Column(db.Integer, default=0)
     enoch_wager_draws = db.Column(db.Integer, default=0)
+    last_seen = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    @property
+    def is_online(self):
+        if not self.last_seen:
+            return False
+        delta = (datetime.now(timezone.utc) - self.last_seen).total_seconds()
+        return delta < 300
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

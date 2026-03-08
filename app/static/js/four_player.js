@@ -26,10 +26,12 @@
     function rkLoadManifest() {
         var cfg = window.RK_AUDIO_CONFIG;
         if (!cfg || !cfg.manifestUrl) return Promise.resolve();
-        return fetch(cfg.manifestUrl)
-            .then(function (r) { return r.json(); })
+        var base = cfg.audioBase || '/static/audio/enoch/';
+        var loader = (window.EnochCache && window.EnochCache.getManifest)
+            ? window.EnochCache.getManifest(cfg.manifestUrl, cfg.manifestVersion || '1')
+            : fetch(cfg.manifestUrl).then(function (r) { return r.json(); });
+        return loader
             .then(function (manifest) {
-                var base = cfg.audioBase || '/static/audio/enoch/';
                 rkAudioMap = {};
                 for (var key in manifest) {
                     if (key.indexOf('reckoning/') === 0) {
@@ -43,17 +45,28 @@
     function rkDrainQueue() {
         if (rkAudioPlaying || rkMuted || rkAudioQueue.length === 0) return;
         var url = rkAudioQueue.shift();
-        var audio = new Audio(url);
         rkAudioPlaying = true;
-        var done = function () {
-            audio.removeEventListener('ended', done);
-            audio.removeEventListener('error', done);
-            rkAudioPlaying = false;
-            rkDrainQueue();
+
+        var play = function (audio) {
+            var done = function () {
+                audio.removeEventListener('ended', done);
+                audio.removeEventListener('error', done);
+                rkAudioPlaying = false;
+                rkDrainQueue();
+            };
+            audio.addEventListener('ended', done);
+            audio.addEventListener('error', done);
+            audio.play().catch(function () { done(); });
         };
-        audio.addEventListener('ended', done);
-        audio.addEventListener('error', done);
-        audio.play().catch(function () { done(); });
+
+        if (window.EnochCache) {
+            window.EnochCache.getAudio(url).then(play).catch(function () {
+                rkAudioPlaying = false;
+                rkDrainQueue();
+            });
+        } else {
+            play(new Audio(url));
+        }
     }
 
     function rkPlayLine(text) {
@@ -148,7 +161,8 @@
     var logEl = document.getElementById('rkLog');
     var selectedSq = null;
     var highlightedCells = [];
-    var lastMoveCount = parseInt(container.querySelector('.rk-move-count').textContent.replace('#', ''), 10) || 0;
+    var mcEl = container.querySelector('.rk-move-count');
+    var lastMoveCount = mcEl ? parseInt(mcEl.textContent.replace('#', ''), 10) || 0 : 0;
 
     var COLOR_CSS = {
         south: '#e8e0d0', west: '#5b8dd9',

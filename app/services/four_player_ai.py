@@ -201,7 +201,3 @@ COMMENTARY = {
     ],
 }
 
-RECKONING_LINES = []
-for cat, lines in COMMENTARY.items():
-    for line in lines:
-        RECKONING_LINES.append({'category': cat, 'text': line})

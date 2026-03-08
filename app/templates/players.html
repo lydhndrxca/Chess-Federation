@@ -9,7 +9,7 @@
         {% for player in players %}
         <a href="{{ url_for('players.player_profile', username=player.username) }}" class="player-card">
             <div class="player-card-top">
-                {{ avatar(player, 'md') }}
+                {{ avatar(player, 'md', show_online=true) }}
                 <span class="player-name">{{ player.username }}</span>
             </div>
             <div class="player-card-title">{{ player.tier.name }}</div>

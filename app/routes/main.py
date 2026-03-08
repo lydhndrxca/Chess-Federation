@@ -99,6 +99,20 @@ def standings():
         week_number=week, season=season_key
     ).first()
 
+    if not schedule:
+        try:
+            from app.services.power import get_current_holder
+            holder = get_current_holder()
+            if holder:
+                schedule = WeeklySchedule(
+                    week_number=week, season=season_key,
+                    power_position_holder_id=holder.id,
+                )
+                db.session.add(schedule)
+                db.session.commit()
+        except (ImportError, Exception):
+            pass
+
     match_deadline = get_week_deadline()
     decree_deadline = get_decree_deadline()
     match_deadline_iso = match_deadline.strftime('%Y-%m-%dT%H:%M:%S') + 'Z'

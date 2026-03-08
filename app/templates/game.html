@@ -36,9 +36,15 @@
 
     {# ── Weekly Rule Reminder (PvP only) ── #}
     {% if weekly_rule %}
-    <div class="gv-rule-banner">
+    <div class="gv-rule-banner" id="ruleBanner" role="button" tabindex="0" title="Click for details">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
         <span><strong>{{ weekly_rule.title }}:</strong> {{ weekly_rule.reminder }}</span>
+        <svg class="gv-rule-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="gv-rule-detail" id="ruleDetail">
+        <h4>{{ weekly_rule.title }}</h4>
+        <p>{{ weekly_rule.explanation }}</p>
+        <button class="btn btn-sm gv-rule-close" id="ruleDetailClose">Got it</button>
     </div>
     {% endif %}
 
@@ -164,11 +170,11 @@
     {# ── Move confirm / cancel bar ── #}
     <div class="gv-confirm-bar" id="moveConfirmBar">
         <span class="gv-confirm-label">Confirm move?</span>
-        <button class="gv-confirm-btn gv-confirm-yes" id="moveConfirmYes" title="Confirm">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        </button>
         <button class="gv-confirm-btn gv-confirm-no" id="moveConfirmNo" title="Cancel">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <button class="gv-confirm-btn gv-confirm-yes" id="moveConfirmYes" title="Confirm">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </button>
     </div>
 
@@ -330,9 +336,21 @@
         replayFens: {{ replay_fens | tojson }},
         audioManifestUrl: "{{ url_for('static', filename='audio/enoch/manifest.json') }}",
         audioBaseUrl: "{{ url_for('static', filename='audio/enoch/') }}",
+        manifestVersion: "{{ manifest_version }}",
         initialEnochLine: {{ (enoch_line or '') | tojson }},
     };
 </script>
 {% endautoescape %}
 <script type="module" src="{{ url_for('static', filename='js/board.js') }}"></script>
+<script>
+(function() {
+    var banner = document.getElementById('ruleBanner');
+    var detail = document.getElementById('ruleDetail');
+    var close  = document.getElementById('ruleDetailClose');
+    if (banner && detail) {
+        banner.addEventListener('click', function() { detail.classList.toggle('open'); });
+        if (close) close.addEventListener('click', function() { detail.classList.remove('open'); });
+    }
+})();
+</script>
 {% endblock %}

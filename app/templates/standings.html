@@ -41,7 +41,7 @@
         {% for m in my_games %}
         {% set g = m.game %}
         {% set opp = m.opponent %}
-        <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="gc">
+        <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="gc{{ ' gc-your-turn' if m.is_my_turn else '' }}">
             <div class="gc-board">
                 {{ mini_board(g.fen_current, m.my_color == 'black') }}
                 {% if g.status in ('completed', 'forfeited') %}
@@ -52,7 +52,7 @@
             </div>
             <div class="gc-info">
                 <div class="gc-opponent">
-                    {{ avatar(opp, 'sm') }}
+                    {{ avatar(opp, 'sm', show_online=true) }}
                     <div class="gc-opp-detail">
                         <span class="gc-opp-name">{{ opp.username }}</span>
                         <span class="gc-opp-rating">({{ opp.rating }})</span>
@@ -97,30 +97,6 @@
     </div>
     {% endif %}
 
-    {# ── Other matches this week ── #}
-    {% if other_games %}
-    <div class="sp-section">
-        <h3 class="sp-section-title">Other Contests</h3>
-        {% for g in other_games %}
-        <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="sp-other-row">
-            <span>{{ g.white.username }} vs {{ g.black.username }}</span>
-            {% if g.custom_rule_name %}
-            <span class="badge badge-rule">{{ g.custom_rule_name }}</span>
-            {% endif %}
-            {% if g.status == 'completed' %}
-            <span class="badge badge-completed">{{ g.result }}</span>
-            {% elif g.status == 'active' %}
-            <span class="badge badge-active">In progress</span>
-            {% elif g.status == 'pending' %}
-            <span class="badge badge-pending">Unbegun</span>
-            {% elif g.status == 'forfeited' %}
-            <span class="badge badge-forfeited">Forfeit</span>
-            {% endif %}
-        </a>
-        {% endfor %}
-    </div>
-    {% endif %}
-
     {# ── Decree strip ── #}
     {% if schedule and schedule.power_holder %}
     <a href="{{ url_for('decree.decree_page') }}" class="sp-decree">
@@ -137,24 +113,37 @@
     </a>
     {% endif %}
 
-    {# ── Standings ── #}
-    <div class="sp-section">
-        <h3 class="sp-section-title">Standings</h3>
-        <div class="sp-standings">
-            {% for player in standings %}
-            <a href="{{ url_for('players.player_profile', username=player.username) }}" class="sp-rank-row">
-                <span class="sp-rank-num">{{ loop.index }}</span>
-                {{ avatar(player, 'sm') }}
-                <div class="sp-rank-info">
-                    <span class="sp-rank-name">{{ player.username }}</span>
-                    <span class="sp-rank-title">{{ player.tier.name }}</span>
-                </div>
-                <div class="sp-rank-right">
-                    <span class="sp-rank-rating">{{ player.rating }}</span>
-                    <span class="sp-rank-record">{{ player.wins }}W {{ player.losses }}L {{ player.draws }}D</span>
-                </div>
-            </a>
-            {% endfor %}
+    {# ── Practice Opponents (Enoch) ── #}
+    <div class="sp-section sp-practice">
+        <h3 class="sp-section-title">Practice Opponents</h3>
+        <div class="sp-practice-card" id="practiceEnochCard">
+            <img src="{{ url_for('static', filename='img/enoch.png') }}" class="avatar avatar-sm avatar-enoch" alt="Enoch">
+            <div class="sp-practice-info">
+                <span class="sp-practice-name">Enoch</span>
+                <span class="sp-practice-subtitle">Steward Beneath the Board</span>
+                <span class="sp-practice-mood sp-mood-{{ enoch_mood.key }}">
+                    <span class="sp-mood-icon">{{ enoch_mood.icon }}</span>
+                    <span class="sp-mood-label">{{ enoch_mood.label }}</span>
+                    <span class="sp-mood-sep">&middot;</span>
+                    <span class="sp-mood-rating">~{{ enoch_mood.rating }}</span>
+                </span>
+                <span class="sp-practice-meta">Practice Match Only</span>
+            </div>
+            <button class="btn btn-sm btn-practice" id="btnChallengeEnoch">Challenge</button>
+        </div>
+        <div class="sp-wager-offer" id="wagerOffer" style="display:none;">
+            <div class="sp-wager-dialogue" id="wagerDialogue"></div>
+            <div class="sp-wager-details" id="wagerDetails">
+                <span class="sp-wager-label">Wager:</span>
+                <span class="sp-wager-amount" id="wagerAmount"></span>
+                <span class="sp-wager-label">rating points</span>
+            </div>
+            <div class="sp-wager-actions">
+                <button class="btn btn-sm btn-wager" id="btnAcceptWager">Play for Points</button>
+                <button class="btn btn-sm" id="btnDeclineWager">Just Practice</button>
+                <button class="btn btn-sm btn-outline" id="btnCancelPractice">Retreat</button>
+            </div>
+            <div class="sp-wager-limit" id="wagerLimitMsg" style="display:none;"></div>
         </div>
     </div>
 
@@ -186,37 +175,48 @@
         {% endif %}
     </div>
 
-    {# ── Practice Opponents ── #}
-    <div class="sp-section sp-practice">
-        <h3 class="sp-section-title">Practice Opponents</h3>
-        <div class="sp-practice-card" id="practiceEnochCard">
-            <img src="{{ url_for('static', filename='img/enoch.png') }}" class="avatar avatar-sm avatar-enoch" alt="Enoch">
-            <div class="sp-practice-info">
-                <span class="sp-practice-name">Enoch</span>
-                <span class="sp-practice-subtitle">Steward Beneath the Board</span>
-                <span class="sp-practice-mood sp-mood-{{ enoch_mood.key }}">
-                    <span class="sp-mood-icon">{{ enoch_mood.icon }}</span>
-                    <span class="sp-mood-label">{{ enoch_mood.label }}</span>
-                    <span class="sp-mood-sep">&middot;</span>
-                    <span class="sp-mood-rating">~{{ enoch_mood.rating }}</span>
-                </span>
-                <span class="sp-practice-meta">Practice Match Only</span>
-            </div>
-            <button class="btn btn-sm btn-practice" id="btnChallengeEnoch">Challenge</button>
-        </div>
-        <div class="sp-wager-offer" id="wagerOffer" style="display:none;">
-            <div class="sp-wager-dialogue" id="wagerDialogue"></div>
-            <div class="sp-wager-details" id="wagerDetails">
-                <span class="sp-wager-label">Wager:</span>
-                <span class="sp-wager-amount" id="wagerAmount"></span>
-                <span class="sp-wager-label">rating points</span>
-            </div>
-            <div class="sp-wager-actions">
-                <button class="btn btn-sm btn-wager" id="btnAcceptWager">Play for Points</button>
-                <button class="btn btn-sm" id="btnDeclineWager">Just Practice</button>
-                <button class="btn btn-sm btn-outline" id="btnCancelPractice">Retreat</button>
-            </div>
-            <div class="sp-wager-limit" id="wagerLimitMsg" style="display:none;"></div>
+    {# ── Other matches this week ── #}
+    {% if other_games %}
+    <div class="sp-section">
+        <h3 class="sp-section-title">Other Contests</h3>
+        {% for g in other_games %}
+        <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="sp-other-row">
+            <span>{{ g.white.username }} vs {{ g.black.username }}</span>
+            {% if g.custom_rule_name %}
+            <span class="badge badge-rule">{{ g.custom_rule_name }}</span>
+            {% endif %}
+            {% if g.status == 'completed' %}
+            <span class="badge badge-completed">{{ g.result }}</span>
+            {% elif g.status == 'active' %}
+            <span class="badge badge-active">In progress</span>
+            {% elif g.status == 'pending' %}
+            <span class="badge badge-pending">Unbegun</span>
+            {% elif g.status == 'forfeited' %}
+            <span class="badge badge-forfeited">Forfeit</span>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Standings ── #}
+    <div class="sp-section">
+        <h3 class="sp-section-title">Standings</h3>
+        <div class="sp-standings">
+            {% for player in standings %}
+            <a href="{{ url_for('players.player_profile', username=player.username) }}" class="sp-rank-row">
+                <span class="sp-rank-num">{{ loop.index }}</span>
+                {{ avatar(player, 'sm', show_online=true) }}
+                <div class="sp-rank-info">
+                    <span class="sp-rank-name">{{ player.username }}</span>
+                    <span class="sp-rank-title">{{ player.tier.name }}</span>
+                </div>
+                <div class="sp-rank-right">
+                    <span class="sp-rank-rating">{{ player.rating }}</span>
+                    <span class="sp-rank-record">{{ player.wins }}W {{ player.losses }}L {{ player.draws }}D</span>
+                </div>
+            </a>
+            {% endfor %}
         </div>
     </div>
 
@@ -395,6 +395,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnAccept.textContent = 'Play for Points';
             });
         });
+    }
+
+    /* ── Background audio preloader ── */
+    if (window.EnochCache) {
+        var manifestUrl = "{{ url_for('static', filename='audio/enoch/manifest.json') }}";
+        var audioBase = "{{ url_for('static', filename='audio/enoch/') }}";
+        var chessBase = (window.STATIC_BASE || '/static/') + 'audio/chess/';
+        var PRELOAD_CATS = [
+            'game_start/', 'practice_game_start/',
+            'check/', 'checkmate/', 'capture_queen/',
+        ];
+        var chessSoundUrls = [
+            chessBase + 'Move.mp3', chessBase + 'Capture.mp3',
+            chessBase + 'GenericNotify.mp3', chessBase + 'Confirmation.mp3',
+            chessBase + 'Win.wav', chessBase + 'Lose.wav',
+        ];
+        window.EnochCache.preloadUrls(chessSoundUrls);
+        window.EnochCache.getManifest(manifestUrl, "{{ manifest_version }}").then(function(manifest) {
+            var urls = [];
+            for (var key in manifest) {
+                for (var i = 0; i < PRELOAD_CATS.length; i++) {
+                    if (key.indexOf(PRELOAD_CATS[i]) === 0) {
+                        urls.push(audioBase + manifest[key].file);
+                        break;
+                    }
+                }
+            }
+            if (urls.length) window.EnochCache.preloadUrls(urls);
+        }).catch(function() {});
     }
 });
 </script>

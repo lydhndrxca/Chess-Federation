@@ -8,6 +8,91 @@ const PROMO_ROLES = [
     { letter: 'n', role: 'knight', label: 'Knight' },
 ];
 
+/* ── Enoch Audio System ── */
+
+let audioManifest = null;
+let audioTextLookup = null;
+let enochMuted = localStorage.getItem('enochMuted') === 'true';
+
+async function loadAudioManifest() {
+    const cfg = window.GAME_CONFIG;
+    if (!cfg || !cfg.audioManifestUrl) return;
+    try {
+        const resp = await fetch(cfg.audioManifestUrl);
+        audioManifest = await resp.json();
+        audioTextLookup = new Map();
+        for (const [, entry] of Object.entries(audioManifest)) {
+            audioTextLookup.set(entry.text, entry.file);
+        }
+    } catch (e) {
+        console.warn('Audio manifest unavailable:', e);
+    }
+}
+
+function playEnochAudio(line) {
+    if (enochMuted || !audioTextLookup || !line) return;
+    const file = audioTextLookup.get(line);
+    if (!file) return;
+    const audio = document.getElementById('enochAudio');
+    if (!audio) return;
+    const cfg = window.GAME_CONFIG;
+    audio.src = (cfg.audioBaseUrl || '/static/audio/enoch/') + file;
+    audio.play().catch(() => {});
+}
+
+function initMuteButton() {
+    const btn = document.getElementById('enochMuteBtn');
+    if (!btn) return;
+    const iconOn = btn.querySelector('.mute-icon-on');
+    const iconOff = btn.querySelector('.mute-icon-off');
+
+    function updateIcon() {
+        iconOn.style.display = enochMuted ? 'none' : '';
+        iconOff.style.display = enochMuted ? '' : 'none';
+    }
+    updateIcon();
+
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        enochMuted = !enochMuted;
+        localStorage.setItem('enochMuted', String(enochMuted));
+        updateIcon();
+        if (enochMuted) {
+            const audio = document.getElementById('enochAudio');
+            if (audio) { audio.pause(); audio.currentTime = 0; }
+        }
+    });
+}
+
+/* ── Material / Captured Pieces Display ── */
+
+const CAP_CHARS = {
+    white: { q: '\u265b', r: '\u265c', b: '\u265d', n: '\u265e', p: '\u265f' },
+    black: { q: '\u2655', r: '\u2656', b: '\u2657', n: '\u2658', p: '\u2659' },
+};
+
+function updateCaptures(captures) {
+    if (!captures) return;
+    for (const color of ['white', 'black']) {
+        const el = document.getElementById(`captures-${color}`);
+        if (!el) continue;
+        const caps = captures[`${color}_captures`] || [];
+        const diff = captures.material_diff || 0;
+        const chars = CAP_CHARS[color];
+        const cls = color === 'white' ? 'gv-cap-w' : 'gv-cap-b';
+
+        let html = '';
+        for (const p of caps) {
+            html += `<span class="gv-cap-piece ${cls}" data-piece="${p}">${chars[p] || ''}</span>`;
+        }
+        const advantage = color === 'white' ? diff : -diff;
+        if (advantage > 0) {
+            html += `<span class="gv-mat-diff">+${advantage}</span>`;
+        }
+        el.innerHTML = html;
+    }
+}
+
 function buildDests(legalMoves) {
     const dests = new Map();
     for (const m of legalMoves) {
@@ -152,6 +237,7 @@ class ChessBoard {
                     this.fen = data.fen;
                     this.lastMoveUci = data.enoch_move.uci;
 
+                    updateCaptures(data.captures);
                     if (data.enoch) updateEnoch(data.enoch);
 
                     if (data.game_over) {
@@ -180,6 +266,7 @@ class ChessBoard {
                         viewOnly: true,
                     });
                     appendMove(data.move_number, data.san, this.playerColor);
+                    updateCaptures(data.captures);
                     if (data.enoch) updateEnoch(data.enoch);
                     if (data.game_over) {
                         this.gameOver = true;
@@ -195,6 +282,7 @@ class ChessBoard {
                     });
 
                     appendMove(data.move_number, data.san, this.playerColor);
+                    updateCaptures(data.captures);
 
                     if (data.enoch) updateEnoch(data.enoch);
                     if (data.sequence) updateSequence(data.sequence);
@@ -255,6 +343,7 @@ class ChessBoard {
                 if (data.last_move) {
                     appendMove(null, data.last_move.san, data.last_move.color);
                 }
+                if (data.captures) updateCaptures(data.captures);
                 if (data.enoch) updateEnoch(data.enoch);
                 if (data.sequence) updateSequence(data.sequence);
 
@@ -437,6 +526,7 @@ function updateEnoch(line) {
     bar.classList.remove('enoch-fade');
     void bar.offsetWidth;
     bar.classList.add('enoch-fade');
+    playEnochAudio(line);
 }
 
 function showNamingPrompt(gameId, info) {
@@ -763,3 +853,5 @@ if (cfg) {
 }
 initReplay();
 initPgnCopy();
+loadAudioManifest();
+initMuteButton();

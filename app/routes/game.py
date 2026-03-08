@@ -21,6 +21,58 @@ import random
 
 game_bp = Blueprint('game', __name__)
 
+PIECE_SYMBOLS = {
+    chess.PAWN: 'p', chess.KNIGHT: 'n', chess.BISHOP: 'b',
+    chess.ROOK: 'r', chess.QUEEN: 'q',
+}
+PIECE_ORDER = [chess.QUEEN, chess.ROOK, chess.BISHOP, chess.KNIGHT, chess.PAWN]
+PIECE_VALUE = {chess.PAWN: 1, chess.KNIGHT: 3, chess.BISHOP: 3, chess.ROOK: 5, chess.QUEEN: 9}
+
+STARTING_PIECES = {
+    chess.WHITE: {chess.PAWN: 8, chess.KNIGHT: 2, chess.BISHOP: 2, chess.ROOK: 2, chess.QUEEN: 1},
+    chess.BLACK: {chess.PAWN: 8, chess.KNIGHT: 2, chess.BISHOP: 2, chess.ROOK: 2, chess.QUEEN: 1},
+}
+
+
+def _get_captures(fen):
+    """Return captured pieces and material diff from a FEN string.
+
+    Returns dict with keys: white_captures (pieces white captured from black),
+    black_captures, white_material, black_material, material_diff.
+    """
+    import chess as _chess
+    board = _chess.Board(fen)
+
+    current = {_chess.WHITE: {}, _chess.BLACK: {}}
+    for sq, piece in board.piece_map().items():
+        if piece.piece_type == _chess.KING:
+            continue
+        current[piece.color][piece.piece_type] = current[piece.color].get(piece.piece_type, 0) + 1
+
+    white_captured = []
+    black_captured = []
+    w_mat = 0
+    b_mat = 0
+
+    for pt in PIECE_ORDER:
+        w_remaining = current.get(_chess.WHITE, {}).get(pt, 0)
+        b_remaining = current.get(_chess.BLACK, {}).get(pt, 0)
+        w_lost = STARTING_PIECES[_chess.WHITE].get(pt, 0) - w_remaining
+        b_lost = STARTING_PIECES[_chess.BLACK].get(pt, 0) - b_remaining
+        w_mat += w_remaining * PIECE_VALUE.get(pt, 0)
+        b_mat += b_remaining * PIECE_VALUE.get(pt, 0)
+        for _ in range(max(0, b_lost)):
+            white_captured.append(PIECE_SYMBOLS[pt])
+        for _ in range(max(0, w_lost)):
+            black_captured.append(PIECE_SYMBOLS[pt])
+
+    diff = w_mat - b_mat
+    return {
+        'white_captures': white_captured,
+        'black_captures': black_captured,
+        'material_diff': diff,
+    }
+
 
 def _player_color(game):
     if current_user.id == game.white_id:
@@ -157,6 +209,7 @@ def view_game(game_id):
         enoch_mood=enoch_mood,
         active_wager=active_wager,
         replay_fens=replay_fens,
+        captures=_get_captures(game.fen_current),
     )
 
 
@@ -236,6 +289,7 @@ def make_move(game_id):
             'result_type': result_type if is_over else None,
             'move_number': result['move_number'],
             'is_practice': True,
+            'captures': _get_captures(game.fen_current),
         }
         if enoch_reply:
             resp['enoch_move'] = {
@@ -243,6 +297,7 @@ def make_move(game_id):
                 'uci': enoch_reply['uci'],
                 'fen': enoch_reply['fen'],
             }
+            resp['captures'] = _get_captures(enoch_reply['fen'])
         if practice_line:
             resp['enoch'] = practice_line
         if is_over:
@@ -277,6 +332,7 @@ def make_move(game_id):
         'result': game.result if is_over else None,
         'result_type': result_type,
         'move_number': result['move_number'],
+        'captures': _get_captures(result['fen']),
     }
     if enoch_line:
         resp['enoch'] = enoch_line
@@ -369,6 +425,7 @@ def game_state(game_id):
         'result': game.result,
         'result_type': game.result_type,
         'move_count': game.move_count,
+        'captures': _get_captures(game.fen_current),
         'last_move': {
             'san': last_move.move_san,
             'uci': last_move.move_uci,

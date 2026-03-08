@@ -41,11 +41,12 @@
     {# ── Opponent bar (top) ── #}
     {% set top_player = opponent if is_participant else game.white %}
     {% set top_is_white = (top_player.id == game.white_id) %}
+    {% set top_color_key = 'white' if top_is_white else 'black' %}
     <div class="gv-player-bar">
         {% if is_practice and top_player.is_bot %}
         <div class="gv-player-link">
             <img src="{{ url_for('static', filename='img/enoch.png') }}" class="avatar avatar-sm avatar-enoch" alt="Enoch">
-            <span class="gv-color-dot gv-dot-{{ 'white' if top_is_white else 'black' }}"></span>
+            <span class="gv-color-dot gv-dot-{{ top_color_key }}"></span>
             <span class="gv-player-name">Enoch</span>
             {% if enoch_mood %}
             <span class="gv-player-rating gv-practice-rating">~{{ enoch_mood.rating }}</span>
@@ -56,12 +57,24 @@
         {% else %}
         <a href="{{ url_for('players.player_profile', username=top_player.username) }}" class="gv-player-link">
             {{ avatar(top_player, 'sm') }}
-            <span class="gv-color-dot gv-dot-{{ 'white' if top_is_white else 'black' }}"></span>
+            <span class="gv-color-dot gv-dot-{{ top_color_key }}"></span>
             <span class="gv-player-name">{{ top_player.username }}</span>
             <span class="gv-player-rating">({{ top_player.rating }})</span>
         </a>
         {% endif %}
         <div class="gv-bar-right">
+            <div class="gv-captures" id="captures-{{ top_color_key }}">
+                {% set cap_key = top_color_key + '_captures' %}
+                {% for p in captures.get(cap_key, []) %}
+                <span class="gv-cap-piece gv-cap-{{ 'w' if top_color_key == 'white' else 'b' }}" data-piece="{{ p }}">{{ {'q':'\u265B','r':'\u265C','b':'\u265D','n':'\u265E','p':'\u265F'}.get(p,'') if top_color_key == 'white' else {'q':'\u2655','r':'\u2656','b':'\u2657','n':'\u2658','p':'\u2659'}.get(p,'') }}</span>
+                {% endfor %}
+                {% set diff = captures.get('material_diff', 0) %}
+                {% if top_color_key == 'white' and diff > 0 %}
+                <span class="gv-mat-diff">+{{ diff }}</span>
+                {% elif top_color_key == 'black' and diff < 0 %}
+                <span class="gv-mat-diff">+{{ -diff }}</span>
+                {% endif %}
+            </div>
             {% if is_practice %}
             {% elif game.status in ('completed', 'forfeited') %}
                 {% if game.rating_change_white is not none %}
@@ -82,14 +95,27 @@
     {# ── Player bar (bottom) ── #}
     {% set bottom_player = me if is_participant else game.black %}
     {% set bottom_is_white = (bottom_player.id == game.white_id) %}
+    {% set bottom_color_key = 'white' if bottom_is_white else 'black' %}
     <div class="gv-player-bar">
         <a href="{{ url_for('players.player_profile', username=bottom_player.username) }}" class="gv-player-link">
             {{ avatar(bottom_player, 'sm') }}
-            <span class="gv-color-dot gv-dot-{{ 'white' if bottom_is_white else 'black' }}"></span>
+            <span class="gv-color-dot gv-dot-{{ bottom_color_key }}"></span>
             <span class="gv-player-name">{{ bottom_player.username }}</span>
             <span class="gv-player-rating">({{ bottom_player.rating }})</span>
         </a>
         <div class="gv-bar-right">
+            <div class="gv-captures" id="captures-{{ bottom_color_key }}">
+                {% set cap_key = bottom_color_key + '_captures' %}
+                {% for p in captures.get(cap_key, []) %}
+                <span class="gv-cap-piece gv-cap-{{ 'w' if bottom_color_key == 'white' else 'b' }}" data-piece="{{ p }}">{{ {'q':'\u265B','r':'\u265C','b':'\u265D','n':'\u265E','p':'\u265F'}.get(p,'') if bottom_color_key == 'white' else {'q':'\u2655','r':'\u2656','b':'\u2657','n':'\u2658','p':'\u2659'}.get(p,'') }}</span>
+                {% endfor %}
+                {% set diff = captures.get('material_diff', 0) %}
+                {% if bottom_color_key == 'white' and diff > 0 %}
+                <span class="gv-mat-diff">+{{ diff }}</span>
+                {% elif bottom_color_key == 'black' and diff < 0 %}
+                <span class="gv-mat-diff">+{{ -diff }}</span>
+                {% endif %}
+            </div>
             {% if game.status in ('completed', 'forfeited') %}
                 {% if game.rating_change_white is not none %}
                     {% set my_change = game.rating_change_white if player_color == 'white' else game.rating_change_black %}
@@ -103,7 +129,12 @@
     <div class="gv-enoch" id="enochBar" {% if not enoch_line %}style="display:none"{% endif %}>
         <img src="{{ url_for('static', filename='img/enoch.png') }}" class="enoch-sigil" alt="Enoch">
         <span class="enoch-text" id="enochText">{{ enoch_line or '' }}</span>
+        <button class="gv-mute-btn" id="enochMuteBtn" title="Toggle Enoch audio">
+            <svg class="mute-icon-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            <svg class="mute-icon-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+        </button>
     </div>
+    <audio id="enochAudio" preload="none"></audio>
 
     {# ── Named sequence display ── #}
     <div class="gv-sequence" id="sequenceBar" {% if not seq_match %}style="display:none"{% endif %}>
@@ -280,6 +311,8 @@
         isPractice: {{ 'true' if is_practice else 'false' }},
         activeWager: {{ active_wager | tojson if active_wager else 'null' }},
         replayFens: {{ replay_fens | tojson }},
+        audioManifestUrl: "{{ url_for('static', filename='audio/enoch/manifest.json') }}",
+        audioBaseUrl: "{{ url_for('static', filename='audio/enoch/') }}",
     };
 </script>
 {% endautoescape %}

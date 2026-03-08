@@ -9,6 +9,7 @@ FEDERATION_TZ = ZoneInfo('America/Chicago')
 
 MATCH_DEADLINE_HOUR = 17  # 5:00 PM CT
 DECREE_DEADLINE_HOUR = 12  # noon CT
+SEASON_START = datetime(2026, 3, 8, 17, 0, 0, tzinfo=ZoneInfo('America/Chicago'))
 
 
 def _now_ct():
@@ -72,6 +73,9 @@ def generate_weekly_pairings(week=None, season=None):
     if season is None:
         year, month = get_current_season()
         season = year * 100 + month
+
+    if _now_ct() < SEASON_START:
+        return {'week': week, 'games_created': 0, 'message': 'Season has not started yet'}
 
     existing = Game.query.filter_by(week_number=week, season=season).first()
     if existing:

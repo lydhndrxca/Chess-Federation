@@ -1009,6 +1009,51 @@ a:hover { text-decoration: underline; }
 }
 
 /* ── Status bar ── */
+/* ── Move confirm / cancel bar ── */
+.gv-confirm-bar {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.6rem 1rem;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    animation: confirmSlide 0.18s ease;
+}
+.gv-confirm-bar.active { display: flex; }
+@keyframes confirmSlide {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.gv-confirm-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.gv-confirm-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.12s, background 0.15s;
+    background: transparent;
+}
+.gv-confirm-btn:hover { transform: scale(1.12); }
+.gv-confirm-yes {
+    border-color: var(--green);
+    color: var(--green);
+}
+.gv-confirm-yes:hover { background: rgba(129,182,76,0.15); }
+.gv-confirm-no {
+    border-color: var(--red);
+    color: var(--red);
+}
+.gv-confirm-no:hover { background: rgba(224,85,85,0.15); }
+
 .gv-status {
     text-align: center;
     padding: 0.6rem;

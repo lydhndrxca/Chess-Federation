@@ -246,7 +246,30 @@ class ChessBoard {
     }
 
     onMove(orig, dest) {
-        this.ground.set({ movable: { color: undefined } });
+        this.pendingOrig = orig;
+        this.pendingDest = dest;
+        this.preMoveLastMove = this.lastMoveUci ? uciToLastMove(this.lastMoveUci) : undefined;
+
+        this.ground.set({
+            lastMove: [orig, dest],
+            movable: { color: undefined },
+        });
+
+        const bar = document.getElementById('moveConfirmBar');
+        if (bar) bar.classList.add('active');
+    }
+
+    confirmMove() {
+        const bar = document.getElementById('moveConfirmBar');
+        if (bar) bar.classList.remove('active');
+
+        const orig = this.pendingOrig;
+        const dest = this.pendingDest;
+        this.pendingOrig = null;
+        this.pendingDest = null;
+        this.preMoveLastMove = undefined;
+
+        if (!orig || !dest) return;
 
         const matchingMoves = this.legalMoves.filter(m => m.from === orig && m.to === dest);
         const hasPromo = matchingMoves.some(m => m.promotion);
@@ -256,6 +279,27 @@ class ChessBoard {
         } else {
             this.sendMove(`${orig}${dest}`);
         }
+    }
+
+    cancelMove() {
+        const bar = document.getElementById('moveConfirmBar');
+        if (bar) bar.classList.remove('active');
+
+        this.ground.set({
+            fen: this.fen,
+            lastMove: this.preMoveLastMove,
+            turnColor: this.playerColor,
+            movable: {
+                color: this.playerColor,
+                dests: buildDests(this.legalMoves),
+                showDests: true,
+            },
+            viewOnly: false,
+        });
+
+        this.pendingOrig = null;
+        this.pendingDest = null;
+        this.preMoveLastMove = undefined;
     }
 
     showPromotionDialog(from, to) {
@@ -941,6 +985,11 @@ const cfg = window.GAME_CONFIG;
 if (cfg) {
     const board = new ChessBoard(cfg);
     window._cg = board.ground;
+
+    const confirmYes = document.getElementById('moveConfirmYes');
+    const confirmNo = document.getElementById('moveConfirmNo');
+    if (confirmYes) confirmYes.addEventListener('click', () => board.confirmMove());
+    if (confirmNo) confirmNo.addEventListener('click', () => board.cancelMove());
 }
 initReplay();
 initPgnCopy();

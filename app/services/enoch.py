@@ -24,26 +24,29 @@ def announce_match_result(game, white, black, change_w, change_b):
         winner, loser = black, white
         w_change, l_change = change_b, change_w
     else:
-        post(f'{white.username} and {black.username} drew. '
-             f'{white.username}: {change_w:+.0f} | {black.username}: {change_b:+.0f}')
+        post(f'The match between {white.username} and {black.username} has concluded in a draw. '
+             f'Adjustments recorded: {white.username} {change_w:+.0f} | {black.username} {change_b:+.0f}.')
         return
 
-    result_desc = game.result_type or 'victory'
-    post(f'{winner.username} defeats {loser.username} by {result_desc}. '
-         f'{winner.username}: {w_change:+.0f} | {loser.username}: {l_change:+.0f}')
+    result_desc = game.result_type or 'decisive play'
+    post(f'{winner.username} prevails over {loser.username} by {result_desc}. '
+         f'The record is amended: {winner.username} {w_change:+.0f} | {loser.username} {l_change:+.0f}.')
 
 
 def announce_promotion(user, new_tier):
-    post(f'{user.username} has ascended to {new_tier["name"]}.')
+    post(f'Let it be known — {user.username} has been elevated to the rank of '
+         f'{new_tier["name"]}. The Federation acknowledges this advancement.')
 
 
 def announce_forfeit(winner, loser):
-    post(f'{loser.username} has forfeited. {winner.username} is awarded the match.')
+    post(f'{loser.username} has failed to meet the obligation of play. '
+         f'The match is forfeit. {winner.username} receives the standing victory.')
 
 
 def announce_power_rotation(holder):
-    post(f'The Power Position now rests with {holder.username}. Declare the week\'s decree.')
+    post(f'The seat of power passes to {holder.username}. '
+         f'A decree is expected before the appointed hour.')
 
 
 def announce_decree(holder, decree_text):
-    post(f'{holder.username} has issued the Weekly Decree: "{decree_text}"')
+    post(f'{holder.username} has issued this week\'s decree: "{decree_text}"')

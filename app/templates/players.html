@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="players-page">
-    <h1>Federation Members</h1>
+    <h1>Members of the Federation</h1>
     <div class="player-grid">
         {% for player in players %}
         <a href="{{ url_for('players.player_profile', username=player.username) }}" class="player-card">

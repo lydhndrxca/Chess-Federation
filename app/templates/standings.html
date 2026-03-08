@@ -15,7 +15,7 @@
         <div class="sp-cd" id="matchCountdown" data-deadline="{{ match_deadline_iso }}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             <div class="sp-cd-body">
-                <span class="sp-cd-label">Matches due</span>
+                <span class="sp-cd-label">All contests due</span>
                 <span class="sp-cd-timer" id="matchTimer">—</span>
             </div>
             <span class="sp-cd-when">Sun 5 PM CT</span>
@@ -90,14 +90,14 @@
     </div>
     {% else %}
     <div class="sp-empty">
-        <p class="text-muted">No matches this week yet.</p>
+        <p class="text-muted">No contests ordained this week.</p>
     </div>
     {% endif %}
 
     {# ── Other matches this week ── #}
     {% if other_games %}
     <div class="sp-section">
-        <h3 class="sp-section-title">Other Matches</h3>
+        <h3 class="sp-section-title">Other Contests</h3>
         {% for g in other_games %}
         <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="sp-other-row">
             <span>{{ g.white.username }} vs {{ g.black.username }}</span>

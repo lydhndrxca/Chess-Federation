@@ -23,10 +23,10 @@
         </div>
 
         <div class="card">
-            <h2>Account Info</h2>
+            <h2>Standing</h2>
             <div class="account-info">
                 <div class="info-row">
-                    <span class="info-label">Username</span>
+                    <span class="info-label">Name</span>
                     <span class="info-value">{{ current_user.username }}</span>
                 </div>
                 <div class="info-row">
@@ -46,10 +46,11 @@
                     <span class="info-value">{{ current_user.wins }}W – {{ current_user.losses }}L – {{ current_user.draws }}D</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Member since</span>
+                    <span class="info-label">Ordained</span>
                     <span class="info-value">{{ current_user.created_at.strftime('%b %d, %Y') }}</span>
                 </div>
             </div>
+            <p class="account-tier-desc">{{ current_user.tier.desc }}</p>
             <a href="{{ url_for('players.player_profile', username=current_user.username) }}" class="btn btn-sm btn-outline" style="margin-top: 1rem;">View Public Profile</a>
         </div>
     </div>

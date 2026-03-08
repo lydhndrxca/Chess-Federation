@@ -3,16 +3,36 @@ import math
 from app.models import db, User
 
 TIERS = [
-    (1,  200, 'Ordained Laborer of the Stables and Bishop\'s Vestments'),
-    (2,  522, 'Most Subordinate to the Relative Command of the Bishop with Holiness'),
-    (3,  844, 'Most Delicate Acolyte to the Bishop with Holiness'),
-    (4, 1167, 'Living Bishop with Holiness'),
-    (5, 1489, 'Esteemed Supreme Grandmaster – Level 1'),
-    (6, 1811, 'Esteemed Supreme Grandmaster – Level 2'),
-    (7, 2133, 'Esteemed Supreme Grandmaster – Level 3'),
-    (8, 2456, 'Most Esteemed Subordinate to the Keeper of the Light of the Lord of Schools'),
-    (9, 2778, 'Keeper of the Light of the Lord of Schools'),
-    (10, 3100, 'Lord of Schools'),
+    (1,  200,
+     'Ordained Laborer of the Stables and Bishop\'s Vestments',
+     'Performs the physical duties of tending the knight stables and maintaining the vestments and equipment of the bishops.'),
+    (2,  522,
+     'Most Subordinate to the Relative Command of the Bishop with Holiness',
+     'Operates under the direction of the delicate acolyte order.'),
+    (3,  844,
+     'Most Delicate Acolyte to the Bishop with Holiness',
+     'Serves beneath the Living Bishop with Holiness with careful obedience and ceremonial sensitivity.'),
+    (4, 1167,
+     'Living Bishop with Holiness',
+     'A consecrated station marking passage into the higher order of the federation, signifying recognition with ceremonial dignity and spiritual authority within the structure.'),
+    (5, 1489,
+     'Esteemed Supreme Grandmaster \u2013 Level 1',
+     'Unknown.'),
+    (6, 1811,
+     'Esteemed Supreme Grandmaster \u2013 Level 2',
+     'Unknown.'),
+    (7, 2133,
+     'Esteemed Supreme Grandmaster \u2013 Level 3',
+     'Unknown.'),
+    (8, 2456,
+     'Most Esteemed Subordinate to the Keeper of the Light of the Lord of Schools',
+     'Direct adjutant serving the Keeper of the Light.'),
+    (9, 2778,
+     'Keeper of the Light of the Lord of Schools',
+     'Guardian of the authority and illumination that flows from the Lord of Schools.'),
+    (10, 3100,
+     'Lord of Schools',
+     'Supreme authority of the federation and final arbiter of all games, ranks, and ordinations.'),
 ]
 
 RATING_FLOOR = 200
@@ -31,11 +51,13 @@ OPPONENT_MOD_RANGE = 12
 def get_tier(rating):
     level = 1
     name = TIERS[0][2]
-    for lvl, threshold, title in TIERS:
+    desc = TIERS[0][3]
+    for lvl, threshold, title, description in TIERS:
         if rating >= threshold:
             level = lvl
             name = title
-    return {'level': level, 'name': name, 'tier': f'Level {level}'}
+            desc = description
+    return {'level': level, 'name': name, 'desc': desc, 'tier': f'Level {level}'}
 
 
 def expected_score(player_rating, opponent_rating):

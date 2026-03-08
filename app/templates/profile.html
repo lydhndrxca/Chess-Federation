@@ -8,6 +8,7 @@
         {{ avatar(player, 'xl') }}
         <h1>{{ player.username }}</h1>
         <p class="profile-title">{{ player.tier.name }}</p>
+        <p class="profile-tier-desc">{{ player.tier.desc }}</p>
         <div class="profile-stats-row">
             <div class="stat-block">
                 <span class="stat-value">{{ player.rating }}</span>
@@ -19,14 +20,14 @@
             </div>
             <div class="stat-block">
                 <span class="stat-value">{{ player.total_games }}</span>
-                <span class="stat-label">Games</span>
+                <span class="stat-label">Contests</span>
             </div>
         </div>
     </div>
 
     <div class="profile-grid">
         <div class="card">
-            <h2>Record</h2>
+            <h2>Service Record</h2>
             <div class="record-bars">
                 <div class="record-row">
                     <span class="record-label">Wins</span>
@@ -50,7 +51,7 @@
         </div>
 
         <div class="card">
-            <h2>Match History</h2>
+            <h2>Record of Contests</h2>
             {% if games %}
             <div class="history-list">
                 {% for game in games %}
@@ -68,7 +69,7 @@
                 {% endfor %}
             </div>
             {% else %}
-            <p class="text-muted">No completed games yet.</p>
+            <p class="text-muted">No contests on record.</p>
             {% endif %}
         </div>
     </div>

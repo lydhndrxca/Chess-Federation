@@ -213,46 +213,65 @@ a:hover { text-decoration: underline; }
 .auth-card h1 { margin-bottom: 1.5rem; font-size: 1.5rem; }
 .auth-link { margin-top: 1rem; text-align: center; font-size: 0.9rem; color: var(--text-muted); }
 
-/* ── Hero / Home ────────────────────────── */
-.hero {
+/* ── Welcome / Landing ──────────────────── */
+.welcome-page {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    gap: 3rem;
-    padding: 3rem 0;
+    padding: 2.5rem 0 3rem;
 }
-.hero-content { flex: 1; }
-.hero-content h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
-.hero-subtitle { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem; max-width: 500px; }
-.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
-
-.hero-board { flex-shrink: 0; }
+.welcome-crest {
+    margin-bottom: 2rem;
+    opacity: 0.25;
+}
 .deco-board {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
-    width: 200px;
-    height: 200px;
+    width: 140px;
+    height: 140px;
     border-radius: var(--radius);
     overflow: hidden;
-    opacity: 0.35;
 }
 .deco-sq.light { background: var(--board-light); }
 .deco-sq.dark { background: var(--board-dark); }
 
-.features {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+.welcome-scroll {
+    max-width: 580px;
+    text-align: center;
+}
+.welcome-scroll h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: var(--gold);
+    letter-spacing: 0.5px;
+}
+.welcome-body {
+    margin-bottom: 2rem;
+}
+.welcome-body p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.75;
+    margin-bottom: 0.9rem;
+}
+.welcome-body strong { color: var(--text); }
+.welcome-body em { color: var(--yellow); font-style: italic; }
+.welcome-closing {
+    color: var(--text) !important;
+    font-weight: 600;
+    font-size: 1.05rem !important;
+    margin-top: 1.25rem;
+}
+.welcome-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 1rem;
-    padding: 2rem 0;
 }
-.feature-card {
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.5rem;
+.welcome-signin {
+    font-size: 0.85rem;
+    color: var(--text-muted);
 }
-.feature-card h3 { margin-bottom: 0.5rem; font-size: 1.1rem; }
-.feature-card p { color: var(--text-muted); font-size: 0.9rem; }
 
 /* ── Player Card Component ─────────────── */
 .pcard { display: flex; align-items: center; gap: 0.6rem; }

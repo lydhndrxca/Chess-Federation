@@ -2,16 +2,8 @@
 {% block title %}Chess Federation{% endblock %}
 
 {% block content %}
-<div class="hero">
-    <div class="hero-content">
-        <h1>Chess Federation</h1>
-        <p class="hero-subtitle">A private correspondence chess league with weekly matches, ceremonial rank titles, rotating decrees, and a persistent federation rating. Climb from Ordained Laborer to Lord of Schools.</p>
-        <div class="hero-actions">
-            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Join the Federation</a>
-            <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">Sign In</a>
-        </div>
-    </div>
-    <div class="hero-board">
+<div class="welcome-page">
+    <div class="welcome-crest">
         <div class="deco-board">
             {% for r in range(8) %}
             {% for c in range(8) %}
@@ -20,24 +12,21 @@
             {% endfor %}
         </div>
     </div>
-</div>
 
-<div class="features">
-    <div class="feature-card">
-        <h3>Weekly Matches</h3>
-        <p>One official match per week. Play on your schedule within the Sunday noon deadline.</p>
-    </div>
-    <div class="feature-card">
-        <h3>Ten Ceremonial Ranks</h3>
-        <p>From Ordained Laborer of the Stables to Lord of Schools. Rating-driven progression through all ten tiers.</p>
-    </div>
-    <div class="feature-card">
-        <h3>Weekly Decree</h3>
-        <p>The Power Position rotates each week. The holder declares a new rule for the federation.</p>
-    </div>
-    <div class="feature-card">
-        <h3>Federation Hall</h3>
-        <p>Group chat with automated announcements from Enoch, the Federation's ceremonial orchestrator.</p>
+    <div class="welcome-scroll">
+        <h1>Hail, Traveller.</h1>
+        <div class="welcome-body">
+            <p>Thou hast arrived at the threshold of <strong>The Chess Federation</strong> — the most esteemed, most exclusive, and most profoundly unknown chess institution in all the realms.</p>
+            <p>There existeth no other body of its kind. No banner shall guide thee here. No search shall reveal its name. Thou art present only because the Federation hath deemed it so.</p>
+            <p>Within these hallowed squares, players of ordained standing do gather each week to contest a single match of correspondence chess — ascending through ten sacred tiers of rank, from the lowly <em>Ordained Laborer of the Stables and Bishop's Vestments</em> unto the supreme glory of the <em>Lord of Schools</em>.</p>
+            <p>A rotating seat of power issueth weekly decrees. A ceremonial orchestrator keepeth record of all triumphs and failures. Every move is preserved unto eternity.</p>
+            <p class="welcome-closing">If thou art worthy, step forward and declare thyself.</p>
+        </div>
+
+        <div class="welcome-actions">
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Enter the Federation</a>
+            <p class="welcome-signin">Already ordained? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+        </div>
     </div>
 </div>
 {% endblock %}

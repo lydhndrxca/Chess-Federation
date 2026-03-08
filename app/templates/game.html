@@ -9,6 +9,9 @@
 
 {% block content %}
 {# ── Loading overlay — hides board until audio + assets are ready ── #}
+<script>
+    window._skipLoading = sessionStorage.getItem('chess_assets_loaded') === '1';
+</script>
 <div class="gv-loading" id="gameLoading">
     <div class="gv-loading-inner">
         <div class="gv-loading-piece">&#9822;</div>
@@ -16,8 +19,16 @@
         <div class="gv-loading-bar"><div class="gv-loading-bar-fill" id="loadingBarFill"></div></div>
     </div>
 </div>
+<script>
+    if (window._skipLoading) {
+        document.getElementById('gameLoading').classList.add('done');
+    }
+</script>
 
-<div class="gv" id="gameContainer" style="visibility:hidden">
+<div class="gv" id="gameContainer">
+<script>
+    if (!window._skipLoading) document.getElementById('gameContainer').style.visibility = 'hidden';
+</script>
     {# ── Practice mode label ── #}
     {% if is_practice %}
     <div class="gv-practice-label">

@@ -1070,13 +1070,16 @@ function preloadPieceImages() {
 }
 
 const cfg = window.GAME_CONFIG;
+const _assetsReady = sessionStorage.getItem('chess_assets_loaded') === '1';
+
+if (_assetsReady) {
+    dismissLoading();
+}
 
 _setLoadPct(5);
 const soundsReady = initChessSounds().then(() => _setLoadPct(40));
 const manifestReady = loadAudioManifest().then(() => _setLoadPct(65));
 const piecesReady = preloadPieceImages().then(() => _setLoadPct(85));
-const MIN_DISPLAY = 800;
-const minTimer = new Promise(resolve => setTimeout(resolve, MIN_DISPLAY));
 
 if (cfg) {
     const board = new ChessBoard(cfg);
@@ -1092,14 +1095,15 @@ initPgnCopy();
 initMuteButton();
 _setLoadPct(20);
 
-const MAX_WAIT = 6000;
+const MAX_WAIT = _assetsReady ? 500 : 6000;
 const timeout = new Promise(resolve => setTimeout(resolve, MAX_WAIT));
 
 Promise.race([
     Promise.all([soundsReady, manifestReady, piecesReady]),
     timeout,
-]).then(() => Promise.race([minTimer, timeout])).then(() => {
-    dismissLoading();
+]).then(() => {
+    if (!_assetsReady) dismissLoading();
+    try { sessionStorage.setItem('chess_assets_loaded', '1'); } catch (e) {}
     const initialLine = cfg && cfg.initialEnochLine;
     if (initialLine) {
         if (audioUnlocked) {

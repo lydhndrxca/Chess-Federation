@@ -11,7 +11,7 @@ from app.services.dialogue import (
     TITLES, GAME_START, EARLY_GAME, OPENING_DETECTED, UNKNOWN_OPENING,
     CAPTURE_PAWN, CAPTURE_KNIGHT, CAPTURE_BISHOP, CAPTURE_ROOK, CAPTURE_QUEEN,
     CHECK, CHECKMATE, BLUNDER, MATCH_RESULT_WIN, MATCH_RESULT_DRAW,
-    PROMOTION, FORFEIT, DOUBLE_FORFEIT, POWER_ROTATION, DECREE,
+    PROMOTION, DOUBLE_FORFEIT, POWER_ROTATION, DECREE,
     IDLE_COMMENTARY, TAUNTS, NEW_SEQUENCE, RATING_CHANGE, MODAL_DISMISS,
     CUSTOM_KNIGHT_RULE,
 )
@@ -81,11 +81,6 @@ def announce_match_result(game, white, black, change_w, change_b):
 
 def announce_promotion(user, new_tier):
     line = _pick(PROMOTION, player=user.username, title=new_tier['name'])
-    post(line)
-
-
-def announce_forfeit(winner, loser):
-    line = _pick(FORFEIT, winner=winner.username, loser=loser.username)
     post(line)
 
 

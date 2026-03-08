@@ -57,5 +57,11 @@ def post_decree():
     except (ImportError, Exception):
         pass
 
+    try:
+        from app.services.collectibles_engagement import evaluate_power_position_trigger
+        evaluate_power_position_trigger(current_user.id)
+    except (ImportError, Exception):
+        pass
+
     flash('Decree issued.', 'success')
     return redirect(url_for('decree.decree_page'))

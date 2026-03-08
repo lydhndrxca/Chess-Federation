@@ -121,7 +121,7 @@ function initMuteButton() {
 const chessSounds = {};
 
 function initChessSounds() {
-    const base = '/static/audio/chess/';
+    const base = (window.STATIC_BASE || '/static/') + 'audio/chess/';
     const files = {
         move: 'Move.mp3', capture: 'Capture.mp3',
         check: 'GenericNotify.mp3', end: 'Confirmation.mp3',
@@ -972,10 +972,14 @@ function initReplay() {
         highlight(current);
     }
 
-    document.getElementById('replayStart').addEventListener('click', () => goTo(0));
-    document.getElementById('replayPrev').addEventListener('click', () => goTo(current - 1));
-    document.getElementById('replayNext').addEventListener('click', () => goTo(current + 1));
-    document.getElementById('replayEnd').addEventListener('click', () => goTo(total));
+    const rStart = document.getElementById('replayStart');
+    const rPrev  = document.getElementById('replayPrev');
+    const rNext  = document.getElementById('replayNext');
+    const rEnd   = document.getElementById('replayEnd');
+    if (rStart) rStart.addEventListener('click', () => goTo(0));
+    if (rPrev)  rPrev.addEventListener('click', () => goTo(current - 1));
+    if (rNext)  rNext.addEventListener('click', () => goTo(current + 1));
+    if (rEnd)   rEnd.addEventListener('click', () => goTo(total));
 
     moveSans.forEach(el => {
         el.style.cursor = 'pointer';

@@ -43,6 +43,8 @@ def _migrate_db(app):
         cur.execute('ALTER TABLE game ADD COLUMN power_holder_id INTEGER')
     if 'is_practice' not in game_cols:
         cur.execute('ALTER TABLE game ADD COLUMN is_practice BOOLEAN DEFAULT 0')
+    if 'custom_rule_name' not in game_cols:
+        cur.execute('ALTER TABLE game ADD COLUMN custom_rule_name VARCHAR(100)')
 
     tables = {row[0] for row in cur.execute(
         "SELECT name FROM sqlite_master WHERE type='table'"

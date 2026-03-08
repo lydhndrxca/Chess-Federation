@@ -419,13 +419,16 @@ def _break_pin_with_capture(a):
             if b_pre.is_check():
                 continue
             king_sq = b_pre.king(a.chess_color)
+            if king_sq is None:
+                continue
             mv = chess.Move.from_uci(a.ucis[i])
-            target = b_pre.piece_at(mv.to_square)
-            if target and target.color == a.opp_color:
-                if b_pre.is_pinned(a.chess_color, mv.from_square):
-                    return False
-                for sq in chess.SquareSet(b_pre.pin(a.chess_color, mv.from_square)):
-                    pass
+            capture_sq = mv.to_square
+            for sq in b_pre.piece_map():
+                piece = b_pre.piece_at(sq)
+                if piece and piece.color == a.chess_color and b_pre.is_pinned(a.chess_color, sq):
+                    pin_ray = b_pre.pin(a.chess_color, sq)
+                    if capture_sq in chess.SquareSet(pin_ray):
+                        return True
     return False
 
 def _opponent_timeout_close(a):

@@ -147,8 +147,16 @@ def evaluate_commendation_triggers(user_id):
 
     from app.services.matchmaking import get_current_week
     week = get_current_week()
-    week_commends = Commendation.query.filter_by(author_id=user_id, kind='commend').count()
-    week_condemns = Commendation.query.filter_by(author_id=user_id, kind='condemn').count()
+    week_commends = Commendation.query.join(Game).filter(
+        Commendation.author_id == user_id,
+        Commendation.kind == 'commend',
+        Game.week_number == week,
+    ).count()
+    week_condemns = Commendation.query.join(Game).filter(
+        Commendation.author_id == user_id,
+        Commendation.kind == 'condemn',
+        Game.week_number == week,
+    ).count()
     if week_commends >= 1 and week_condemns >= 1:
         r = _check_and_award(user_id, 'eng_give_both_commend_condemn')
         if r:

@@ -1,10 +1,14 @@
 .venv/
+venv/
 __pycache__/
 *.pyc
 .env
 data/*.db
+*.db
+instance/
 screenshots/
 .repo_snapshot/
+app/static/uploads/
 
 .cursor/*
 !.cursor/rules/

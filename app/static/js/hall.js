@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (m.is_bot) {
             div.innerHTML = `
-                <div class="chat-avatar-wrap"><img src="/static/img/enoch.png" class="avatar avatar-sm avatar-enoch" alt="Enoch"></div>
+                <div class="chat-avatar-wrap"><img src="${window.STATIC_BASE || '/static/'}img/enoch.png" class="avatar avatar-sm avatar-enoch" alt="Enoch"></div>
                 <div class="chat-bubble chat-bubble-bot">
                     <span class="chat-sender chat-sender-bot">${m.bot_name || 'Enoch'}</span>
                     <p class="chat-text chat-text-bot">${escapeHtml(m.content)}</p>
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
         } else {
             const avatarHtml = m.avatar
-                ? `<img src="/static/uploads/avatars/${m.avatar}" class="avatar avatar-sm" alt="">`
+                ? `<img src="${window.STATIC_BASE || '/static/'}uploads/avatars/${m.avatar}" class="avatar avatar-sm" alt="">`
                 : `<span class="avatar avatar-sm avatar-placeholder">${(m.username || '?')[0].toUpperCase()}</span>`;
             div.innerHTML = `
                 <div class="chat-avatar-wrap">${avatarHtml}</div>
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         div.className = 'chat-msg chat-msg-bot enoch-typing';
         div.id = 'enochTyping';
         div.innerHTML = `
-            <div class="chat-avatar-wrap"><img src="/static/img/enoch.png" class="avatar avatar-sm avatar-enoch" alt="Enoch"></div>
+            <div class="chat-avatar-wrap"><img src="${window.STATIC_BASE || '/static/'}img/enoch.png" class="avatar avatar-sm avatar-enoch" alt="Enoch"></div>
             <div class="chat-bubble chat-bubble-bot">
                 <span class="chat-sender chat-sender-bot">Enoch</span>
                 <p class="chat-text chat-text-bot typing-dots"><span>.</span><span>.</span><span>.</span></p>

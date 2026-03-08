@@ -124,7 +124,7 @@ def poll_messages():
 @hall_bp.route('/hall/login-greeting')
 @login_required
 def login_greeting():
-    from app.services.login_greetings import get_login_greeting, PLAYER_GREETINGS
+    from app.services.login_greetings import get_login_greeting
     from flask import url_for as _url
     import json, os
 

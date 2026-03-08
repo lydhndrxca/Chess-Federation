@@ -6,6 +6,7 @@
     --border: #504d47;
     --text: #e8e6e3;
     --text-muted: #9b9894;
+    --text-dim: #b8b5b0;
     --accent: #81b64c;
     --green: #81b64c;
     --red: #e05555;
@@ -1596,6 +1597,18 @@ a:hover { text-decoration: underline; }
 .info-row { display: flex; justify-content: space-between; align-items: center; }
 .info-label { font-size: 0.82rem; color: var(--text-muted); }
 .info-value { font-weight: 600; }
+.pcard-title-inline { color: var(--yellow); font-style: italic; font-size: 0.82rem; }
+.tier-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--accent);
+    background: rgba(196,164,105,.12);
+    padding: .15rem .45rem;
+    border-radius: 3px;
+}
 
 .account-pref-row {
     display: flex;

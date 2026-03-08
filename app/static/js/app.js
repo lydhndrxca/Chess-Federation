@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const toast = document.createElement('div');
         toast.className = 'enoch-login-toast';
         toast.innerHTML = `
-            <img src="/static/img/enoch.png" class="enoch-login-sigil" alt="Enoch">
+            <img src="${window.STATIC_BASE || '/static/'}img/enoch.png" class="enoch-login-sigil" alt="Enoch">
             <div class="enoch-login-body">
                 <div class="enoch-login-label">Enoch mutters…</div>
                 <div class="enoch-login-text">${text}</div>
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ── Universal Award Popup (available globally) ── */
-    window._awardBell = new Audio('/static/audio/chess/Bell.wav');
+    window._awardBell = new Audio((window.STATIC_BASE || '/static/') + 'audio/chess/Bell.wav');
     window._awardBell.preload = 'auto';
 
     window.showAwardItem = function(item) {
@@ -155,28 +155,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const deadlineEl = document.querySelector('.deadline-display');
-    if (deadlineEl) {
-        const iso = deadlineEl.dataset.deadline;
-        if (iso) {
-            const target = new Date(iso);
-            const timerSpan = document.getElementById('deadlineTimer');
-
-            function tick() {
-                const now = new Date();
-                const diff = target - now;
-                if (diff <= 0) {
-                    timerSpan.textContent = 'Deadline passed';
-                    return;
-                }
-                const d = Math.floor(diff / 86400000);
-                const h = Math.floor((diff % 86400000) / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                timerSpan.textContent = `${d}d ${h}h ${m}m remaining`;
-            }
-
-            tick();
-            setInterval(tick, 60000);
-        }
-    }
 });

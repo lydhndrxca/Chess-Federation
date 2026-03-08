@@ -210,48 +210,142 @@ a:hover { text-decoration: underline; }
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2.5rem 1rem 3rem;
+    padding: 2rem 1rem 3rem;
+    min-height: 80vh;
+    justify-content: center;
 }
-.welcome-crest { margin-bottom: 2rem; opacity: 0.25; }
-.deco-board {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    width: 120px;
-    height: 120px;
-    border-radius: var(--radius);
+
+.welcome-letter {
+    position: relative;
+    max-width: 560px;
+    width: 100%;
+    margin-bottom: 2.5rem;
+    background: linear-gradient(175deg, #1a1714 0%, #13110f 40%, #0e0d0b 100%);
+    border: 1px solid rgba(139,94,60,0.3);
+    border-radius: 6px;
+    box-shadow:
+        0 12px 48px rgba(0,0,0,0.6),
+        inset 0 1px 0 rgba(180,160,120,0.06);
     overflow: hidden;
 }
-.deco-sq.light { background: var(--board-light); }
-.deco-sq.dark { background: var(--board-dark); }
 
-.welcome-scroll { max-width: 520px; text-align: center; }
-.welcome-scroll h1 {
-    font-size: 1.8rem;
-    margin-bottom: 1.25rem;
-    color: var(--gold);
+.letter-grate {
+    height: 6px;
+    background: repeating-linear-gradient(
+        90deg,
+        rgba(139,94,60,0.35) 0px,
+        rgba(139,94,60,0.35) 3px,
+        transparent 3px,
+        transparent 8px
+    );
+    border-bottom: 1px solid rgba(139,94,60,0.15);
 }
-.welcome-body { margin-bottom: 2rem; }
-.welcome-body p {
+
+.letter-body {
+    padding: 2rem 2rem 1.5rem;
+    font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+.letter-body p {
     font-size: 0.92rem;
-    color: var(--text-muted);
-    line-height: 1.75;
-    margin-bottom: 0.9rem;
+    color: #b4a078;
+    line-height: 1.8;
+    margin-bottom: 1.1rem;
+    text-indent: 1.5em;
 }
-.welcome-body strong { color: var(--text); }
-.welcome-body em { color: var(--yellow); font-style: italic; }
-.welcome-closing {
+
+.letter-body p:first-child {
+    text-indent: 0;
+    font-style: italic;
+    color: #9a8870;
+    font-size: 0.88rem;
+}
+
+.letter-body strong {
+    color: #c9a23c;
+    font-style: normal;
+    letter-spacing: 0.03em;
+}
+
+.letter-closing-line {
     color: var(--text) !important;
     font-weight: 600;
-    font-size: 1rem !important;
-    margin-top: 1.25rem;
+    font-style: italic;
+    text-indent: 0 !important;
+    margin-top: 1.5rem !important;
 }
+
+.letter-signature {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(139,94,60,0.15);
+}
+
+.letter-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(139,94,60,0.4);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    flex-shrink: 0;
+}
+
+.letter-sig-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.letter-dash {
+    color: #7a7672;
+    font-size: 0.85rem;
+    margin-bottom: 0.15rem;
+}
+
+.letter-name {
+    font-family: 'Georgia', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #c9a23c;
+    font-style: italic;
+    letter-spacing: 0.04em;
+}
+
+.letter-title {
+    font-size: 0.72rem;
+    color: #7a7672;
+    font-style: italic;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 0.15rem;
+}
+
 .welcome-actions {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
 }
+
+.welcome-actions .btn-lg {
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    font-size: 1rem;
+    padding: 0.85rem 2.5rem;
+    letter-spacing: 0.04em;
+}
+
 .welcome-signin { font-size: 0.85rem; color: var(--text-muted); }
+
+@media (max-width: 600px) {
+    .letter-body { padding: 1.5rem 1.25rem 1.25rem; }
+    .letter-body p { font-size: 0.87rem; }
+}
 
 /* ── Avatars ────────────────────────────── */
 .avatar {
@@ -276,6 +370,11 @@ a:hover { text-decoration: underline; }
     user-select: none;
 }
 .avatar-bot { background: var(--gold); color: var(--bg); font-weight: 800; }
+.avatar-enoch {
+    object-fit: cover;
+    border: 1.5px solid rgba(139,94,60,0.5);
+    box-shadow: 0 0 4px rgba(0,0,0,0.5);
+}
 
 .nav-user-link { display: flex; align-items: center; gap: 0.35rem; }
 
@@ -647,14 +746,45 @@ a:hover { text-decoration: underline; }
 }
 
 /* ── Sequence bar ── */
+/* ── Enoch commentary bar (in-game) ── */
+.gv-enoch {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    background: rgba(180, 160, 120, 0.06);
+    border-top: 1px solid rgba(180, 160, 120, 0.12);
+}
+.enoch-sigil {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(139,94,60,0.4);
+}
+.enoch-text {
+    font-size: 0.78rem;
+    font-style: italic;
+    color: #b4a078;
+    line-height: 1.3;
+}
+.enoch-fade {
+    animation: enochFadeIn 0.6s ease;
+}
+@keyframes enochFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .gv-sequence {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.4rem;
     padding: 0.35rem 0.75rem;
-    background: rgba(227, 179, 65, 0.06);
-    border-top: 1px solid rgba(227, 179, 65, 0.15);
+    background: rgba(180, 160, 120, 0.06);
+    border-top: 1px solid rgba(180, 160, 120, 0.12);
     font-size: 0.78rem;
 }
 .gv-seq-category {
@@ -1087,13 +1217,30 @@ a:hover { text-decoration: underline; }
     max-width: 75%;
 }
 .chat-bubble-bot {
-    background: rgba(227, 179, 65, 0.06);
-    border-color: var(--gold);
+    background: rgba(180, 160, 120, 0.06);
+    border-color: rgba(180, 160, 120, 0.25);
 }
 .chat-sender { font-weight: 600; font-size: 0.75rem; display: block; margin-bottom: 0.1rem; }
-.chat-sender-bot { color: var(--gold); }
+.chat-sender-bot { color: #b4a078; font-style: italic; }
+.enoch-hall-title { font-size: 0.65rem; font-weight: 400; opacity: 0.7; }
 .chat-text { font-size: 0.85rem; margin: 0; word-wrap: break-word; }
+.chat-text-bot { color: #b4a078; font-style: italic; }
 .chat-time { font-size: 0.6rem; color: var(--text-muted); margin-top: 0.2rem; display: block; }
+
+/* Enoch typing indicator */
+.typing-dots span {
+    display: inline-block;
+    color: #b4a078;
+    font-size: 1.4rem;
+    line-height: 1;
+    animation: enochDot 1.4s infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes enochDot {
+    0%, 60%, 100% { opacity: 0.2; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-3px); }
+}
 
 .chat-input-bar {
     display: flex;
@@ -1233,4 +1380,428 @@ a:hover { text-decoration: underline; }
     .player-grid { grid-template-columns: 1fr; }
     .profile-stats-row { gap: 1.25rem; }
     .gc-board { width: 80px; height: 80px; }
+}
+
+/* ══════════════════════════════════════════════
+   ENOCH COLLECTIBLES — DRAWER
+   ══════════════════════════════════════════════ */
+
+.drawer-card { overflow: visible; }
+
+.drawer-subtitle {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.82rem;
+    margin: -0.4rem 0 0.25rem;
+}
+
+.drawer-count {
+    font-size: 0.78rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    letter-spacing: 0.04em;
+}
+
+.drawer-collection {
+    margin-bottom: 1.5rem;
+}
+
+.drawer-coll-name {
+    font-family: 'Georgia', serif;
+    font-size: 0.85rem;
+    color: #9a8870;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    border-bottom: 1px solid rgba(139,94,60,0.25);
+    padding-bottom: 0.35rem;
+    margin-bottom: 0.6rem;
+}
+
+.drawer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    gap: 6px;
+}
+
+.drawer-slot {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: default;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.drawer-slot-empty {
+    background: rgba(20,18,16,0.7);
+    border: 1px solid rgba(60,50,40,0.35);
+}
+
+.drawer-slot-earned {
+    background: linear-gradient(145deg, #2a2218, #1a1612);
+    border: 1px solid rgba(139,94,60,0.45);
+    cursor: pointer;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.drawer-slot-earned:hover {
+    transform: scale(1.12);
+    box-shadow: 0 0 8px rgba(139,94,60,0.4), inset 0 1px 3px rgba(0,0,0,0.5);
+    border-color: var(--accent);
+    z-index: 5;
+}
+
+.drawer-slot-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.drawer-item-icon {
+    font-size: 1.2rem;
+    color: #b4a078;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+.drawer-item-silhouette {
+    font-size: 1.2rem;
+    color: rgba(60,50,40,0.3);
+}
+
+.drawer-stack-badge {
+    position: absolute;
+    bottom: 1px;
+    right: 2px;
+    font-size: 0.6rem;
+    color: var(--accent);
+    background: rgba(14,14,16,0.85);
+    border-radius: 3px;
+    padding: 0 3px;
+    line-height: 1.3;
+    font-weight: 700;
+}
+
+/* ── TOOLTIP ── */
+
+.drawer-tooltip {
+    position: absolute;
+    z-index: 9999;
+    width: 280px;
+    padding: 14px 16px;
+    background: linear-gradient(160deg, #1a1714, #0e0d0b);
+    border: 1px solid rgba(139,94,60,0.5);
+    border-radius: 6px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 1px rgba(139,94,60,0.4);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.18s, transform 0.18s;
+}
+
+.drawer-tooltip.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.dt-name {
+    font-family: 'Georgia', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #c9a23c;
+    margin-bottom: 2px;
+}
+
+.dt-collection {
+    font-size: 0.72rem;
+    color: #7a7672;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+}
+
+.dt-desc {
+    font-size: 0.82rem;
+    color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 8px;
+    font-style: italic;
+}
+
+.dt-trigger-label, .dt-enoch-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #7a7672;
+    margin-top: 6px;
+    margin-bottom: 2px;
+}
+
+.dt-trigger {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.35;
+}
+
+.dt-enoch {
+    font-size: 0.82rem;
+    color: #b4a078;
+    font-style: italic;
+    line-height: 1.4;
+}
+
+.dt-date {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+    border-top: 1px solid rgba(139,94,60,0.2);
+    padding-top: 6px;
+}
+
+.dt-instances {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
+}
+
+.dt-game-link {
+    font-size: 0.72rem;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.dt-game-link:hover {
+    text-decoration: underline;
+}
+
+/* ══════════════════════════════════════════════
+   ENOCH INTERVENTION MODAL
+   ══════════════════════════════════════════════ */
+
+.enoch-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.enoch-modal.active {
+    display: flex;
+}
+
+.enoch-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(10,8,6,0.92), rgba(0,0,0,0.97));
+    animation: enochOverlayIn 0.6s ease-out;
+}
+
+@keyframes enochOverlayIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.enoch-modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 380px;
+    background: linear-gradient(170deg, #1a1612 0%, #0e0d0b 60%, #0a0908 100%);
+    border: 1px solid rgba(139,94,60,0.4);
+    border-radius: 10px;
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+    box-shadow:
+        0 0 60px rgba(139,94,60,0.12),
+        0 20px 60px rgba(0,0,0,0.8),
+        inset 0 1px 0 rgba(180,160,120,0.08);
+    animation: enochCardIn 0.5s 0.2s ease-out both;
+}
+
+@keyframes enochCardIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.enoch-modal-candle {
+    position: absolute;
+    top: -6px;
+    width: 4px;
+    height: 14px;
+    background: linear-gradient(to top, #8b5e3c, #c9a23c);
+    border-radius: 2px;
+    animation: candleFlicker 2s infinite alternate;
+}
+
+.enoch-candle-left { left: 24px; }
+.enoch-candle-right { right: 24px; }
+
+@keyframes candleFlicker {
+    0%, 100% { box-shadow: 0 -4px 8px rgba(201,162,60,0.5); opacity: 0.8; }
+    50% { box-shadow: 0 -6px 12px rgba(201,162,60,0.7); opacity: 1; }
+}
+
+.enoch-modal-sigil {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(139,94,60,0.45);
+    box-shadow: 0 0 12px rgba(0,0,0,0.5), 0 0 4px rgba(139,94,60,0.2);
+}
+
+.enoch-modal-item-icon {
+    font-size: 2.5rem;
+    color: #9a8870;
+    margin-bottom: 0.75rem;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+
+.enoch-modal-item-name {
+    font-family: 'Georgia', serif;
+    font-size: 1.2rem;
+    color: #c9a23c;
+    margin-bottom: 0.25rem;
+}
+
+.enoch-modal-collection {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #7a7672;
+    margin-bottom: 0.75rem;
+}
+
+.enoch-modal-desc {
+    font-size: 0.85rem;
+    color: var(--text);
+    font-style: italic;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+}
+
+.enoch-modal-quote {
+    font-size: 0.9rem;
+    color: #b4a078;
+    font-style: italic;
+    line-height: 1.5;
+    padding: 0.75rem;
+    border-left: 2px solid rgba(139,94,60,0.4);
+    background: rgba(139,94,60,0.06);
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 1.25rem;
+}
+
+.enoch-modal-dismiss {
+    display: inline-block;
+    padding: 0.6rem 1.5rem;
+    background: rgba(139,94,60,0.15);
+    border: 1px solid rgba(139,94,60,0.4);
+    border-radius: 6px;
+    color: var(--text-muted);
+    font-family: 'Georgia', serif;
+    font-size: 0.82rem;
+    font-style: italic;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.enoch-modal-dismiss:hover {
+    background: rgba(139,94,60,0.25);
+    color: var(--text);
+    border-color: var(--accent);
+}
+
+.enoch-modal-counter {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 0.75rem;
+    letter-spacing: 0.06em;
+}
+
+/* ══════════════════════════════════════════════
+   ENOCH COLLECTIBLE TOAST (chat/engagement awards)
+   ══════════════════════════════════════════════ */
+
+.enoch-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 10001;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    max-width: 340px;
+    padding: 14px 16px;
+    background: linear-gradient(160deg, #1a1714, #0e0d0b);
+    border: 1px solid rgba(139,94,60,0.5);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 1px rgba(139,94,60,0.4);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.35s, transform 0.35s;
+    pointer-events: auto;
+}
+
+.enoch-toast.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.enoch-toast-sigil {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(139,94,60,0.4);
+    box-shadow: 0 0 6px rgba(0,0,0,0.4);
+}
+
+.enoch-toast-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.enoch-toast-title {
+    font-family: 'Georgia', serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #c9a23c;
+    margin-bottom: 2px;
+}
+
+.enoch-toast-sub {
+    font-size: 0.68rem;
+    color: #7a7672;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+}
+
+.enoch-toast-quote {
+    font-size: 0.8rem;
+    color: #b4a078;
+    font-style: italic;
+    line-height: 1.35;
+}
+
+/* ── Mobile adjustments for drawer ── */
+
+@media (max-width: 480px) {
+    .drawer-grid {
+        grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+        gap: 4px;
+    }
+    .drawer-tooltip { width: 260px; }
+    .enoch-modal-content { padding: 1.5rem 1rem 1rem; }
+    .enoch-toast { right: 0.75rem; bottom: 0.75rem; max-width: 300px; }
 }

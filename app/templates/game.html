@@ -65,6 +65,12 @@
         </div>
     </div>
 
+    {# ── Enoch commentary ── #}
+    <div class="gv-enoch" id="enochBar" {% if not enoch_line %}style="display:none"{% endif %}>
+        <img src="{{ url_for('static', filename='img/enoch.png') }}" class="enoch-sigil" alt="Enoch">
+        <span class="enoch-text" id="enochText">{{ enoch_line or '' }}</span>
+    </div>
+
     {# ── Named sequence display ── #}
     <div class="gv-sequence" id="sequenceBar" {% if not seq_match %}style="display:none"{% endif %}>
         {% if seq_match %}
@@ -139,6 +145,25 @@
             <button class="btn btn-sm" id="namingSkip">Skip</button>
             <button class="btn btn-sm btn-primary" id="namingSubmit">Inscribe</button>
         </div>
+    </div>
+</div>
+
+{# ── Enoch Intervention Modal ── #}
+<div class="enoch-modal" id="enochModal">
+    <div class="enoch-modal-overlay"></div>
+    <div class="enoch-modal-content">
+        <div class="enoch-modal-candle enoch-candle-left"></div>
+        <div class="enoch-modal-candle enoch-candle-right"></div>
+        <img src="{{ url_for('static', filename='img/enoch.png') }}" class="enoch-modal-sigil" alt="Enoch">
+        <div class="enoch-modal-inner">
+            <div class="enoch-modal-item-icon" id="enochItemIcon"></div>
+            <h3 class="enoch-modal-item-name" id="enochItemName"></h3>
+            <p class="enoch-modal-collection" id="enochItemCollection"></p>
+            <p class="enoch-modal-desc" id="enochItemDesc"></p>
+            <p class="enoch-modal-quote" id="enochItemQuote"></p>
+        </div>
+        <button class="enoch-modal-dismiss" id="enochModalDismiss">Wash Your Hands</button>
+        <p class="enoch-modal-counter" id="enochModalCounter"></p>
     </div>
 </div>
 

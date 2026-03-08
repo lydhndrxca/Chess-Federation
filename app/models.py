@@ -148,3 +148,14 @@ class SeasonMaterialStat(db.Model):
     avg_diff = db.Column(db.Float, default=0)
 
     user = db.relationship('User', foreign_keys=[user_id])
+
+
+class PlayerCollectible(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    item_id = db.Column(db.Integer, nullable=False)
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=True)
+    acquired_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = db.relationship('User', foreign_keys=[user_id])
+    game = db.relationship('Game', foreign_keys=[game_id])

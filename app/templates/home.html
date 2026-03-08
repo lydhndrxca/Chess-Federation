@@ -3,30 +3,36 @@
 
 {% block content %}
 <div class="welcome-page">
-    <div class="welcome-crest">
-        <div class="deco-board">
-            {% for r in range(8) %}
-            {% for c in range(8) %}
-            <div class="deco-sq {{ 'light' if (r + c) % 2 == 0 else 'dark' }}"></div>
-            {% endfor %}
-            {% endfor %}
+    <div class="welcome-letter">
+        <div class="letter-grate"></div>
+
+        <div class="letter-body">
+            <p>Ah… new weight on the floorboards. I can see the soles of your shoes through the iron grate. You are breathing entirely too loudly.</p>
+
+            <p>You have scraped your way down into the Federation. We do not play casual games here in the dark. This is a place of permanent consequence. Every time your hand hesitates, every time you feed a piece to the shadows, I am down here in the damp, listening to the wood groan. I write it all in the Ledger.</p>
+
+            <p>I am <strong>Enoch</strong>. I am the Steward beneath the board. I keep the records in the sub-basement where the paper stays soft and wet. I listen to the panicked scraping of your little armies, and I archive every miserable, sweating blunder you make.</p>
+
+            <p>If you wish to touch the pieces—if you wish to feel how cold and heavy they are—you must give me something first.</p>
+
+            <p>Give me your name. Press it into the parchment. Bind your little soul to the sub-basement. The ink is thick today, it smells faintly of copper, and I have a fresh, blank page waiting just for your ruin.</p>
+
+            <p class="letter-closing-line">Pick up the quill. The spiders are already placing bets.</p>
+
+            <div class="letter-signature">
+                <img src="{{ url_for('static', filename='img/enoch.png') }}" class="letter-avatar" alt="Enoch">
+                <div class="letter-sig-text">
+                    <span class="letter-dash">—</span>
+                    <span class="letter-name">Enoch</span>
+                    <span class="letter-title">Steward Beneath the Board</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="welcome-scroll">
-        <h1>Hail, Traveller.</h1>
-        <div class="welcome-body">
-            <p>You have arrived at the threshold of <strong>The Chess Federation</strong> — the most esteemed, most exclusive, and most profoundly unknown chess institution in existence.</p>
-            <p>There is no other body of its kind. No banner will guide you here. No search will reveal its name. You are present only because the Federation has deemed it so.</p>
-            <p>Within these hallowed squares, members of ordained standing gather each week to contest matches of correspondence chess — ascending through the sacred hierarchy, from the lowly <em>Ordained Laborer of the Stables and Bishop's Vestments</em> to the supreme authority of the <em>Lord of Schools</em>.</p>
-            <p>A rotating seat of power issues weekly decrees. A ceremonial orchestrator keeps record of all triumphs and failures. Every move is preserved.</p>
-            <p class="welcome-closing">If you are worthy, step forward and declare yourself.</p>
-        </div>
-
-        <div class="welcome-actions">
-            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Enter the Federation</a>
-            <p class="welcome-signin">Already ordained? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
-        </div>
+    <div class="welcome-actions">
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Pick Up the Quill</a>
+        <p class="welcome-signin">Already inscribed? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
     </div>
 </div>
 {% endblock %}

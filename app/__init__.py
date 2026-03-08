@@ -81,6 +81,17 @@ def _migrate_db(app):
             FOREIGN KEY(creator_id) REFERENCES user(id)
         )''')
 
+    if 'player_collectible' not in tables:
+        cur.execute('''CREATE TABLE player_collectible (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            item_id INTEGER NOT NULL,
+            game_id INTEGER,
+            acquired_at DATETIME,
+            FOREIGN KEY(user_id) REFERENCES user(id),
+            FOREIGN KEY(game_id) REFERENCES game(id)
+        )''')
+
     if 'season_material_stat' not in tables:
         cur.execute('''CREATE TABLE season_material_stat (
             id INTEGER PRIMARY KEY,

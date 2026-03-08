@@ -19,10 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (m.is_bot) {
             div.innerHTML = `
-                <div class="chat-avatar-wrap"><span class="avatar avatar-sm avatar-bot">E</span></div>
+                <div class="chat-avatar-wrap"><img src="/static/img/enoch.png" class="avatar avatar-sm avatar-enoch" alt="Enoch"></div>
                 <div class="chat-bubble chat-bubble-bot">
                     <span class="chat-sender chat-sender-bot">${m.bot_name || 'Enoch'}</span>
-                    <p class="chat-text">${escapeHtml(m.content)}</p>
+                    <p class="chat-text chat-text-bot">${escapeHtml(m.content)}</p>
                     <span class="chat-time">${m.timestamp}</span>
                 </div>`;
         } else {
@@ -39,6 +39,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         messages.appendChild(div);
         if (m.id > lastMsgId) lastMsgId = m.id;
+    }
+
+    function showTypingIndicator() {
+        const div = document.createElement('div');
+        div.className = 'chat-msg chat-msg-bot enoch-typing';
+        div.id = 'enochTyping';
+        div.innerHTML = `
+            <div class="chat-avatar-wrap"><img src="/static/img/enoch.png" class="avatar avatar-sm avatar-enoch" alt="Enoch"></div>
+            <div class="chat-bubble chat-bubble-bot">
+                <span class="chat-sender chat-sender-bot">Enoch</span>
+                <p class="chat-text chat-text-bot typing-dots"><span>.</span><span>.</span><span>.</span></p>
+            </div>`;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+        const el = document.getElementById('enochTyping');
+        if (el) el.remove();
     }
 
     function escapeHtml(s) {
@@ -61,6 +80,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.success) {
                 appendMsg(data.message);
                 messages.scrollTop = messages.scrollHeight;
+
+                if (data.enoch_reply) {
+                    showTypingIndicator();
+                    const delay = 2000 + Math.random() * 2000;
+                    setTimeout(() => {
+                        removeTypingIndicator();
+                        appendMsg(data.enoch_reply);
+                        messages.scrollTop = messages.scrollHeight;
+                    }, delay);
+                }
+
+                if (data.earned_items && data.earned_items.length) {
+                    for (const item of data.earned_items) {
+                        showCollectibleToast(item);
+                    }
+                }
             }
         } catch (e) {
             console.error('Send failed:', e);
@@ -78,12 +113,34 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await resp.json();
             if (data.messages && data.messages.length) {
                 const atBottom = messages.scrollHeight - messages.scrollTop - messages.clientHeight < 80;
-                for (const m of data.messages) appendMsg(m);
+                for (const m of data.messages) {
+                    if (!document.querySelector(`[data-msg-id="${m.id}"]`)) {
+                        appendMsg(m);
+                    }
+                }
                 if (atBottom) messages.scrollTop = messages.scrollHeight;
             }
         } catch (e) {
             console.error('Poll failed:', e);
         }
+    }
+
+    function showCollectibleToast(item) {
+        const toast = document.createElement('div');
+        toast.className = 'enoch-toast';
+        toast.innerHTML = `
+            <img src="/static/img/enoch.png" class="enoch-toast-sigil" alt="Enoch">
+            <div class="enoch-toast-body">
+                <div class="enoch-toast-title">${escapeHtml(item.name)}</div>
+                <div class="enoch-toast-sub">${escapeHtml(item.collection)}</div>
+                <div class="enoch-toast-quote">"${escapeHtml(item.enoch)}"</div>
+            </div>`;
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('active'));
+        setTimeout(() => {
+            toast.classList.remove('active');
+            setTimeout(() => toast.remove(), 400);
+        }, 6000);
     }
 
     setInterval(poll, 3000);

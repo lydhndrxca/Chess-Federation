@@ -1,11 +1,13 @@
 import os
 import uuid
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import (Blueprint, render_template, request, redirect, url_for,
+                   flash, current_app, jsonify)
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
-from app.models import Commendation, Game, User, db
+from app.models import Commendation, Game, PlayerCollectible, User, db
+from app.services.collectibles_catalog import CATALOG, CATALOG_BY_ID, COLLECTIONS
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
@@ -34,9 +36,14 @@ def player_profile(username):
     condemnations = Commendation.query.filter_by(
         subject_id=player.id, kind='condemn'
     ).order_by(Commendation.created_at.desc()).all()
+    collectible_rows = PlayerCollectible.query.filter_by(user_id=player.id)\
+        .order_by(PlayerCollectible.acquired_at.desc()).all()
+    drawer = _build_drawer(collectible_rows)
+
     return render_template(
         'profile.html', player=player, games=games,
         commendations=commendations, condemnations=condemnations,
+        drawer=drawer, collections=COLLECTIONS, catalog=CATALOG,
     )
 
 
@@ -100,3 +107,40 @@ def chronicle():
         Game.status.in_(['completed', 'forfeited'])
     ).order_by(Game.completed_at.desc()).paginate(page=page, per_page=20)
     return render_template('chronicle.html', games=games)
+
+
+@players_bp.route('/api/drawer/<int:user_id>')
+@login_required
+def drawer_api(user_id):
+    rows = PlayerCollectible.query.filter_by(user_id=user_id)\
+        .order_by(PlayerCollectible.acquired_at.desc()).all()
+    drawer = _build_drawer(rows)
+    return jsonify(drawer)
+
+
+def _build_drawer(rows):
+    """Build a structured drawer dict grouped by collection with stacking."""
+    owned = {}
+    for r in rows:
+        key = r.item_id
+        if key not in owned:
+            owned[key] = []
+        owned[key].append({
+            'game_id': r.game_id,
+            'acquired_at': r.acquired_at.isoformat() if r.acquired_at else None,
+        })
+
+    drawer = {}
+    for coll in COLLECTIONS:
+        items_in_coll = [it for it in CATALOG if it['collection'] == coll]
+        slots = []
+        for it in items_in_coll:
+            stack = owned.get(it['id'], [])
+            slots.append({
+                'item': it,
+                'earned': len(stack) > 0,
+                'count': len(stack),
+                'instances': stack,
+            })
+        drawer[coll] = slots
+    return drawer

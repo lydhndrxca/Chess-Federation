@@ -172,7 +172,17 @@ def apply_result(game):
         announce_match_result(game, white, black, change_w, change_b)
         if new_tier_white['level'] > old_tier_white['level']:
             announce_promotion(white, new_tier_white)
+            try:
+                from app.services.collectibles_engagement import evaluate_tier_promotion
+                evaluate_tier_promotion(white.id, game.id)
+            except Exception:
+                pass
         if new_tier_black['level'] > old_tier_black['level']:
             announce_promotion(black, new_tier_black)
+            try:
+                from app.services.collectibles_engagement import evaluate_tier_promotion
+                evaluate_tier_promotion(black.id, game.id)
+            except Exception:
+                pass
     except (ImportError, Exception):
         pass

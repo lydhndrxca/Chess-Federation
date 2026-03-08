@@ -139,14 +139,14 @@ class ChessBoard {
 
                 appendMove(data.move_number, data.san, this.playerColor);
 
+                if (data.enoch) updateEnoch(data.enoch);
                 if (data.sequence) updateSequence(data.sequence);
                 if (data.can_name_sequence) showNamingPrompt(this.gameId, data.can_name_sequence);
 
                 if (data.game_over) {
                     this.gameOver = true;
                     this.ground.set({ viewOnly: true });
-                    showResult(data.result, data.result_type, data.rating_change);
-                    if (data.show_commend && !this.hasCommended) showCommendPrompt(this.gameId);
+                    runEndSequence(data, this.gameId, this.hasCommended);
                 } else {
                     updateTurn(false);
                     this.startPolling();
@@ -197,14 +197,14 @@ class ChessBoard {
                 if (data.last_move) {
                     appendMove(null, data.last_move.san, data.last_move.color);
                 }
+                if (data.enoch) updateEnoch(data.enoch);
                 if (data.sequence) updateSequence(data.sequence);
 
                 if (data.status === 'completed' || data.status === 'forfeited') {
                     this.gameOver = true;
                     this.stopPolling();
                     this.ground.set({ viewOnly: true });
-                    showResult(data.result, data.result_type, data.rating_change);
-                    if (!this.hasCommended) showCommendPrompt(this.gameId);
+                    runEndSequence(data, this.gameId, this.hasCommended);
                     return;
                 }
 
@@ -244,8 +244,7 @@ class ChessBoard {
                     this.gameOver = true;
                     this.stopPolling();
                     this.ground.set({ viewOnly: true });
-                    showResult(data.result, data.result_type, data.rating_change);
-                    if (data.show_commend && !this.hasCommended) showCommendPrompt(this.gameId);
+                    runEndSequence(data, this.gameId, this.hasCommended);
                 }
             } catch (err) {
                 console.error('Resign failed:', err);
@@ -365,6 +364,18 @@ function updateSequence(seq) {
     bar.style.display = '';
 }
 
+function updateEnoch(line) {
+    const bar = document.getElementById('enochBar');
+    const text = document.getElementById('enochText');
+    if (!bar || !text) return;
+    if (!line) { bar.style.display = 'none'; return; }
+    text.textContent = line;
+    bar.style.display = '';
+    bar.classList.remove('enoch-fade');
+    void bar.offsetWidth;
+    bar.classList.add('enoch-fade');
+}
+
 function showNamingPrompt(gameId, info) {
     const modal = document.getElementById('namingModal');
     if (!modal) return;
@@ -470,6 +481,52 @@ function showCommendPrompt(gameId) {
     };
 
     setTimeout(() => modal.classList.add('active'), 600);
+}
+
+/* ── Enoch Intervention Modal ── */
+
+function showEnochItem(item) {
+    return new Promise(resolve => {
+        const modal = document.getElementById('enochModal');
+        if (!modal) { resolve(); return; }
+
+        document.getElementById('enochItemIcon').textContent = '';
+        document.getElementById('enochItemName').textContent = item.name;
+        document.getElementById('enochItemCollection').textContent = item.collection;
+        document.getElementById('enochItemDesc').textContent = item.desc;
+        document.getElementById('enochItemQuote').textContent = `"${item.enoch}"`;
+
+        const dismiss = document.getElementById('enochModalDismiss');
+        modal.classList.add('active');
+
+        const close = () => {
+            modal.classList.remove('active');
+            resolve();
+        };
+        dismiss.onclick = close;
+    });
+}
+
+async function showEnochQueue(items) {
+    const counter = document.getElementById('enochModalCounter');
+    for (let i = 0; i < items.length; i++) {
+        if (counter && items.length > 1) {
+            counter.textContent = `${i + 1} of ${items.length}`;
+            counter.style.display = '';
+        } else if (counter) {
+            counter.style.display = 'none';
+        }
+        await showEnochItem(items[i]);
+    }
+}
+
+async function runEndSequence(data, gameId, hasCommended) {
+    const items = data.earned_items || [];
+    if (items.length > 0) {
+        await showEnochQueue(items);
+    }
+    showResult(data.result, data.result_type, data.rating_change);
+    if (data.show_commend && !hasCommended) showCommendPrompt(gameId);
 }
 
 /* ── Init ── */

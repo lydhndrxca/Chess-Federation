@@ -158,9 +158,8 @@ def check_forfeits():
         black.rating = max(RATING_FLOOR, round(black.rating + penalty))
 
         try:
-            from app.services.enoch import post
-            post(f'{white.username} and {black.username} failed to finish their match. '
-                 f'Both receive a loss. ({penalty:+.0f} each)')
+            from app.services.enoch import announce_double_forfeit
+            announce_double_forfeit(white, black)
         except (ImportError, Exception):
             pass
 

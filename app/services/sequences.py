@@ -105,11 +105,10 @@ def name_sequence(creator_id, name, moves_key, half_moves, category):
     db.session.commit()
 
     try:
-        from app.services.enoch import post
+        from app.services.enoch import announce_new_sequence
         from app.models import User
         creator = db.session.get(User, creator_id)
-        post(f'{creator.username} has inscribed a new {category.lower()} '
-             f'into the Federation record: "{name.strip()}"')
+        announce_new_sequence(creator, name.strip(), category.lower())
     except (ImportError, Exception):
         pass
 

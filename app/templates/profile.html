@@ -87,6 +87,60 @@
         </div>
         {% endif %}
 
+        {# ── Enoch's Drawer ── #}
+        <div class="card drawer-card">
+            <h2>Enoch's Drawer</h2>
+            <p class="drawer-subtitle">Items recovered from the sub-basement</p>
+            {% set total_earned = drawer.values()|map('selectattr', 'earned')|map('list')|map('length')|sum %}
+            <p class="drawer-count">{{ total_earned }} of {{ catalog|length }} collected</p>
+            {% for coll_name in collections %}
+            {% set slots = drawer[coll_name] %}
+            <div class="drawer-collection">
+                <h3 class="drawer-coll-name">{{ coll_name }}</h3>
+                <div class="drawer-grid">
+                    {% for slot in slots %}
+                    <div class="drawer-slot {{ 'drawer-slot-earned' if slot.earned else 'drawer-slot-empty' }}"
+                         {% if slot.earned %}
+                         data-item-id="{{ slot.item.id }}"
+                         data-name="{{ slot.item.name }}"
+                         data-collection="{{ slot.item.collection }}"
+                         data-desc="{{ slot.item.desc }}"
+                         data-trigger="{{ slot.item.trigger_text }}"
+                         data-enoch="{{ slot.item.enoch }}"
+                         data-count="{{ slot.count }}"
+                         data-instances='{{ slot.instances | tojson }}'
+                         {% endif %}
+                    >
+                        <div class="drawer-slot-inner">
+                            {% if slot.earned %}
+                            <span class="drawer-item-icon">&#9670;</span>
+                            {% if slot.count > 1 %}
+                            <span class="drawer-stack-badge">x{{ slot.count }}</span>
+                            {% endif %}
+                            {% else %}
+                            <span class="drawer-item-silhouette">&#9670;</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {# ── Tooltip (hidden, positioned via JS) ── #}
+        <div class="drawer-tooltip" id="drawerTooltip">
+            <div class="dt-name" id="dtName"></div>
+            <div class="dt-collection" id="dtCollection"></div>
+            <div class="dt-desc" id="dtDesc"></div>
+            <div class="dt-trigger-label">The Ledger Records:</div>
+            <div class="dt-trigger" id="dtTrigger"></div>
+            <div class="dt-enoch-label">Enoch's Note:</div>
+            <div class="dt-enoch" id="dtEnoch"></div>
+            <div class="dt-date" id="dtDate"></div>
+            <div class="dt-instances" id="dtInstances"></div>
+        </div>
+
         <div class="card">
             <h2>Record of Contests</h2>
             {% if games %}
@@ -111,4 +165,71 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    const tooltip = document.getElementById('drawerTooltip');
+    if (!tooltip) return;
+    const slots = document.querySelectorAll('.drawer-slot-earned');
+
+    function show(e) {
+        const el = e.currentTarget;
+        const name = el.dataset.name;
+        const count = parseInt(el.dataset.count) || 1;
+        document.getElementById('dtName').textContent = count > 1 ? name + ' (x' + count + ')' : name;
+        document.getElementById('dtCollection').textContent = el.dataset.collection;
+        document.getElementById('dtDesc').textContent = el.dataset.desc;
+        document.getElementById('dtTrigger').textContent = el.dataset.trigger;
+        document.getElementById('dtEnoch').textContent = '"' + el.dataset.enoch + '"';
+
+        let instances = [];
+        try { instances = JSON.parse(el.dataset.instances); } catch(x) {}
+
+        const dtDate = document.getElementById('dtDate');
+        const dtInst = document.getElementById('dtInstances');
+
+        if (instances.length === 1) {
+            dtDate.textContent = 'Acquired: ' + (instances[0].acquired_at ? new Date(instances[0].acquired_at).toLocaleDateString() : '\u2014');
+            dtInst.innerHTML = '';
+        } else if (instances.length > 1) {
+            dtDate.textContent = 'Earned ' + instances.length + ' times';
+            dtInst.innerHTML = instances.map(function(inst) {
+                var d = inst.acquired_at ? new Date(inst.acquired_at).toLocaleDateString() : '\u2014';
+                return '<a href="/game/' + inst.game_id + '" class="dt-game-link">Game #' + inst.game_id + ' \u2014 ' + d + '</a>';
+            }).join('');
+        }
+
+        tooltip.classList.add('active');
+
+        var rect = el.getBoundingClientRect();
+        var tr = tooltip.getBoundingClientRect();
+        var top = rect.top - tr.height - 8;
+        var left = rect.left + rect.width / 2 - tr.width / 2;
+        if (top < 0) top = rect.bottom + 8;
+        if (left < 4) left = 4;
+        if (left + tr.width > window.innerWidth - 4) left = window.innerWidth - tr.width - 4;
+
+        tooltip.style.top = top + window.scrollY + 'px';
+        tooltip.style.left = left + window.scrollX + 'px';
+    }
+
+    function hide() {
+        tooltip.classList.remove('active');
+    }
+
+    slots.forEach(function(slot) {
+        slot.addEventListener('mouseenter', show);
+        slot.addEventListener('mouseleave', hide);
+        slot.addEventListener('click', show);
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.drawer-slot-earned') && !e.target.closest('.drawer-tooltip')) {
+            hide();
+        }
+    });
+})();
+</script>
 {% endblock %}

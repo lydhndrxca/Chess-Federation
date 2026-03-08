@@ -3,9 +3,11 @@ from datetime import datetime, timezone
 from flask import Blueprint, jsonify, render_template, request
 from flask_login import current_user, login_required
 
-from app.models import Commendation, Game, Move, User, db
+from app.models import Commendation, Game, Move, PlayerCollectible, User, db
 from app.services.chess_engine import ChessEngine
+from app.services.enoch import get_move_commentary, comment_game_start, get_title
 from app.services.sequences import get_sequence_info, name_sequence
+from app.services.collectibles_catalog import CATALOG_BY_ID
 
 game_bp = Blueprint('game', __name__)
 
@@ -19,12 +21,27 @@ def _player_color(game):
 
 
 def _my_rating_change(game, user_id):
-    """Return the rating change for a specific player in a finished game."""
     if user_id == game.white_id and game.rating_change_white is not None:
         return round(game.rating_change_white, 1)
     if user_id == game.black_id and game.rating_change_black is not None:
         return round(game.rating_change_black, 1)
     return None
+
+
+def _get_earned_items(game_id, user_id):
+    rows = PlayerCollectible.query.filter_by(game_id=game_id, user_id=user_id).all()
+    items = []
+    for r in rows:
+        cat = CATALOG_BY_ID.get(r.item_id)
+        if cat:
+            items.append({
+                'id': cat['id'],
+                'name': cat['name'],
+                'collection': cat['collection'],
+                'desc': cat['desc'],
+                'enoch': cat['enoch'],
+            })
+    return items
 
 
 @game_bp.route('/game/<int:game_id>')
@@ -60,6 +77,17 @@ def view_game(game_id):
             game_id=game.id, author_id=current_user.id
         ).first() is not None
 
+    opening_name = seq_info['match']['name'] if seq_info.get('match') else None
+    last_san = moves[-1].move_san if moves else None
+    is_over = game.status in ('completed', 'forfeited')
+    enoch_line = None
+    if last_san:
+        enoch_line = get_move_commentary(
+            last_san, len(moves), is_over, game.result_type,
+            opening_name=opening_name)
+    elif game.move_count == 0:
+        enoch_line = comment_game_start()
+
     return render_template(
         'game.html',
         game=game,
@@ -75,6 +103,8 @@ def view_game(game_id):
         me=me,
         seq_match=seq_info.get('match'),
         has_commended=has_commended,
+        enoch_line=enoch_line,
+        enoch_title=get_title(),
     )
 
 
@@ -124,6 +154,13 @@ def make_move(game_id):
 
     db.session.commit()
 
+    seq = get_sequence_info(game.id)
+    opening_name = seq['match']['name'] if seq.get('match') else None
+
+    enoch_line = get_move_commentary(
+        result['san'], game.move_count, is_over, result_type,
+        opening_name=opening_name)
+
     resp = {
         'success': True,
         'fen': result['fen'],
@@ -134,11 +171,13 @@ def make_move(game_id):
         'result_type': result_type,
         'move_number': result['move_number'],
     }
+    if enoch_line:
+        resp['enoch'] = enoch_line
     if is_over:
         resp['rating_change'] = _my_rating_change(game, current_user.id)
         resp['show_commend'] = True
+        resp['earned_items'] = _get_earned_items(game.id, current_user.id)
 
-    seq = get_sequence_info(game.id)
     if seq.get('match'):
         resp['sequence'] = seq['match']
     if seq.get('can_name') and current_user.can_name_openings:
@@ -167,6 +206,7 @@ def resign(game_id):
         'result_type': 'resignation',
         'rating_change': _my_rating_change(game, current_user.id),
         'show_commend': True,
+        'earned_items': _get_earned_items(game.id, current_user.id),
     })
 
 
@@ -187,6 +227,16 @@ def game_state(game_id):
         game_id=game.id
     ).order_by(Move.id.desc()).first()
 
+    seq = get_sequence_info(game.id)
+    opening_name = seq['match']['name'] if seq.get('match') else None
+    is_over = game.status in ('completed', 'forfeited')
+
+    enoch_line = None
+    if last_move:
+        enoch_line = get_move_commentary(
+            last_move.move_san, game.move_count, is_over, game.result_type,
+            opening_name=opening_name)
+
     resp = {
         'fen': game.fen_current,
         'turn': game.current_turn,
@@ -202,10 +252,12 @@ def game_state(game_id):
             'color': last_move.color,
         } if last_move else None,
     }
-    if game.status in ('completed', 'forfeited') and player_color:
+    if enoch_line:
+        resp['enoch'] = enoch_line
+    if is_over and player_color:
         resp['rating_change'] = _my_rating_change(game, current_user.id)
-
-    seq = get_sequence_info(game.id)
+        resp['show_commend'] = True
+        resp['earned_items'] = _get_earned_items(game.id, current_user.id)
     if seq.get('match'):
         resp['sequence'] = seq['match']
 
@@ -247,9 +299,25 @@ def commend_player(game_id):
         text=text,
     )
     db.session.add(comm)
+
+    commend_earned = []
+    try:
+        from app.services.collectibles_engagement import evaluate_commendation_triggers
+        commend_earned = evaluate_commendation_triggers(current_user.id) or []
+    except Exception:
+        pass
+
     db.session.commit()
 
-    return jsonify({'success': True})
+    resp = {'success': True}
+    if commend_earned:
+        resp['earned_items'] = [{
+            'id': it['id'], 'name': it['name'],
+            'collection': it['collection'], 'desc': it['desc'],
+            'enoch': it['enoch'],
+        } for it in commend_earned]
+
+    return jsonify(resp)
 
 
 @game_bp.route('/game/<int:game_id>/name-sequence', methods=['POST'])
@@ -276,6 +344,13 @@ def name_game_sequence(game_id):
     seq = name_sequence(current_user.id, seq_name, moves_key, half_moves, category)
     if not seq:
         return jsonify({'error': 'This sequence has already been named'}), 409
+
+    try:
+        from app.services.collectibles_engagement import evaluate_naming_triggers
+        evaluate_naming_triggers(current_user.id)
+        db.session.flush()
+    except Exception:
+        pass
 
     return jsonify({
         'success': True,
@@ -316,3 +391,23 @@ def _finish_game(game, result_type, last_mover):
 
     from app.services.rating import apply_result
     apply_result(game)
+
+    try:
+        from app.services.collectibles import evaluate_collectibles
+        from app.models import PlayerCollectible
+        for color in ('white', 'black'):
+            uid = game.white_id if color == 'white' else game.black_id
+            earned = evaluate_collectibles(game, all_moves, color)
+            for item in earned:
+                pc = PlayerCollectible(
+                    user_id=uid, item_id=item['id'], game_id=game.id)
+                db.session.add(pc)
+    except Exception:
+        pass
+
+    try:
+        from app.services.collectibles_engagement import evaluate_milestone_triggers
+        evaluate_milestone_triggers(game.white_id, game.id)
+        evaluate_milestone_triggers(game.black_id, game.id)
+    except Exception:
+        pass

@@ -12,11 +12,11 @@
             <div class="chat-msg {{ 'chat-msg-bot' if msg.is_bot else '' }}" data-msg-id="{{ msg.id }}">
                 {% if msg.is_bot %}
                 <div class="chat-avatar-wrap">
-                    <span class="avatar avatar-sm avatar-bot">E</span>
+                    <img src="{{ url_for('static', filename='img/enoch.png') }}" class="avatar avatar-sm avatar-enoch" alt="Enoch">
                 </div>
                 <div class="chat-bubble chat-bubble-bot">
-                    <span class="chat-sender chat-sender-bot">{{ msg.bot_name or 'Enoch' }}</span>
-                    <p class="chat-text">{{ msg.content }}</p>
+                    <span class="chat-sender chat-sender-bot">{{ enoch_title }}</span>
+                    <p class="chat-text chat-text-bot">{{ msg.content }}</p>
                     <span class="chat-time">{{ msg.timestamp.strftime('%b %d, %I:%M %p') }}</span>
                 </div>
                 {% else %}

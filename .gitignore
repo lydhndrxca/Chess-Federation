@@ -3,6 +3,8 @@ __pycache__/
 *.pyc
 .env
 data/*.db
+screenshots/
+.repo_snapshot/
 
 .cursor/*
 !.cursor/rules/

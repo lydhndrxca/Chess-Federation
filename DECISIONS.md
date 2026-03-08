@@ -23,12 +23,13 @@ changing routes.
 
 ## DEC-005: Frontend — Jinja2 + vanilla JS
 
-No build step, no frontend framework. Board rendered via custom JS using
-Unicode chess characters. Responsive CSS for mobile.
+No build step, no frontend framework. Responsive CSS for mobile.
+Dark/ominous ceremonial theme.
 
 ## DEC-006: Auth — Flask-Login + werkzeug hashing
 
 Simple session-based authentication. Sufficient for a small trusted group.
+Remember-me cookie lasts 90 days.
 
 ## DEC-007: Rating System — Modified Elo with Material Modifier
 
@@ -36,12 +37,12 @@ Simple session-based authentication. Sufficient for a small trusted group.
 modifier capped at 20% of base change. Forfeit results skip material
 modifier. K-factor = 32.
 
-## DEC-008: Board Rendering — Custom JS with Unicode Pieces
+## DEC-008: Board Rendering — Chessground (vendored)
 
-Built a custom board renderer using CSS Grid and Unicode chess symbols
-instead of external libraries (chessground, chessboard.js). Keeps the
-project dependency-free on the frontend and makes future variant board
-support (non-8x8) straightforward.
+Originally built a custom board renderer using CSS Grid and Unicode chess
+symbols. Replaced with Chessground library (vendored `chessground.min.js`)
+for drag-and-drop, SVG pieces, and animations. The library is included in
+`app/static/js/` with no build step required.
 
 ## DEC-009: Forfeit Detection — Lazy Evaluation
 
@@ -60,3 +61,49 @@ Alternative: PythonAnywhere free tier.
 
 v1: Standard chess, accounts, weekly scheduling, ratings, dashboard,
 profiles, history. Power Position system and variant engine deferred to v2.
+
+## DEC-012: Matchmaking — All-Play-All
+
+Changed from one-match-per-week to all-play-all: every active player plays
+every other player each week. Matches auto-generate at Sunday 5 PM CST.
+Unfinished matches are forfeited for both players.
+
+## DEC-013: Enoch NPC System
+
+Introduced "Enoch" as a sub-basement steward NPC. Practice matches against
+Enoch are unrated and do not affect federation standings. Enoch has a
+mood-based AI (Chill ~500, Annoyed ~800, Angry ~1200 Elo) using a
+deterministic daily schedule seeded from the date.
+
+## DEC-014: Enoch Wager System
+
+Optional daily rated wagers against Enoch. Mood determines stake range
+(5–25 pts). 1% anomaly chance for 30–50 pts at ~1500 Elo. One rated wager
+per player per day. Wins/losses apply directly to the player's main rating.
+Tracked separately via `EnochWager` model.
+
+## DEC-015: Collectibles — Physical Item Theme
+
+170 items across 12 collections with a damp, physical, unsettling aesthetic.
+Triggers include game-analysis (board positions, move patterns), engagement
+milestones (chat, career stats), lore (beating Enoch), and gambling
+(wager wins/losses/streaks). Items stack with multipliers on duplicates.
+
+## DEC-016: Federation Hall Chat
+
+Persistent chat room at `/hall`. Enoch lurks and occasionally interjects
+during periods of high activity. Players can use `@Enoch` commands.
+Chat messages are stored permanently.
+
+## DEC-017: Named Openings/Variations
+
+Players can opt-in to naming new move sequences they discover in games.
+Named sequences are stored permanently and displayed whenever any player
+replays the same sequence in a future game.
+
+## DEC-018: DB Migrations — Inline ALTER TABLE
+
+Using raw SQL `ALTER TABLE` with column-existence checks in
+`app/__init__.py` rather than a formal migration framework (Alembic).
+Sufficient for the current pace of schema changes. May need to adopt
+Alembic if schema evolution accelerates.

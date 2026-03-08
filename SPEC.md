@@ -37,10 +37,10 @@ gradually evolve from standard chess into a custom ruleset over time.
 
 ## 3. Match Structure — Weekly Federation Cycle
 
-- Every active federation player is matched each week
-- One match per player per week
+- Every active federation player is matched against every other player
+  each week (all-play-all round-robin)
 - Each match is a turn-based correspondence game (asynchronous)
-- 7-day match window (hard deadline)
+- Weekly match window: Sunday 5 PM CST to next Sunday 5 PM CST
 - A player opens the game, makes a move, state saves automatically
 - Opponent is then up next
 - Game continues until: checkmate, resignation, draw, timeout/forfeit,

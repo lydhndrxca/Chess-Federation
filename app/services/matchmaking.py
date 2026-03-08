@@ -16,7 +16,10 @@ def _now_ct():
 
 
 def get_current_week():
-    return _now_ct().isocalendar()[1]
+    """Federation week rolls over at Sunday 5 PM CT, not Monday midnight.
+    Offset by 7 hours so Sunday 5 PM maps to Monday 00:00 (ISO boundary)."""
+    shifted = _now_ct() + timedelta(hours=7)
+    return shifted.isocalendar()[1]
 
 
 def get_current_season():

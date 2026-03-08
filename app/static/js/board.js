@@ -174,7 +174,7 @@ class ChessBoard {
 
                 if (data.game_over) {
                     this.gameOver = true;
-                    showResult(data.result, data.result_type);
+                    showResult(data.result, data.result_type, data.rating_change);
                 } else {
                     updateTurn(false);
                     this.startPolling();
@@ -215,7 +215,7 @@ class ChessBoard {
                 if (data.status === 'completed' || data.status === 'forfeited') {
                     this.gameOver = true;
                     this.stopPolling();
-                    showResult(data.result, data.result_type);
+                    showResult(data.result, data.result_type, data.rating_change);
                     return;
                 }
 
@@ -245,7 +245,7 @@ class ChessBoard {
                 if (data.success) {
                     this.gameOver = true;
                     this.stopPolling();
-                    showResult(data.result, data.result_type);
+                    showResult(data.result, data.result_type, data.rating_change);
                 }
             } catch (err) {
                 console.error('Resign failed:', err);
@@ -291,10 +291,16 @@ function updateTurn(isYourTurn) {
         : '<span class="turn-waiting">Waiting for opponent</span>';
 }
 
-function showResult(result, resultType) {
+function showResult(result, resultType, ratingChange) {
     const el = document.getElementById('turnIndicator');
     if (el) {
-        el.innerHTML = `<span class="game-over-text">${result} — ${resultType}</span>`;
+        let html = `<span class="game-over-text">${result} — ${resultType}</span>`;
+        if (ratingChange != null) {
+            const sign = ratingChange >= 0 ? '+' : '';
+            const cls = ratingChange >= 0 ? 'rating-up' : 'rating-down';
+            html += `<span class="rating-impact ${cls}">${sign}${ratingChange.toFixed(1)} rating</span>`;
+        }
+        el.innerHTML = html;
     }
     const btn = document.getElementById('resignBtn');
     if (btn) btn.style.display = 'none';

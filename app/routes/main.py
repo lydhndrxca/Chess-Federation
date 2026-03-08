@@ -27,11 +27,10 @@ def standings():
         week_number=week, season=season_key
     ).all()
 
-    current_game = None
-    for g in weekly_games:
-        if current_user.id in (g.white_id, g.black_id):
-            current_game = g
-            break
+    my_games = [
+        g for g in weekly_games
+        if current_user.id in (g.white_id, g.black_id)
+    ]
 
     standings_list = User.query.filter_by(
         is_active_player=True
@@ -47,7 +46,7 @@ def standings():
         season_year=year,
         season_month=month,
         weekly_games=weekly_games,
-        current_game=current_game,
+        my_games=my_games,
         standings=standings_list,
         schedule=schedule,
     )
@@ -56,18 +55,24 @@ def standings():
 @main_bp.route('/board')
 @login_required
 def board_redirect():
-    """Redirect to the player's active game, or standings if none."""
+    """Redirect to the player's active game where it's their turn, or first active, or standings."""
     week = get_current_week()
     year, month = get_current_season()
     season_key = year * 100 + month
 
-    game = Game.query.filter(
+    active = Game.query.filter(
         Game.week_number == week,
         Game.season == season_key,
         Game.status.in_(['pending', 'active']),
         (Game.white_id == current_user.id) | (Game.black_id == current_user.id),
-    ).first()
+    ).all()
 
-    if game:
-        return redirect(url_for('game.view_game', game_id=game.id))
-    return redirect(url_for('main.standings'))
+    if not active:
+        return redirect(url_for('main.standings'))
+
+    for g in active:
+        my_color = 'white' if g.white_id == current_user.id else 'black'
+        if g.current_turn == my_color:
+            return redirect(url_for('game.view_game', game_id=g.id))
+
+    return redirect(url_for('game.view_game', game_id=active[0].id))

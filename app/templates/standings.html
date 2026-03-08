@@ -31,45 +31,48 @@
     </div>
     {% endif %}
 
-    {% if current_game %}
+    {% if my_games %}
     <div class="card highlight-card">
-        <h2>Your Match</h2>
-        <div class="matchup-display">
-            <div class="matchup-player {{ 'active-turn' if current_game.current_turn == 'white' }}">
-                {{ player_card(current_game.white, 'sm') }}
+        <h2>Your Matches</h2>
+        {% for g in my_games %}
+        <div class="my-match-row">
+            <div class="matchup-display">
+                <div class="matchup-player {{ 'active-turn' if g.current_turn == 'white' and g.status in ('pending','active') }}">
+                    {{ player_card(g.white, 'sm') }}
+                </div>
+                <span class="matchup-vs">vs</span>
+                <div class="matchup-player {{ 'active-turn' if g.current_turn == 'black' and g.status in ('pending','active') }}">
+                    {{ player_card(g.black, 'sm') }}
+                </div>
             </div>
-            <span class="matchup-vs">vs</span>
-            <div class="matchup-player {{ 'active-turn' if current_game.current_turn == 'black' }}">
-                {{ player_card(current_game.black, 'sm') }}
-            </div>
-        </div>
-        <div class="matchup-status">
-            {% if current_game.status == 'pending' %}
-            <span class="badge badge-pending">Waiting for first move</span>
-            {% elif current_game.status == 'active' %}
-            <span class="badge badge-active">
-                {% if (current_user.id == current_game.white_id and current_game.current_turn == 'white') or
-                      (current_user.id == current_game.black_id and current_game.current_turn == 'black') %}
-                    Your turn
-                {% else %}
-                    Opponent's turn
+            <div class="matchup-status">
+                {% if g.status == 'pending' %}
+                <span class="badge badge-pending">Waiting for first move</span>
+                {% elif g.status == 'active' %}
+                    {% set my_color = 'white' if current_user.id == g.white_id else 'black' %}
+                    {% if g.current_turn == my_color %}
+                    <span class="badge badge-your-turn">Your turn</span>
+                    {% else %}
+                    <span class="badge badge-active">Opponent's turn</span>
+                    {% endif %}
+                {% elif g.status == 'completed' %}
+                <span class="badge badge-completed">{{ g.result }} — {{ g.result_type }}</span>
+                {% elif g.status == 'forfeited' %}
+                <span class="badge badge-forfeited">Forfeit — {{ g.result }}</span>
                 {% endif %}
-            </span>
-            {% elif current_game.status == 'completed' %}
-            <span class="badge badge-completed">{{ current_game.result }} — {{ current_game.result_type }}</span>
-            {% elif current_game.status == 'forfeited' %}
-            <span class="badge badge-forfeited">Forfeit — {{ current_game.result }}</span>
+            </div>
+            {% if g.status in ('pending', 'active') %}
+            <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="btn btn-primary btn-sm">Play</a>
+            {% else %}
+            <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="btn btn-outline btn-sm">Review</a>
             {% endif %}
         </div>
-        {% if current_game.status in ('pending', 'active') %}
-        <a href="{{ url_for('game.view_game', game_id=current_game.id) }}" class="btn btn-primary">Play</a>
-        {% else %}
-        <a href="{{ url_for('game.view_game', game_id=current_game.id) }}" class="btn btn-outline">Review</a>
-        {% endif %}
+        {% if not loop.last %}<hr class="match-divider">{% endif %}
+        {% endfor %}
     </div>
     {% else %}
     <div class="card">
-        <p class="text-muted">No match scheduled for you this week.</p>
+        <p class="text-muted">No matches scheduled for you this week.</p>
     </div>
     {% endif %}
 
@@ -95,9 +98,7 @@
                         {% elif game.status == 'forfeited' %}
                         <span class="badge badge-forfeited">Forfeit</span>
                         {% endif %}
-                        {% if game.status != 'pending' %}
                         <a href="{{ url_for('game.view_game', game_id=game.id) }}" class="link-sm">View</a>
-                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}

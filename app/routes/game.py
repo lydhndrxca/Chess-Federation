@@ -17,6 +17,15 @@ def _player_color(game):
     return None
 
 
+def _my_rating_change(game, user_id):
+    """Return the rating change for a specific player in a finished game."""
+    if user_id == game.white_id and game.rating_change_white is not None:
+        return round(game.rating_change_white, 1)
+    if user_id == game.black_id and game.rating_change_black is not None:
+        return round(game.rating_change_black, 1)
+    return None
+
+
 @game_bp.route('/game/<int:game_id>')
 @login_required
 def view_game(game_id):
@@ -96,7 +105,7 @@ def make_move(game_id):
 
     db.session.commit()
 
-    return jsonify({
+    resp = {
         'success': True,
         'fen': result['fen'],
         'san': result['san'],
@@ -105,7 +114,10 @@ def make_move(game_id):
         'result': game.result if is_over else None,
         'result_type': result_type,
         'move_number': result['move_number'],
-    })
+    }
+    if is_over:
+        resp['rating_change'] = _my_rating_change(game, current_user.id)
+    return jsonify(resp)
 
 
 @game_bp.route('/game/<int:game_id>/resign', methods=['POST'])
@@ -126,6 +138,7 @@ def resign(game_id):
         'success': True,
         'result': game.result,
         'result_type': 'resignation',
+        'rating_change': _my_rating_change(game, current_user.id),
     })
 
 
@@ -146,7 +159,7 @@ def game_state(game_id):
         game_id=game.id
     ).order_by(Move.id.desc()).first()
 
-    return jsonify({
+    resp = {
         'fen': game.fen_current,
         'turn': game.current_turn,
         'is_your_turn': is_your_turn,
@@ -160,7 +173,10 @@ def game_state(game_id):
             'uci': last_move.move_uci,
             'color': last_move.color,
         } if last_move else None,
-    })
+    }
+    if game.status in ('completed', 'forfeited') and player_color:
+        resp['rating_change'] = _my_rating_change(game, current_user.id)
+    return jsonify(resp)
 
 
 def _finish_game(game, result_type, last_mover):

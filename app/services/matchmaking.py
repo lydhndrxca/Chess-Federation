@@ -1,11 +1,14 @@
-import random
 from datetime import datetime, timedelta, timezone
+from itertools import combinations
 from zoneinfo import ZoneInfo
 
 from app.models import Game, User, WeeklySchedule, db
-from app.services.rating import apply_result
+from app.services.rating import apply_result, RESULT_BASE, RATING_FLOOR
 
 FEDERATION_TZ = ZoneInfo('America/Chicago')
+
+MATCH_DEADLINE_HOUR = 17  # 5:00 PM CT
+DECREE_DEADLINE_HOUR = 12  # noon CT
 
 
 def _now_ct():
@@ -23,13 +26,29 @@ def get_current_season():
 
 
 def get_week_deadline():
-    """Next Sunday 12:00 PM Central Time."""
+    """Next Sunday 5:00 PM Central Time."""
     now = _now_ct()
     days_until_sunday = (6 - now.weekday()) % 7
-    if days_until_sunday == 0 and now.hour >= 12:
+    if days_until_sunday == 0 and now.hour >= MATCH_DEADLINE_HOUR:
         days_until_sunday = 7
-    next_sunday = now.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(days=days_until_sunday)
+    next_sunday = now.replace(
+        hour=MATCH_DEADLINE_HOUR, minute=0, second=0, microsecond=0
+    ) + timedelta(days=days_until_sunday)
     return next_sunday.astimezone(timezone.utc)
+
+
+def _count_white_games(user_id):
+    """How many times this user has played as white."""
+    return Game.query.filter_by(white_id=user_id).count()
+
+
+def _assign_colors(player_a, player_b):
+    """Assign white/black so the player who has been white less often gets white."""
+    a_whites = _count_white_games(player_a.id)
+    b_whites = _count_white_games(player_b.id)
+    if a_whites <= b_whites:
+        return player_a, player_b
+    return player_b, player_a
 
 
 def generate_weekly_pairings(week=None, season=None):
@@ -47,7 +66,6 @@ def generate_weekly_pairings(week=None, season=None):
     if len(players) < 2:
         return {'week': week, 'games_created': 0, 'message': 'Not enough players'}
 
-    random.shuffle(players)
     deadline = get_week_deadline()
     games_created = 0
 
@@ -60,23 +78,6 @@ def generate_weekly_pairings(week=None, season=None):
     except (ImportError, Exception):
         pass
 
-    for i in range(0, len(players) - 1, 2):
-        if random.random() < 0.5:
-            white, black = players[i], players[i + 1]
-        else:
-            white, black = players[i + 1], players[i]
-
-        game = Game(
-            white_id=white.id,
-            black_id=black.id,
-            week_number=week,
-            season=season,
-            deadline=deadline,
-            power_holder_id=power_holder_id,
-        )
-        db.session.add(game)
-        games_created += 1
-
     schedule = WeeklySchedule.query.filter_by(week_number=week, season=season).first()
     if not schedule:
         schedule = WeeklySchedule(
@@ -85,6 +86,23 @@ def generate_weekly_pairings(week=None, season=None):
             power_position_holder_id=power_holder_id,
         )
         db.session.add(schedule)
+
+    decree_text = schedule.rule_declaration or ''
+
+    for pa, pb in combinations(players, 2):
+        white, black = _assign_colors(pa, pb)
+
+        game = Game(
+            white_id=white.id,
+            black_id=black.id,
+            week_number=week,
+            season=season,
+            deadline=deadline,
+            power_holder_id=power_holder_id,
+            rule_snapshot=decree_text if decree_text else None,
+        )
+        db.session.add(game)
+        games_created += 1
 
     db.session.commit()
     return {'week': week, 'games_created': games_created}
@@ -102,23 +120,31 @@ def check_forfeits():
         game.status = 'forfeited'
         game.completed_at = now
         game.fen_final = game.fen_current
-        game.result_type = 'timeout'
+        game.result_type = 'double_forfeit'
+        game.result = '0-0'
 
-        if game.current_turn == 'white':
-            game.result = '0-1'
-        else:
-            game.result = '1-0'
+        white = db.session.get(User, game.white_id)
+        black = db.session.get(User, game.black_id)
 
-        material = {}
+        penalty = RESULT_BASE['forfeit_loss']
+        game.rating_change_white = penalty
+        game.rating_change_black = penalty
+
+        white.losses += 1
+        white.forfeits += 1
+        white.rating = max(RATING_FLOOR, round(white.rating + penalty))
+
+        black.losses += 1
+        black.forfeits += 1
+        black.rating = max(RATING_FLOOR, round(black.rating + penalty))
+
         try:
-            from app.services.chess_engine import ChessEngine
-            material = ChessEngine.get_material(game.fen_current)
-        except Exception:
-            material = {'white': 0, 'black': 0}
-        game.material_white = material.get('white', 0)
-        game.material_black = material.get('black', 0)
+            from app.services.enoch import post
+            post(f'{white.username} and {black.username} failed to finish their match. '
+                 f'Both receive a loss. ({penalty:+.0f} each)')
+        except (ImportError, Exception):
+            pass
 
-        apply_result(game)
         forfeited += 1
 
     if forfeited:

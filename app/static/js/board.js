@@ -16,11 +16,23 @@ const PROMO_ROLES = [
 */
 
 let audioTextToUrl = null;
-const audioCache = new Map();
 const audioQueue = [];
 let audioPlaying = false;
 let currentAudio = null;
 let enochMuted = localStorage.getItem('enochMuted') === 'true';
+let audioUnlocked = false;
+
+function unlockAudio() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+    const buf = ctx.createBuffer(1, 1, 22050);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start(0);
+}
 
 async function loadAudioManifest() {
     const cfg = window.GAME_CONFIG;
@@ -31,30 +43,18 @@ async function loadAudioManifest() {
         const base = cfg.audioBaseUrl || '/static/audio/enoch/';
         audioTextToUrl = new Map();
         for (const [, entry] of Object.entries(manifest)) {
-            const url = base + entry.file;
-            audioTextToUrl.set(entry.text, url);
+            audioTextToUrl.set(entry.text, base + entry.file);
         }
     } catch (e) {
         console.warn('Audio manifest unavailable:', e);
     }
 }
 
-function _preloadAudio(url) {
-    if (audioCache.has(url)) return audioCache.get(url);
-    const a = new Audio();
-    a.preload = 'auto';
-    a.src = url;
-    audioCache.set(url, a);
-    return a;
-}
-
 function _drainQueue() {
     if (audioPlaying || enochMuted || audioQueue.length === 0) return;
 
     const url = audioQueue.shift();
-    const audio = _preloadAudio(url);
-
-    audio.currentTime = 0;
+    const audio = new Audio(url);
     audioPlaying = true;
     currentAudio = audio;
 
@@ -75,22 +75,11 @@ function playEnochAudio(line) {
     const url = audioTextToUrl.get(line);
     if (!url) return;
 
-    _preloadAudio(url);
     audioQueue.push(url);
-
     if (audioQueue.length > 2) {
         audioQueue.splice(0, audioQueue.length - 2);
     }
-
     _drainQueue();
-}
-
-function preloadNextLines(lines) {
-    if (!audioTextToUrl) return;
-    for (const line of lines) {
-        const url = audioTextToUrl.get(line);
-        if (url) _preloadAudio(url);
-    }
 }
 
 function initMuteButton() {
@@ -107,6 +96,7 @@ function initMuteButton() {
 
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
+        unlockAudio();
         enochMuted = !enochMuted;
         localStorage.setItem('enochMuted', String(enochMuted));
         updateIcon();
@@ -232,6 +222,12 @@ class ChessBoard {
             premovable: { enabled: false },
         });
 
+        const boardEl = document.getElementById('chessBoard');
+        if (boardEl) {
+            boardEl.addEventListener('mousedown', unlockAudio, { once: true });
+            boardEl.addEventListener('touchstart', unlockAudio, { once: true });
+        }
+
         if (!this.gameOver && !this.isPlayerTurn && this.isParticipant && !this.isPractice) {
             this.startPolling();
         }
@@ -246,6 +242,7 @@ class ChessBoard {
     }
 
     onMove(orig, dest) {
+        unlockAudio();
         this.pendingOrig = orig;
         this.pendingDest = dest;
         this.preMoveLastMove = this.lastMoveUci ? uciToLastMove(this.lastMoveUci) : undefined;
@@ -260,6 +257,7 @@ class ChessBoard {
     }
 
     confirmMove() {
+        unlockAudio();
         const bar = document.getElementById('moveConfirmBar');
         if (bar) bar.classList.remove('active');
 

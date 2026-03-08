@@ -2339,6 +2339,296 @@ a:hover { text-decoration: underline; }
     text-align: right;
 }
 
+/* ── White/Black color dots ── */
+
+.gv-color-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin: 0 4px 0 0;
+    flex-shrink: 0;
+    border: 1px solid #555;
+}
+.gv-dot-white { background: #e8e0d4; }
+.gv-dot-black { background: #2a2520; border-color: #6a6560; }
+
+/* ── Replay bar ── */
+
+.gv-replay-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    margin-top: 0.25rem;
+}
+.gv-replay-btn {
+    background: #2a2520;
+    color: #c9b99a;
+    border: 1px solid #3d3630;
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.gv-replay-btn:hover { background: #3d3630; }
+.gv-replay-ply {
+    color: #8a8075;
+    font-size: 0.85rem;
+    min-width: 70px;
+    text-align: center;
+}
+
+/* Clickable moves in replay mode */
+.move-san.replay-active {
+    background: #4a3f30;
+    border-radius: 3px;
+    outline: 1px solid #c9b99a55;
+}
+
+/* ── PGN panel ── */
+
+.gv-pgn-panel {
+    background: #1a1714;
+    border: 1px solid #2a2520;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+.gv-pgn-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.75rem;
+    background: #221f1a;
+    border-bottom: 1px solid #2a2520;
+}
+.gv-pgn-title {
+    color: #8a8075;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.gv-pgn-copy {
+    background: #2a2520;
+    color: #c9b99a;
+    border: 1px solid #3d3630;
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.gv-pgn-copy:hover { background: #3d3630; }
+.gv-pgn-text {
+    padding: 0.75rem;
+    color: #b0a898;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 0;
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+/* ── Match Statistics ── */
+
+.mstats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.mstats-block {
+    text-align: center;
+    padding: 0.5rem 0;
+}
+.mstats-value {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #c9b99a;
+}
+.mstats-label {
+    display: block;
+    font-size: 0.7rem;
+    color: #6a6560;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+.mstats-split {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem 0;
+    border-top: 1px solid #2a2520;
+    border-bottom: 1px solid #2a2520;
+}
+.mstats-split-col {
+    flex: 1;
+    text-align: center;
+}
+.mstats-split-title {
+    font-size: 0.8rem;
+    color: #8a8075;
+    margin: 0 0 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+.mstats-record {
+    font-size: 0.95rem;
+    color: #c9b99a;
+    font-weight: 600;
+}
+
+.mstats-breakdown {
+    margin-bottom: 0.75rem;
+}
+.mstats-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid #1a1714;
+}
+.mstats-breakdown-label {
+    color: #8a8075;
+    font-size: 0.85rem;
+}
+.mstats-breakdown-val {
+    color: #b0a898;
+    font-size: 0.85rem;
+}
+
+.mstats-h2h {
+    margin-top: 0.75rem;
+}
+.mstats-h2h-title {
+    font-size: 0.85rem;
+    color: #8a8075;
+    margin: 0 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.mstats-h2h-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid #1a1714;
+}
+.mstats-h2h-name {
+    color: #c9b99a;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.mstats-h2h-record {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+.mstats-h2h-record .win { color: #7ab87a; }
+.mstats-h2h-record .loss { color: #c47a7a; }
+.mstats-h2h-record .draw { color: #8a8075; }
+
+/* ── Match History Tabs ── */
+
+.mhist-tabs {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #2a2520;
+    padding-bottom: 0.5rem;
+}
+.mhist-tab {
+    background: none;
+    border: 1px solid #2a2520;
+    border-radius: 4px;
+    color: #8a8075;
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.mhist-tab:hover { color: #c9b99a; border-color: #3d3630; }
+.mhist-tab.active {
+    background: #2a2520;
+    color: #c9b99a;
+    border-color: #4a3f30;
+}
+
+.badge-practice {
+    background: #3a2f20;
+    color: #c9a04a;
+    font-size: 0.65rem;
+}
+
+/* ── Archive game links ── */
+
+.arch-game-link {
+    display: flex;
+    flex-wrap: wrap;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s;
+    border-radius: 6px;
+}
+.arch-game-link:hover { background: #2a252088; }
+
+.arch-color-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.arch-white-badge {
+    background: #e8e0d4;
+    color: #1a1714;
+    margin-right: 4px;
+}
+.arch-black-badge {
+    background: #2a2520;
+    color: #c9b99a;
+    border: 1px solid #555;
+    margin-left: 4px;
+}
+
+.arch-game-meta {
+    flex-basis: 100%;
+    padding: 0 0.5rem;
+}
+.arch-move-count {
+    color: #6a6560;
+    font-size: 0.75rem;
+}
+
+/* ── Profile history color labels ── */
+
+.history-color-badge {
+    display: inline-flex;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1px solid #555;
+    margin-right: 4px;
+}
+.history-white-dot { background: #e8e0d4; }
+.history-black-dot { background: #2a2520; border-color: #6a6560; }
+
 /* ── Mobile adjustments for drawer ── */
 
 @media (max-width: 480px) {
@@ -2351,4 +2641,9 @@ a:hover { text-decoration: underline; }
     .enoch-toast { right: 0.75rem; bottom: 0.75rem; max-width: 300px; }
     .scrapbook-milestone { flex-wrap: wrap; }
     .scrapbook-ms-flavor { max-width: 100%; text-align: left; margin-top: 0.25rem; }
+    .gv-replay-btn { padding: 4px 8px; font-size: 0.9rem; }
+    .gv-pgn-text { font-size: 0.7rem; }
+    .mstats-grid { grid-template-columns: repeat(2, 1fr); }
+    .mstats-split { flex-direction: column; gap: 0.5rem; }
+    .mhist-tabs { flex-wrap: wrap; }
 }

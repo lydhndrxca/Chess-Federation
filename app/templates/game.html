@@ -40,10 +40,12 @@
 
     {# ── Opponent bar (top) ── #}
     {% set top_player = opponent if is_participant else game.white %}
+    {% set top_is_white = (top_player.id == game.white_id) %}
     <div class="gv-player-bar">
         {% if is_practice and top_player.is_bot %}
         <div class="gv-player-link">
             <img src="{{ url_for('static', filename='img/enoch.png') }}" class="avatar avatar-sm avatar-enoch" alt="Enoch">
+            <span class="gv-color-dot gv-dot-{{ 'white' if top_is_white else 'black' }}"></span>
             <span class="gv-player-name">Enoch</span>
             {% if enoch_mood %}
             <span class="gv-player-rating gv-practice-rating">~{{ enoch_mood.rating }}</span>
@@ -54,6 +56,7 @@
         {% else %}
         <a href="{{ url_for('players.player_profile', username=top_player.username) }}" class="gv-player-link">
             {{ avatar(top_player, 'sm') }}
+            <span class="gv-color-dot gv-dot-{{ 'white' if top_is_white else 'black' }}"></span>
             <span class="gv-player-name">{{ top_player.username }}</span>
             <span class="gv-player-rating">({{ top_player.rating }})</span>
         </a>
@@ -78,9 +81,11 @@
 
     {# ── Player bar (bottom) ── #}
     {% set bottom_player = me if is_participant else game.black %}
+    {% set bottom_is_white = (bottom_player.id == game.white_id) %}
     <div class="gv-player-bar">
         <a href="{{ url_for('players.player_profile', username=bottom_player.username) }}" class="gv-player-link">
             {{ avatar(bottom_player, 'sm') }}
+            <span class="gv-color-dot gv-dot-{{ 'white' if bottom_is_white else 'black' }}"></span>
             <span class="gv-player-name">{{ bottom_player.username }}</span>
             <span class="gv-player-rating">({{ bottom_player.rating }})</span>
         </a>
@@ -146,9 +151,9 @@
             {% if move.color == 'white' %}
             <div class="move-row">
                 <span class="move-num">{{ move.move_number }}.</span>
-                <span class="move-san white-move">{{ move.move_san }}</span>
+                <span class="move-san white-move" data-ply="{{ loop.index }}">{{ move.move_san }}</span>
             {% else %}
-                <span class="move-san black-move">{{ move.move_san }}</span>
+                <span class="move-san black-move" data-ply="{{ loop.index }}">{{ move.move_san }}</span>
             </div>
             {% endif %}
             {% endfor %}
@@ -157,6 +162,28 @@
             {% endif %}
         </div>
     </div>
+
+    {# ── Replay controls (completed games) ── #}
+    {% if game.status in ('completed', 'forfeited') and moves %}
+    <div class="gv-replay-bar" id="replayBar">
+        <button class="gv-replay-btn" id="replayStart" title="Start">&laquo;</button>
+        <button class="gv-replay-btn" id="replayPrev" title="Previous">&lsaquo;</button>
+        <span class="gv-replay-ply" id="replayPly">{{ moves|length }} / {{ moves|length }}</span>
+        <button class="gv-replay-btn" id="replayNext" title="Next">&rsaquo;</button>
+        <button class="gv-replay-btn" id="replayEnd" title="End">&raquo;</button>
+    </div>
+    {% endif %}
+
+    {# ── PGN panel (completed games) ── #}
+    {% if game.status in ('completed', 'forfeited') and game.pgn %}
+    <div class="gv-pgn-panel" id="pgnPanel">
+        <div class="gv-pgn-header">
+            <span class="gv-pgn-title">PGN</span>
+            <button class="gv-pgn-copy" id="pgnCopyBtn" title="Copy PGN">Copy</button>
+        </div>
+        <pre class="gv-pgn-text" id="pgnText">{{ game.pgn }}</pre>
+    </div>
+    {% endif %}
 </div>
 
 <div class="promotion-modal" id="promotionModal">
@@ -252,6 +279,7 @@
         hasCommended: {{ 'true' if has_commended else 'false' }},
         isPractice: {{ 'true' if is_practice else 'false' }},
         activeWager: {{ active_wager | tojson if active_wager else 'null' }},
+        replayFens: {{ replay_fens | tojson }},
     };
 </script>
 {% endautoescape %}

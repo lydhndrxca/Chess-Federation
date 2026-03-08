@@ -674,7 +674,92 @@ async function runPracticeEnd(data) {
     setTimeout(() => modal.classList.add('active'), 400);
 }
 
+/* ── Replay controls ── */
+
+function initReplay() {
+    const fens = window.GAME_CONFIG && window.GAME_CONFIG.replayFens;
+    if (!fens || fens.length < 2) return;
+
+    const bar = document.getElementById('replayBar');
+    if (!bar) return;
+
+    const plyLabel = document.getElementById('replayPly');
+    const total = fens.length - 1;
+    let current = total;
+
+    const moveSans = document.querySelectorAll('.move-san[data-ply]');
+    const cgWrap = document.querySelector('#chessBoard .cg-wrap');
+
+    function highlight(ply) {
+        moveSans.forEach(el => {
+            el.classList.toggle('replay-active', parseInt(el.dataset.ply) === ply);
+        });
+    }
+
+    function goTo(ply) {
+        current = Math.max(0, Math.min(total, ply));
+        plyLabel.textContent = `${current} / ${total}`;
+
+        const fen = fens[current];
+        if (cgWrap && cgWrap.cg) {
+            cgWrap.cg.set({ fen: fen });
+        } else if (window._cg) {
+            window._cg.set({ fen: fen });
+        }
+
+        highlight(current);
+    }
+
+    document.getElementById('replayStart').addEventListener('click', () => goTo(0));
+    document.getElementById('replayPrev').addEventListener('click', () => goTo(current - 1));
+    document.getElementById('replayNext').addEventListener('click', () => goTo(current + 1));
+    document.getElementById('replayEnd').addEventListener('click', () => goTo(total));
+
+    moveSans.forEach(el => {
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', () => goTo(parseInt(el.dataset.ply)));
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); goTo(current + 1); }
+        else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+        else if (e.key === 'End') { e.preventDefault(); goTo(total); }
+    });
+
+    highlight(total);
+}
+
+/* ── PGN copy ── */
+
+function initPgnCopy() {
+    const btn = document.getElementById('pgnCopyBtn');
+    const text = document.getElementById('pgnText');
+    if (!btn || !text) return;
+
+    btn.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(text.textContent);
+            btn.textContent = 'Copied';
+            setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+        } catch {
+            const range = document.createRange();
+            range.selectNodeContents(text);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            btn.textContent = 'Selected';
+            setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+        }
+    });
+}
+
 /* ── Init ── */
 
 const cfg = window.GAME_CONFIG;
-if (cfg) new ChessBoard(cfg);
+if (cfg) {
+    const board = new ChessBoard(cfg);
+    window._cg = board.ground;
+}
+initReplay();
+initPgnCopy();

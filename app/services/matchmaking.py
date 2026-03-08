@@ -2,7 +2,8 @@ from datetime import datetime, timedelta, timezone
 from itertools import combinations
 from zoneinfo import ZoneInfo
 
-from app.models import Game, User, WeeklySchedule, db
+from app.models import Game, Move, User, WeeklySchedule, db
+from app.services.chess_engine import ChessEngine
 from app.services.rating import apply_result, RESULT_BASE, RATING_FLOOR
 
 FEDERATION_TZ = ZoneInfo('America/Chicago')
@@ -141,6 +142,9 @@ def check_forfeits():
         game.fen_final = game.fen_current
         game.result_type = 'double_forfeit'
         game.result = '0-0'
+
+        all_moves = Move.query.filter_by(game_id=game.id).order_by(Move.id).all()
+        game.pgn = ChessEngine.build_pgn(all_moves, game)
 
         white = db.session.get(User, game.white_id)
         black = db.session.get(User, game.black_id)

@@ -133,6 +133,9 @@ def view_game(game_id):
                 'points_change': w.points_change,
             }
 
+    starting_fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+    replay_fens = [starting_fen] + [m.fen_after for m in moves]
+
     return render_template(
         'game.html',
         game=game,
@@ -153,6 +156,7 @@ def view_game(game_id):
         is_practice=game.is_practice,
         enoch_mood=enoch_mood,
         active_wager=active_wager,
+        replay_fens=replay_fens,
     )
 
 

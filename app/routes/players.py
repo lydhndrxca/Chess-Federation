@@ -25,11 +25,18 @@ def player_list():
 @login_required
 def player_profile(username):
     player = User.query.filter_by(username=username).first_or_404()
-    games = Game.query.filter(
+
+    all_games = Game.query.filter(
         (Game.white_id == player.id) | (Game.black_id == player.id)
     ).filter(
         Game.status.in_(['completed', 'forfeited'])
     ).order_by(Game.completed_at.desc()).all()
+
+    fed_games = [g for g in all_games if not g.is_practice]
+    practice_games = [g for g in all_games if g.is_practice]
+
+    match_stats = _build_match_stats(player, all_games, fed_games, practice_games)
+
     commendations = Commendation.query.filter_by(
         subject_id=player.id, kind='commend'
     ).order_by(Commendation.created_at.desc()).all()
@@ -44,11 +51,97 @@ def player_profile(username):
         .order_by(EnochWager.created_at.desc()).limit(10).all()
 
     return render_template(
-        'profile.html', player=player, games=games,
+        'profile.html', player=player,
+        all_games=all_games, fed_games=fed_games,
+        practice_games=practice_games, match_stats=match_stats,
         commendations=commendations, condemnations=condemnations,
         drawer=drawer, collections=COLLECTIONS, catalog=CATALOG,
         wager_history=wager_history,
     )
+
+
+def _player_result(game, player_id):
+    if game.result == '1-0':
+        return 'win' if game.white_id == player_id else 'loss'
+    elif game.result == '0-1':
+        return 'win' if game.black_id == player_id else 'loss'
+    elif game.result == '1/2-1/2':
+        return 'draw'
+    elif game.result == '0-0':
+        return 'loss'
+    return None
+
+
+def _build_match_stats(player, all_games, fed_games, practice_games):
+    pid = player.id
+
+    def _compute(games_list):
+        w = l = d = 0
+        total_moves = 0
+        as_white_w = as_white_l = as_black_w = as_black_l = 0
+        longest = shortest = None
+        for g in games_list:
+            r = _player_result(g, pid)
+            if r == 'win':
+                w += 1
+                if g.white_id == pid:
+                    as_white_w += 1
+                else:
+                    as_black_w += 1
+            elif r == 'loss':
+                l += 1
+                if g.white_id == pid:
+                    as_white_l += 1
+                else:
+                    as_black_l += 1
+            elif r == 'draw':
+                d += 1
+            total_moves += g.move_count or 0
+            if g.move_count and g.move_count > 0:
+                if longest is None or g.move_count > longest:
+                    longest = g.move_count
+                if shortest is None or g.move_count < shortest:
+                    shortest = g.move_count
+        total = w + l + d
+        return {
+            'total': total,
+            'wins': w, 'losses': l, 'draws': d,
+            'win_pct': round(100 * w / total) if total else 0,
+            'avg_moves': round(total_moves / total) if total else 0,
+            'longest': longest or 0,
+            'shortest': shortest or 0,
+            'as_white_wins': as_white_w, 'as_white_losses': as_white_l,
+            'as_black_wins': as_black_w, 'as_black_losses': as_black_l,
+        }
+
+    overall = _compute(all_games)
+    federation = _compute(fed_games)
+    practice = _compute(practice_games)
+
+    opponents = {}
+    for g in fed_games:
+        opp_id = g.black_id if g.white_id == pid else g.white_id
+        if opp_id not in opponents:
+            opp_user = g.black if g.white_id == pid else g.white
+            opponents[opp_id] = {'user': opp_user, 'wins': 0, 'losses': 0, 'draws': 0}
+        r = _player_result(g, pid)
+        if r == 'win':
+            opponents[opp_id]['wins'] += 1
+        elif r == 'loss':
+            opponents[opp_id]['losses'] += 1
+        elif r == 'draw':
+            opponents[opp_id]['draws'] += 1
+
+    head_to_head = sorted(opponents.values(),
+                          key=lambda x: x['wins'] + x['losses'] + x['draws'],
+                          reverse=True)
+
+    return {
+        'overall': overall,
+        'federation': federation,
+        'practice': practice,
+        'head_to_head': head_to_head,
+    }
 
 
 @players_bp.route('/account')

@@ -65,11 +65,16 @@
         {% endif %}
 
         {% for g in weeks[wk] %}
-        <div class="arch-game-row">
+        <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="arch-game-row arch-game-link">
             <div class="arch-game-players">
+                <span class="arch-color-badge arch-white-badge">W</span>
                 <span class="{{ 'winner' if g.result == '1-0' }}">{{ g.white.username }}</span>
                 <span class="arch-vs">vs</span>
                 <span class="{{ 'winner' if g.result == '0-1' }}">{{ g.black.username }}</span>
+                <span class="arch-color-badge arch-black-badge">B</span>
+            </div>
+            <div class="arch-game-meta">
+                <span class="arch-move-count">{{ g.move_count }} move{{ 's' if g.move_count != 1 }}</span>
             </div>
             <div class="arch-game-result">
                 {% if g.status == 'completed' %}
@@ -89,7 +94,7 @@
                 </span>
                 {% endif %}
             </div>
-        </div>
+        </a>
         {% endfor %}
     </div>
     {% endfor %}

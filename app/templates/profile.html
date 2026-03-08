@@ -191,20 +191,111 @@
             <div class="dt-instances" id="dtInstances"></div>
         </div>
 
+        {# ── Match Stats ── #}
         <div class="card">
-            <h2>Record of Contests</h2>
-            {% if games %}
-            <div class="history-list">
-                {% for game in games %}
-                <a href="{{ url_for('game.view_game', game_id=game.id) }}" class="history-row">
+            <h2>Match Statistics</h2>
+            {% set ms = match_stats %}
+            <div class="mstats-grid">
+                <div class="mstats-block">
+                    <span class="mstats-value">{{ ms.overall.total }}</span>
+                    <span class="mstats-label">Total Matches</span>
+                </div>
+                <div class="mstats-block">
+                    <span class="mstats-value">{{ ms.overall.win_pct }}%</span>
+                    <span class="mstats-label">Win Rate</span>
+                </div>
+                <div class="mstats-block">
+                    <span class="mstats-value">{{ ms.overall.avg_moves }}</span>
+                    <span class="mstats-label">Avg Moves</span>
+                </div>
+                <div class="mstats-block">
+                    <span class="mstats-value">{{ ms.overall.longest }}</span>
+                    <span class="mstats-label">Longest</span>
+                </div>
+            </div>
+
+            <div class="mstats-split">
+                <div class="mstats-split-col">
+                    <h3 class="mstats-split-title">
+                        <span class="history-color-badge history-white-dot"></span> As White
+                    </h3>
+                    <span class="mstats-record">{{ ms.overall.as_white_wins }}W / {{ ms.overall.as_white_losses }}L</span>
+                </div>
+                <div class="mstats-split-col">
+                    <h3 class="mstats-split-title">
+                        <span class="history-color-badge history-black-dot"></span> As Black
+                    </h3>
+                    <span class="mstats-record">{{ ms.overall.as_black_wins }}W / {{ ms.overall.as_black_losses }}L</span>
+                </div>
+            </div>
+
+            {% if ms.federation.total > 0 and ms.practice.total > 0 %}
+            <div class="mstats-breakdown">
+                <div class="mstats-breakdown-row">
+                    <span class="mstats-breakdown-label">Federation</span>
+                    <span class="mstats-breakdown-val">{{ ms.federation.wins }}W {{ ms.federation.losses }}L {{ ms.federation.draws }}D ({{ ms.federation.total }} games)</span>
+                </div>
+                <div class="mstats-breakdown-row">
+                    <span class="mstats-breakdown-label">vs Enoch</span>
+                    <span class="mstats-breakdown-val">{{ ms.practice.wins }}W {{ ms.practice.losses }}L {{ ms.practice.draws }}D ({{ ms.practice.total }} games)</span>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if ms.head_to_head %}
+            <div class="mstats-h2h">
+                <h3 class="mstats-h2h-title">Head-to-Head</h3>
+                {% for h in ms.head_to_head %}
+                <div class="mstats-h2h-row">
+                    <span class="mstats-h2h-name">{{ h.user.username }}</span>
+                    <span class="mstats-h2h-record">
+                        <span class="win">{{ h.wins }}W</span>
+                        <span class="loss">{{ h.losses }}L</span>
+                        {% if h.draws %}<span class="draw">{{ h.draws }}D</span>{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        {# ── Full Match History ── #}
+        <div class="card">
+            <h2>Match History</h2>
+            {% if all_games %}
+            <div class="mhist-tabs" id="mhistTabs">
+                <button class="mhist-tab active" data-filter="all">All ({{ all_games|length }})</button>
+                {% if fed_games %}
+                <button class="mhist-tab" data-filter="fed">Federation ({{ fed_games|length }})</button>
+                {% endif %}
+                {% if practice_games %}
+                <button class="mhist-tab" data-filter="enoch">Enoch ({{ practice_games|length }})</button>
+                {% endif %}
+            </div>
+            <div class="history-list" id="mhistList">
+                {% for game in all_games %}
+                <a href="{{ url_for('game.view_game', game_id=game.id) }}"
+                   class="history-row mhist-row"
+                   data-type="{{ 'enoch' if game.is_practice else 'fed' }}">
                     <div class="history-players">
+                        <span class="history-color-badge history-white-dot" title="White"></span>
                         <span class="{{ 'winner' if game.result == '1-0' else '' }}">{{ game.white.username }}</span>
-                        <span class="history-result">{{ game.result }}</span>
+                        <span class="history-result">{{ game.result or '—' }}</span>
                         <span class="{{ 'winner' if game.result == '0-1' else '' }}">{{ game.black.username }}</span>
+                        <span class="history-color-badge history-black-dot" title="Black"></span>
                     </div>
                     <div class="history-meta">
-                        <span class="badge badge-sm">{{ game.result_type }}</span>
-                        <span class="text-muted">Wk {{ game.week_number }}</span>
+                        <span class="badge badge-sm">{{ game.result_type or game.status }}</span>
+                        {% if game.is_practice %}
+                        <span class="badge badge-sm badge-practice">Enoch</span>
+                        {% endif %}
+                        <span class="text-muted">
+                            {{ game.move_count }} moves
+                            {% if game.rating_change_white is not none and not game.is_practice %}
+                                · {% set rc = game.rating_change_white if game.white_id == player.id else game.rating_change_black %}
+                                <span class="{{ 'rating-up' if rc >= 0 else 'rating-down' }}">{{ '%+.0f'|format(rc) }}</span>
+                            {% endif %}
+                        </span>
                     </div>
                 </a>
                 {% endfor %}
@@ -279,6 +370,26 @@
         if (!e.target.closest('.drawer-slot-earned') && !e.target.closest('.drawer-tooltip')) {
             hide();
         }
+    });
+})();
+
+(function() {
+    var tabs = document.querySelectorAll('.mhist-tab');
+    var rows = document.querySelectorAll('.mhist-row');
+    if (!tabs.length) return;
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            tabs.forEach(function(t) { t.classList.remove('active'); });
+            tab.classList.add('active');
+            var filter = tab.dataset.filter;
+            rows.forEach(function(row) {
+                if (filter === 'all' || row.dataset.type === filter) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
     });
 })();
 </script>

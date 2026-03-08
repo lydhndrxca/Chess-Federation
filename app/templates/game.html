@@ -323,6 +323,7 @@
         replayFens: {{ replay_fens | tojson }},
         audioManifestUrl: "{{ url_for('static', filename='audio/enoch/manifest.json') }}",
         audioBaseUrl: "{{ url_for('static', filename='audio/enoch/') }}",
+        initialEnochLine: {{ (enoch_line or '') | tojson }},
     };
 </script>
 {% endautoescape %}

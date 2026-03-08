@@ -21,6 +21,7 @@ let audioPlaying = false;
 let currentAudio = null;
 let enochMuted = localStorage.getItem('enochMuted') === 'true';
 let audioUnlocked = false;
+let pendingInitialLine = null;
 
 function unlockAudio() {
     if (audioUnlocked) return;
@@ -32,6 +33,10 @@ function unlockAudio() {
     src.buffer = buf;
     src.connect(ctx.destination);
     src.start(0);
+    if (pendingInitialLine) {
+        playEnochAudio(pendingInitialLine);
+        pendingInitialLine = null;
+    }
 }
 
 async function loadAudioManifest() {
@@ -992,5 +997,14 @@ if (cfg) {
 initReplay();
 initPgnCopy();
 initChessSounds();
-loadAudioManifest();
+loadAudioManifest().then(() => {
+    const initialLine = window.GAME_CONFIG && window.GAME_CONFIG.initialEnochLine;
+    if (initialLine) {
+        if (audioUnlocked) {
+            playEnochAudio(initialLine);
+        } else {
+            pendingInitialLine = initialLine;
+        }
+    }
+});
 initMuteButton();

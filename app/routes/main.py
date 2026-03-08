@@ -111,6 +111,9 @@ def standings():
     except (ImportError, Exception):
         pass
 
+    from app.services.enoch_ai import get_current_mood
+    enoch_mood = get_current_mood()
+
     return render_template(
         'standings.html',
         week=week,
@@ -124,6 +127,7 @@ def standings():
         match_deadline_iso=match_deadline_iso,
         decree_deadline_iso=decree_deadline_iso,
         next_holder=next_holder,
+        enoch_mood=enoch_mood,
     )
 
 

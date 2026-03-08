@@ -14,6 +14,14 @@
         <div class="scrapbook-intro-text">
             <h3>Enoch &mdash; Steward Beneath the Board</h3>
             <p class="text-muted">These matches do not stain the official Ledger. They are for your practice, and his amusement.</p>
+            {% if enoch_mood %}
+            <span class="sp-practice-mood sp-mood-{{ enoch_mood.key }}">
+                <span class="sp-mood-icon">{{ enoch_mood.icon }}</span>
+                <span class="sp-mood-label">Currently {{ enoch_mood.label }}</span>
+                <span class="sp-mood-sep">&middot;</span>
+                <span class="sp-mood-rating">~{{ enoch_mood.rating }}</span>
+            </span>
+            {% endif %}
         </div>
     </div>
 

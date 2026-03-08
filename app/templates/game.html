@@ -14,6 +14,9 @@
     <div class="gv-practice-label">
         <img src="{{ url_for('static', filename='img/enoch.png') }}" class="gv-practice-icon" alt="Enoch">
         <span>Scrapbook Match &mdash; vs Enoch</span>
+        {% if enoch_mood %}
+        <span class="gv-practice-mood gv-mood-{{ enoch_mood.key }}">{{ enoch_mood.icon }} {{ enoch_mood.label }}</span>
+        {% endif %}
     </div>
     {% endif %}
 
@@ -37,7 +40,11 @@
         <div class="gv-player-link">
             <img src="{{ url_for('static', filename='img/enoch.png') }}" class="avatar avatar-sm avatar-enoch" alt="Enoch">
             <span class="gv-player-name">Enoch</span>
+            {% if enoch_mood %}
+            <span class="gv-player-rating gv-practice-rating">~{{ enoch_mood.rating }}</span>
+            {% else %}
             <span class="gv-player-rating gv-practice-rating">~550</span>
+            {% endif %}
         </div>
         {% else %}
         <a href="{{ url_for('players.player_profile', username=top_player.username) }}" class="gv-player-link">

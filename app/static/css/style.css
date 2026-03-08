@@ -1823,6 +1823,33 @@ a:hover { text-decoration: underline; }
     font-style: italic;
 }
 
+.gv-practice-mood {
+    margin-left: auto;
+    font-size: 0.72rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-style: normal;
+    letter-spacing: 0.04em;
+}
+
+.gv-mood-chill {
+    background: rgba(90, 130, 100, 0.2);
+    color: #8aab8a;
+    border: 1px solid rgba(90, 130, 100, 0.3);
+}
+
+.gv-mood-annoyed {
+    background: rgba(180, 160, 120, 0.15);
+    color: #b4a078;
+    border: 1px solid rgba(180, 160, 120, 0.3);
+}
+
+.gv-mood-angry {
+    background: rgba(180, 80, 60, 0.15);
+    color: #c87060;
+    border: 1px solid rgba(180, 80, 60, 0.3);
+}
+
 .sp-practice { margin-top: 1.5rem; }
 
 .sp-practice-card {
@@ -1852,6 +1879,47 @@ a:hover { text-decoration: underline; }
     font-size: 0.75rem;
     color: #b4a078;
     font-style: italic;
+}
+
+.sp-practice-mood {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 12px;
+    margin-top: 0.15rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+}
+
+.sp-mood-icon { font-size: 0.85rem; }
+
+.sp-mood-sep {
+    color: #4a4440;
+    font-size: 0.65rem;
+}
+
+.sp-mood-rating {
+    font-weight: 600;
+}
+
+.sp-mood-chill {
+    background: rgba(90, 130, 100, 0.15);
+    color: #8aab8a;
+    border: 1px solid rgba(90, 130, 100, 0.25);
+}
+
+.sp-mood-annoyed {
+    background: rgba(180, 160, 120, 0.12);
+    color: #b4a078;
+    border: 1px solid rgba(180, 160, 120, 0.25);
+}
+
+.sp-mood-angry {
+    background: rgba(180, 80, 60, 0.12);
+    color: #c87060;
+    border: 1px solid rgba(180, 80, 60, 0.25);
 }
 
 .sp-practice-meta {

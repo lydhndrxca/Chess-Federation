@@ -1,16 +1,73 @@
-"""Enoch AI — a weak, distracted chess engine (~500-600 Elo).
+"""Enoch AI — a moody chess engine whose strength shifts throughout the day.
 
-'A man who watches brilliant chess all day but cannot play it himself.'
-
-Behavior:
-- Prefers standard, clumsy development
-- Completely misses 2-move tactics
-- Hangs pieces when the board is crowded
-- Occasionally finds a sharp move, then blunders next turn
+Moods (rotate every ~4-6 hours, deterministically):
+  Chill    → ~500 Elo   — distracted, clumsy, blunder-heavy
+  Annoyed  → ~800 Elo   — sharper, fewer blunders, still sloppy
+  Angry    → ~1200 Elo  — focused, tactical, genuinely dangerous
 """
 
+import hashlib
 import random
+from datetime import datetime, timezone
+
 import chess
+
+
+# ── Mood System ─────────────────────────────────────────────────
+
+MOODS = [
+    {'key': 'chill',   'label': 'Chill',   'rating': 500,  'icon': '\U0001f56f\ufe0f'},
+    {'key': 'annoyed', 'label': 'Annoyed', 'rating': 800,  'icon': '\U0001f610'},
+    {'key': 'angry',   'label': 'Angry',   'rating': 1200, 'icon': '\U0001f525'},
+]
+
+MOOD_BY_KEY = {m['key']: m for m in MOODS}
+
+def get_current_mood():
+    """Return the current Enoch mood dict based on time of day.
+
+    The day is split into 6 segments (~4 hours each). A daily seed
+    creates a shuffled mood schedule that guarantees at least one
+    appearance of each mood and changes a few times throughout the day.
+    """
+    now = datetime.now(timezone.utc)
+    day_key = now.strftime('%Y-%m-%d')
+    segment = now.hour // 4
+
+    seed = int(hashlib.md5(f'enoch-mood-{day_key}'.encode()).hexdigest(), 16)
+    rng = random.Random(seed)
+    schedule = list(MOODS) * 2
+    rng.shuffle(schedule)
+    schedule = schedule[:6]
+
+    return schedule[segment]
+
+
+# ── Mood-dependent AI parameters ────────────────────────────────
+
+_MOOD_PARAMS = {
+    'chill': {
+        'blunder_early': 0.15, 'blunder_mid': 0.35, 'blunder_late': 0.25,
+        'sharp_chance': 0.08,
+        'noise_sigma': 80,
+        'top_n': 5,
+        'depth': 1,
+    },
+    'annoyed': {
+        'blunder_early': 0.06, 'blunder_mid': 0.15, 'blunder_late': 0.10,
+        'sharp_chance': 0.20,
+        'noise_sigma': 45,
+        'top_n': 4,
+        'depth': 1,
+    },
+    'angry': {
+        'blunder_early': 0.02, 'blunder_mid': 0.05, 'blunder_late': 0.04,
+        'sharp_chance': 0.40,
+        'noise_sigma': 20,
+        'top_n': 3,
+        'depth': 2,
+    },
+}
 
 
 PIECE_VALUES = {
@@ -64,8 +121,8 @@ def _evaluate_board(board, engine_color):
     return score
 
 
-def _score_move(board, move, engine_color):
-    """Score a single move for Enoch's selection heuristic.  Depth-1 only."""
+def _score_move(board, move, engine_color, noise_sigma=80, depth=1):
+    """Score a single move for Enoch's selection heuristic."""
     score = 0.0
 
     piece = board.piece_at(move.from_square)
@@ -94,35 +151,49 @@ def _score_move(board, move, engine_color):
     elif board.is_check():
         score += 40
 
+    if depth >= 2 and not board.is_game_over():
+        best_reply = -99999
+        for reply in board.legal_moves:
+            board.push(reply)
+            val = _evaluate_board(board, engine_color)
+            board.pop()
+            opp_val = -val
+            if opp_val > best_reply:
+                best_reply = opp_val
+        score -= best_reply * 0.3
+
     board.pop()
 
-    score += random.gauss(0, 80)
+    score += random.gauss(0, noise_sigma)
 
     return score
 
 
-def _is_blunder_turn(move_number):
-    """Enoch blunders more as the board gets crowded / in the midgame."""
+def _is_blunder_turn(move_number, params):
     if move_number < 6:
-        return random.random() < 0.15
+        return random.random() < params['blunder_early']
     elif move_number < 20:
-        return random.random() < 0.35
+        return random.random() < params['blunder_mid']
     else:
-        return random.random() < 0.25
+        return random.random() < params['blunder_late']
 
 
-def _is_sharp_turn():
-    """Occasionally Enoch finds a surprisingly good move."""
-    return random.random() < 0.08
+def _is_sharp_turn(params):
+    return random.random() < params['sharp_chance']
 
 
-def pick_move(fen):
+def pick_move(fen, mood_key=None):
     """Select Enoch's next move given a FEN string.
 
-    Returns a chess.Move, or None if no legal moves.
-    Also returns a 'mood' string for dialogue selection:
-      'blunder', 'sharp', 'normal', 'capture', 'check'
+    mood_key: 'chill', 'annoyed', or 'angry' (defaults to current mood).
+
+    Returns (chess.Move or None, move_mood_str).
+    move_mood_str is one of: 'blunder', 'sharp', 'normal', 'capture', 'check', 'checkmate', 'none'
     """
+    if mood_key is None:
+        mood_key = get_current_mood()['key']
+    params = _MOOD_PARAMS[mood_key]
+
     board = chess.Board(fen)
     legal = list(board.legal_moves)
     if not legal:
@@ -130,18 +201,15 @@ def pick_move(fen):
 
     if len(legal) == 1:
         board.push(legal[0])
-        mood = 'check' if board.is_check() else 'normal'
+        mv_mood = 'check' if board.is_check() else 'normal'
         board.pop()
-        return legal[0], mood
+        return legal[0], mv_mood
 
     engine_color = board.turn
     move_number = board.fullmove_number
 
-    if _is_blunder_turn(move_number) and not _is_sharp_turn():
+    if _is_blunder_turn(move_number, params) and not _is_sharp_turn(params):
         chosen = random.choice(legal)
-        board.push(chosen)
-        mat_before = _material(board, engine_color)
-        board.pop()
 
         is_hanging = False
         board.push(chosen)
@@ -158,31 +226,33 @@ def pick_move(fen):
 
     scored = []
     for move in legal:
-        s = _score_move(board, move, engine_color)
+        s = _score_move(board, move, engine_color,
+                        noise_sigma=params['noise_sigma'],
+                        depth=params['depth'])
         scored.append((s, move))
 
     scored.sort(key=lambda x: -x[0])
 
-    if _is_sharp_turn():
+    if _is_sharp_turn(params):
         chosen = scored[0][1]
-        mood = 'sharp'
+        mv_mood = 'sharp'
     else:
-        top_n = min(5, len(scored))
+        top_n = min(params['top_n'], len(scored))
         weights = [max(1, 100 - i * 25) for i in range(top_n)]
         chosen = random.choices([s[1] for s in scored[:top_n]], weights=weights, k=1)[0]
-        mood = 'normal'
+        mv_mood = 'normal'
 
     is_cap = board.is_capture(chosen)
     board.push(chosen)
     if board.is_checkmate():
-        mood = 'checkmate'
+        mv_mood = 'checkmate'
     elif board.is_check():
-        mood = 'check'
+        mv_mood = 'check'
     elif is_cap:
-        mood = 'capture'
+        mv_mood = 'capture'
     board.pop()
 
-    return chosen, mood
+    return chosen, mv_mood
 
 
 def get_practice_commentary(player_san, enoch_san, enoch_mood, board_fen,

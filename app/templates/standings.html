@@ -160,7 +160,13 @@
             <div class="sp-practice-info">
                 <span class="sp-practice-name">Enoch</span>
                 <span class="sp-practice-subtitle">Steward Beneath the Board</span>
-                <span class="sp-practice-meta">Practice Match Only &middot; Est. Rating 500&ndash;600</span>
+                <span class="sp-practice-mood sp-mood-{{ enoch_mood.key }}">
+                    <span class="sp-mood-icon">{{ enoch_mood.icon }}</span>
+                    <span class="sp-mood-label">{{ enoch_mood.label }}</span>
+                    <span class="sp-mood-sep">&middot;</span>
+                    <span class="sp-mood-rating">~{{ enoch_mood.rating }}</span>
+                </span>
+                <span class="sp-practice-meta">Practice Match Only</span>
             </div>
             <button class="btn btn-sm btn-practice" id="btnChallengeEnoch">Challenge</button>
         </div>

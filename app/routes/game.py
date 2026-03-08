@@ -116,6 +116,11 @@ def view_game(game_id):
         elif game.move_count == 0:
             enoch_line = comment_game_start()
 
+    enoch_mood = None
+    if game.is_practice:
+        from app.services.enoch_ai import get_current_mood
+        enoch_mood = get_current_mood()
+
     return render_template(
         'game.html',
         game=game,
@@ -134,6 +139,7 @@ def view_game(game_id):
         enoch_line=enoch_line,
         enoch_title=get_title(),
         is_practice=game.is_practice,
+        enoch_mood=enoch_mood,
     )
 
 
@@ -661,6 +667,7 @@ def scrapbook():
             next_milestone = m
             break
 
+    from app.services.enoch_ai import get_current_mood
     return render_template(
         'scrapbook.html',
         games=games,
@@ -668,4 +675,5 @@ def scrapbook():
         milestones=ENOCH_LORE_MILESTONES,
         next_milestone=next_milestone,
         enoch=enoch,
+        enoch_mood=get_current_mood(),
     )

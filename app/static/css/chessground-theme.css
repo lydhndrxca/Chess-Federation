@@ -13,20 +13,16 @@ cg-board square.selected {
     background-color: rgba(20, 85, 30, 0.5);
 }
 
-/* Move destination — white outlined circles for empty squares */
+/* Move destination — thick white border on every legal square */
 cg-board square.move-dest {
-    background: radial-gradient(
-        circle at center,
-        transparent 0%, transparent 28%,
-        rgba(255, 255, 255, 0.85) 28%, rgba(255, 255, 255, 0.85) 38%,
-        transparent 38%
-    );
+    background: none;
+    box-shadow: inset 0 0 0 5px #fff;
 }
 /* Move destination — capture target (occupied square) */
 cg-board square.move-dest.oc {
     background: none;
     border-radius: 0;
-    box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.9);
+    box-shadow: inset 0 0 0 5px #fff;
 }
 
 /* Check highlight */

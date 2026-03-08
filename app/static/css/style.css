@@ -629,78 +629,21 @@ a:hover { text-decoration: underline; }
 }
 .gv-delta { font-weight: 700; font-size: 0.85rem; }
 
-/* ── Board wrapper ── */
+/* ── Board wrapper (Chessground) ── */
 .gv-board-wrap {
     width: 100%;
     max-width: 600px;
     position: relative;
 }
 
-.board {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
+#chessBoard {
     width: 100%;
     aspect-ratio: 1;
-    user-select: none;
-    -webkit-user-select: none;
 }
 
-.sq {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-.sq-light { background: var(--board-light); }
-.sq-dark { background: var(--board-dark); }
-.sq-hl-light { background: var(--board-hl-light); }
-.sq-hl-dark { background: var(--board-hl-dark); }
-.sq-selected { background: var(--board-selected) !important; }
-.sq-light.sq-target { background-image: var(--board-target-light); }
-.sq-dark.sq-target { background-image: var(--board-target-dark); }
-
-.sq-label {
-    position: absolute;
-    font-size: 0.55rem;
-    font-weight: 700;
-    pointer-events: none;
-    opacity: 0.6;
-    line-height: 1;
-}
-.rank-label { top: 2px; left: 3px; }
-.file-label { bottom: 2px; right: 3px; }
-.sq-light .sq-label, .sq-hl-light .sq-label { color: var(--board-dark); }
-.sq-dark .sq-label, .sq-hl-dark .sq-label { color: var(--board-light); }
-
-.piece {
-    font-size: min(3.2rem, calc((100vw) / 10));
-    line-height: 1;
-    pointer-events: none;
-}
-.w-piece {
-    color: #fff;
-    text-shadow:
-        -1px -1px 0 #000,
-         1px -1px 0 #000,
-        -1px  1px 0 #000,
-         1px  1px 0 #000,
-         0   -1px 0 #000,
-         0    1px 0 #000,
-        -1px  0   0 #000,
-         1px  0   0 #000;
-}
-.b-piece {
-    color: #312e2b;
-    text-shadow:
-        -1px -1px 0 #000,
-         1px -1px 0 #000,
-        -1px  1px 0 #000,
-         1px  1px 0 #000,
-         0   -1px 0 #000,
-         0    1px 0 #000,
-        -1px  0   0 #000,
-         1px  0   0 #000;
+#chessBoard cg-wrap {
+    width: 100%;
+    height: 100%;
 }
 
 /* ── Sequence bar ── */
@@ -953,9 +896,9 @@ a:hover { text-decoration: underline; }
     padding: 1rem;
 }
 .promo-btn {
-    width: 56px;
-    height: 56px;
-    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    padding: 6px;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -963,9 +906,9 @@ a:hover { text-decoration: underline; }
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text);
 }
 .promo-btn:hover { background: var(--accent); }
+.promo-btn img { display: block; }
 
 
 /* ════════════════════════════════════════════

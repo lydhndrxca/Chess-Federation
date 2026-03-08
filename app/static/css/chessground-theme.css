@@ -1,0 +1,56 @@
+/* Board colours — green/cream chess.com style */
+cg-board {
+    background: repeating-conic-gradient(#ebecd0 0% 25%, #779556 0% 50%) 0 / 25% 25%;
+}
+
+/* Last-move highlight */
+cg-board square.last-move {
+    background-color: rgba(255, 255, 50, 0.41);
+}
+
+/* Selected square */
+cg-board square.selected {
+    background-color: rgba(20, 85, 30, 0.5);
+}
+
+/* Move destination dots */
+cg-board square.move-dest {
+    background: radial-gradient(rgba(20, 30, 40, 0.5) 22%, transparent 22%);
+}
+cg-board square.move-dest.oc {
+    background: radial-gradient(transparent 0%, transparent 80%, rgba(20, 30, 40, 0.3) 80%);
+}
+
+/* Check highlight */
+cg-board square.check {
+    background: radial-gradient(ellipse at center, rgba(255, 0, 0, 0.9) 0%, rgba(231, 0, 0, 0.6) 25%, transparent 89%);
+}
+
+/* Coordinates */
+coords.ranks coord,
+coords.files coord {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Piece ghost (drag) */
+piece.ghost {
+    opacity: 0.35;
+}
+
+/* ── cburnett piece set from Lichess ── */
+piece.white.pawn   { background-image: url('https://lichess1.org/assets/piece/cburnett/wP.svg'); }
+piece.white.knight { background-image: url('https://lichess1.org/assets/piece/cburnett/wN.svg'); }
+piece.white.bishop { background-image: url('https://lichess1.org/assets/piece/cburnett/wB.svg'); }
+piece.white.rook   { background-image: url('https://lichess1.org/assets/piece/cburnett/wR.svg'); }
+piece.white.queen  { background-image: url('https://lichess1.org/assets/piece/cburnett/wQ.svg'); }
+piece.white.king   { background-image: url('https://lichess1.org/assets/piece/cburnett/wK.svg'); }
+
+piece.black.pawn   { background-image: url('https://lichess1.org/assets/piece/cburnett/bP.svg'); }
+piece.black.knight { background-image: url('https://lichess1.org/assets/piece/cburnett/bN.svg'); }
+piece.black.bishop { background-image: url('https://lichess1.org/assets/piece/cburnett/bB.svg'); }
+piece.black.rook   { background-image: url('https://lichess1.org/assets/piece/cburnett/bR.svg'); }
+piece.black.queen  { background-image: url('https://lichess1.org/assets/piece/cburnett/bQ.svg'); }
+piece.black.king   { background-image: url('https://lichess1.org/assets/piece/cburnett/bK.svg'); }

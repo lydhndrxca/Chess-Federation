@@ -1,11 +1,30 @@
-const PIECE_CHARS = {
-    'K': '\u265A', 'Q': '\u265B', 'R': '\u265C', 'B': '\u265D', 'N': '\u265E', 'P': '\u265F',
-    'k': '\u265A', 'q': '\u265B', 'r': '\u265C', 'b': '\u265D', 'n': '\u265E', 'p': '\u265F',
-};
+import { Chessground } from 'https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.1.0/+esm';
+
+const PIECE_URL = 'https://lichess1.org/assets/piece/cburnett/';
+const PROMO_ROLES = [
+    { letter: 'q', role: 'queen',  label: 'Queen' },
+    { letter: 'r', role: 'rook',   label: 'Rook' },
+    { letter: 'b', role: 'bishop', label: 'Bishop' },
+    { letter: 'n', role: 'knight', label: 'Knight' },
+];
+
+function buildDests(legalMoves) {
+    const dests = new Map();
+    for (const m of legalMoves) {
+        if (!dests.has(m.from)) dests.set(m.from, []);
+        const arr = dests.get(m.from);
+        if (!arr.includes(m.to)) arr.push(m.to);
+    }
+    return dests;
+}
+
+function uciToLastMove(uci) {
+    if (!uci || uci.length < 4) return undefined;
+    return [uci.substring(0, 2), uci.substring(2, 4)];
+}
 
 class ChessBoard {
     constructor(config) {
-        this.container = document.getElementById('chessBoard');
         this.gameId = config.gameId;
         this.playerColor = config.playerColor;
         this.isPlayerTurn = config.isPlayerTurn;
@@ -15,11 +34,32 @@ class ChessBoard {
         this.isParticipant = config.isParticipant;
         this.lastMoveUci = config.lastMoveUci || null;
         this.hasCommended = config.hasCommended || false;
-        this.selectedSquare = null;
-        this.flipped = config.playerColor === 'black';
         this.pollInterval = null;
 
-        this.render();
+        const orientation = this.playerColor === 'black' ? 'black' : 'white';
+        const movableColor = (this.isPlayerTurn && !this.gameOver && this.isParticipant)
+            ? this.playerColor : undefined;
+
+        this.ground = Chessground(document.getElementById('chessBoard'), {
+            fen: this.fen,
+            orientation,
+            turnColor: this.isPlayerTurn ? this.playerColor : this.otherColor(),
+            lastMove: uciToLastMove(this.lastMoveUci),
+            coordinates: true,
+            viewOnly: this.gameOver || !this.isParticipant,
+            animation: { enabled: true, duration: 200 },
+            highlight: { lastMove: true, check: true },
+            draggable: { enabled: true, showGhost: true },
+            selectable: { enabled: true },
+            movable: {
+                free: false,
+                color: movableColor,
+                dests: buildDests(this.legalMoves),
+                showDests: true,
+                events: { after: (orig, dest) => this.onMove(orig, dest) },
+            },
+            premovable: { enabled: false },
+        });
 
         if (!this.gameOver && !this.isPlayerTurn && this.isParticipant) {
             this.startPolling();
@@ -30,139 +70,43 @@ class ChessBoard {
         this.startDeadlineTimer();
     }
 
-    parseFEN(fen) {
-        const board = {};
-        const rows = fen.split(' ')[0].split('/');
-        for (let r = 0; r < 8; r++) {
-            let col = 0;
-            for (const ch of rows[r]) {
-                if (ch >= '1' && ch <= '8') {
-                    col += parseInt(ch);
-                } else {
-                    const file = String.fromCharCode(97 + col);
-                    const rank = 8 - r;
-                    board[`${file}${rank}`] = ch;
-                    col++;
-                }
-            }
-        }
-        return board;
+    otherColor() {
+        return this.playerColor === 'white' ? 'black' : 'white';
     }
 
-    lastMoveSquares() {
-        if (!this.lastMoveUci || this.lastMoveUci.length < 4) return new Set();
-        return new Set([
-            this.lastMoveUci.substring(0, 2),
-            this.lastMoveUci.substring(2, 4),
-        ]);
-    }
+    onMove(orig, dest) {
+        this.ground.set({ movable: { color: undefined } });
 
-    render() {
-        this.container.innerHTML = '';
-        const pieces = this.parseFEN(this.fen);
-        const ranks = this.flipped ? [1,2,3,4,5,6,7,8] : [8,7,6,5,4,3,2,1];
-        const files = this.flipped ? 'hgfedcba'.split('') : 'abcdefgh'.split('');
-        const highlighted = this.lastMoveSquares();
+        const matchingMoves = this.legalMoves.filter(m => m.from === orig && m.to === dest);
+        const hasPromo = matchingMoves.some(m => m.promotion);
 
-        for (const rank of ranks) {
-            for (const file of files) {
-                const sq = `${file}${rank}`;
-                const isLight = (file.charCodeAt(0) - 97 + rank) % 2 === 1;
-                const div = document.createElement('div');
-                let cls = `sq ${isLight ? 'sq-light' : 'sq-dark'}`;
-                if (highlighted.has(sq)) cls += isLight ? ' sq-hl-light' : ' sq-hl-dark';
-                div.className = cls;
-                div.dataset.square = sq;
-
-                if (file === files[0]) {
-                    const rl = document.createElement('span');
-                    rl.className = 'sq-label rank-label';
-                    rl.textContent = rank;
-                    div.appendChild(rl);
-                }
-                if (rank === (this.flipped ? 8 : 1)) {
-                    const fl = document.createElement('span');
-                    fl.className = 'sq-label file-label';
-                    fl.textContent = file;
-                    div.appendChild(fl);
-                }
-
-                if (pieces[sq]) {
-                    const span = document.createElement('span');
-                    span.className = 'piece';
-                    span.textContent = PIECE_CHARS[pieces[sq]];
-                    span.classList.add(pieces[sq] === pieces[sq].toUpperCase() ? 'w-piece' : 'b-piece');
-                    div.appendChild(span);
-                }
-
-                div.addEventListener('click', () => this.onSquareClick(sq));
-                this.container.appendChild(div);
-            }
+        if (hasPromo) {
+            this.showPromotionDialog(orig, dest);
+        } else {
+            this.sendMove(`${orig}${dest}`);
         }
     }
 
-    onSquareClick(sq) {
-        if (this.gameOver || !this.isPlayerTurn) return;
-
-        if (this.selectedSquare) {
-            const matchingMoves = this.legalMoves.filter(
-                m => m.from === this.selectedSquare && m.to === sq
-            );
-
-            if (matchingMoves.length > 0) {
-                const hasPromotion = matchingMoves.some(m => m.promotion);
-                if (hasPromotion) {
-                    this.showPromotionDialog(this.selectedSquare, sq, matchingMoves);
-                } else {
-                    this.sendMove(matchingMoves[0].uci);
-                }
-                return;
-            }
-            this.clearSelection();
-        }
-
-        const movesFrom = this.legalMoves.filter(m => m.from === sq);
-        if (movesFrom.length > 0) {
-            this.selectedSquare = sq;
-            const sqEl = this.container.querySelector(`[data-square="${sq}"]`);
-            if (sqEl) sqEl.classList.add('sq-selected');
-
-            const targets = new Set(movesFrom.map(m => m.to));
-            for (const t of targets) {
-                const tEl = this.container.querySelector(`[data-square="${t}"]`);
-                if (tEl) tEl.classList.add('sq-target');
-            }
-        }
-    }
-
-    clearSelection() {
-        this.selectedSquare = null;
-        this.container.querySelectorAll('.sq-selected, .sq-target')
-            .forEach(el => el.classList.remove('sq-selected', 'sq-target'));
-    }
-
-    showPromotionDialog(from, to, moves) {
+    showPromotionDialog(from, to) {
         const modal = document.getElementById('promotionModal');
         const choices = document.getElementById('promotionChoices');
         choices.innerHTML = '';
 
-        const isWhite = this.playerColor === 'white';
-        const promoPieces = [
-            { letter: 'q', char: isWhite ? '\u2655' : '\u265B', label: 'Queen' },
-            { letter: 'r', char: isWhite ? '\u2656' : '\u265C', label: 'Rook' },
-            { letter: 'b', char: isWhite ? '\u2657' : '\u265D', label: 'Bishop' },
-            { letter: 'n', char: isWhite ? '\u2658' : '\u265E', label: 'Knight' },
-        ];
+        const colorPrefix = this.playerColor === 'white' ? 'w' : 'b';
 
-        for (const p of promoPieces) {
+        for (const p of PROMO_ROLES) {
             const btn = document.createElement('button');
             btn.className = 'promo-btn';
-            btn.textContent = p.char;
             btn.title = p.label;
+            const img = document.createElement('img');
+            img.src = `${PIECE_URL}${colorPrefix}${p.letter.toUpperCase()}.svg`;
+            img.alt = p.label;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            btn.appendChild(img);
             btn.addEventListener('click', () => {
                 modal.classList.remove('active');
-                const uci = `${from}${to}${p.letter}`;
-                this.sendMove(uci);
+                this.sendMove(`${from}${to}${p.letter}`);
             });
             choices.appendChild(btn);
         }
@@ -171,7 +115,6 @@ class ChessBoard {
     }
 
     async sendMove(uci) {
-        this.clearSelection();
         try {
             const resp = await fetch(`/game/${this.gameId}/move`, {
                 method: 'POST',
@@ -184,7 +127,16 @@ class ChessBoard {
                 this.fen = data.fen;
                 this.lastMoveUci = uci;
                 this.isPlayerTurn = false;
-                this.render();
+                this.legalMoves = [];
+
+                this.ground.set({
+                    fen: data.fen,
+                    lastMove: uciToLastMove(uci),
+                    turnColor: this.otherColor(),
+                    movable: { color: undefined, dests: new Map() },
+                    viewOnly: false,
+                });
+
                 appendMove(data.move_number, data.san, this.playerColor);
 
                 if (data.sequence) updateSequence(data.sequence);
@@ -192,6 +144,7 @@ class ChessBoard {
 
                 if (data.game_over) {
                     this.gameOver = true;
+                    this.ground.set({ viewOnly: true });
                     showResult(data.result, data.result_type, data.rating_change);
                     if (data.show_commend && !this.hasCommended) showCommendPrompt(this.gameId);
                 } else {
@@ -199,6 +152,14 @@ class ChessBoard {
                     this.startPolling();
                 }
             } else {
+                this.ground.set({
+                    fen: this.fen,
+                    lastMove: uciToLastMove(this.lastMoveUci),
+                    movable: {
+                        color: this.playerColor,
+                        dests: buildDests(this.legalMoves),
+                    },
+                });
                 console.error('Move rejected:', data.error);
             }
         } catch (err) {
@@ -225,10 +186,13 @@ class ChessBoard {
 
             if (data.fen !== this.fen) {
                 this.fen = data.fen;
-                if (data.last_move) {
-                    this.lastMoveUci = data.last_move.uci;
-                }
-                this.render();
+                if (data.last_move) this.lastMoveUci = data.last_move.uci;
+
+                this.ground.set({
+                    fen: data.fen,
+                    lastMove: data.last_move ? [data.last_move.uci.substring(0, 2), data.last_move.uci.substring(2, 4)] : undefined,
+                    turnColor: data.turn,
+                });
 
                 if (data.last_move) {
                     appendMove(null, data.last_move.san, data.last_move.color);
@@ -238,6 +202,7 @@ class ChessBoard {
                 if (data.status === 'completed' || data.status === 'forfeited') {
                     this.gameOver = true;
                     this.stopPolling();
+                    this.ground.set({ viewOnly: true });
                     showResult(data.result, data.result_type, data.rating_change);
                     if (!this.hasCommended) showCommendPrompt(this.gameId);
                     return;
@@ -247,6 +212,15 @@ class ChessBoard {
                     this.isPlayerTurn = true;
                     this.legalMoves = data.legal_moves;
                     this.stopPolling();
+
+                    this.ground.set({
+                        movable: {
+                            color: this.playerColor,
+                            dests: buildDests(data.legal_moves),
+                        },
+                        viewOnly: false,
+                    });
+
                     updateTurn(true);
                 }
             }
@@ -269,6 +243,7 @@ class ChessBoard {
                 if (data.success) {
                     this.gameOver = true;
                     this.stopPolling();
+                    this.ground.set({ viewOnly: true });
                     showResult(data.result, data.result_type, data.rating_change);
                     if (data.show_commend && !this.hasCommended) showCommendPrompt(this.gameId);
                 }
@@ -310,6 +285,8 @@ class ChessBoard {
         setInterval(tick, 60000);
     }
 }
+
+/* ── UI helpers (unchanged logic) ── */
 
 function appendMove(moveNum, san, color) {
     const strip = document.getElementById('movesStrip');
@@ -495,13 +472,7 @@ function showCommendPrompt(gameId) {
     setTimeout(() => modal.classList.add('active'), 600);
 }
 
-function initBoard() {
-    if (typeof GAME_CONFIG !== 'undefined') {
-        new ChessBoard(GAME_CONFIG);
-    }
-}
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initBoard);
-} else {
-    initBoard();
-}
+/* ── Init ── */
+
+const cfg = window.GAME_CONFIG;
+if (cfg) new ChessBoard(cfg);

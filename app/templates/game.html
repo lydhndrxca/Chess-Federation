@@ -2,6 +2,11 @@
 {% from "macros.html" import avatar %}
 {% block title %}Game #{{ game.id }} — Chess Federation{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.1.0/assets/chessground.base.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chessground-theme.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="gv">
     {# ── Move notation strip ── #}
@@ -37,9 +42,9 @@
         </div>
     </div>
 
-    {# ── Board ── #}
+    {# ── Board (Chessground) ── #}
     <div class="gv-board-wrap">
-        <div class="board" id="chessBoard"></div>
+        <div id="chessBoard"></div>
     </div>
 
     {# ── Player bar (bottom) ── #}
@@ -164,7 +169,7 @@
 {% block scripts %}
 {% autoescape false %}
 <script>
-    const GAME_CONFIG = {
+    window.GAME_CONFIG = {
         gameId: {{ game.id }},
         playerColor: {{ player_color | tojson if player_color else 'null' }},
         isPlayerTurn: {{ 'true' if is_player_turn else 'false' }},
@@ -177,5 +182,5 @@
     };
 </script>
 {% endautoescape %}
-<script src="{{ url_for('static', filename='js/board.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/board.js') }}"></script>
 {% endblock %}

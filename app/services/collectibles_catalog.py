@@ -14,6 +14,7 @@ COLLECTIONS = [
     "The Conductor's Personal Effects",
     'The Rehearsal Logs',
     'The Vermin & the Dark',
+    "The Steward's Lore",
 ]
 
 CATALOG = [
@@ -933,6 +934,38 @@ CATALOG = [
      'trigger': 'eng_collect_50',
      'trigger_text': 'Collect 50 items from the drawer.',
      'enoch': 'The ledger is full. I will need a new book.'},
+
+    # ── XI. THE STEWARD'S LORE (151–155) ── Practice vs Enoch ──
+
+    {'id': 151, 'name': 'A Knock on the Floorboards', 'collection': "The Steward's Lore",
+     'desc': 'A small, tentative knock. The wood is hollow.',
+     'trigger': 'lore_beat_enoch_1',
+     'trigger_text': 'Defeat Enoch in a practice match.',
+     'enoch': 'You have proven yourself against the Steward. He is annoyed, but he remembers your name.'},
+
+    {'id': 152, 'name': 'The Unwelcome Guest', 'collection': "The Steward's Lore",
+     'desc': 'A chair that has been pulled out too many times. The legs have scored the stone.',
+     'trigger': 'lore_beat_enoch_5',
+     'trigger_text': 'Defeat Enoch 5 times.',
+     'enoch': 'Enoch recognizes your footsteps. He no longer looks up from his desk when you enter.'},
+
+    {'id': 153, 'name': 'A Nuisance in the Dark', 'collection': "The Steward's Lore",
+     'desc': 'A candle stub worn down to a nub from too many late-night visits.',
+     'trigger': 'lore_beat_enoch_10',
+     'trigger_text': 'Defeat Enoch 10 times.',
+     'enoch': 'You are officially disrupting his archival duties. He sighs heavily every time you challenge him.'},
+
+    {'id': 154, 'name': "Architect of Enoch's Ruin", 'collection': "The Steward's Lore",
+     'desc': 'A cracked inkwell. He threw it at the wall after your last visit.',
+     'trigger': 'lore_beat_enoch_20',
+     'trigger_text': 'Defeat Enoch 20 times.',
+     'enoch': 'The Steward actively dreads the sound of your chair pulling out. You have bullied the caretaker.'},
+
+    {'id': 155, 'name': 'Master of the Sub-Basement', 'collection': "The Steward's Lore",
+     'desc': 'A bent brass key to the sub-basement. Enoch left it on your chair.',
+     'trigger': 'lore_beat_enoch_50',
+     'trigger_text': 'Defeat Enoch 50 times.',
+     'enoch': 'You have slaughtered him fifty times over. He offers no resistance now, only a fresh page of ink.'},
 ]
 
 CATALOG_BY_ID = {item['id']: item for item in CATALOG}

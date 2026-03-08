@@ -1794,6 +1794,305 @@ a:hover { text-decoration: underline; }
     line-height: 1.35;
 }
 
+/* ── Practice Mode ── */
+
+.gv-practice-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    background: linear-gradient(135deg, #1a1410 0%, #231c14 100%);
+    border: 1px solid #3a2f24;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    color: #b4a078;
+    font-style: italic;
+    letter-spacing: 0.05em;
+}
+
+.gv-practice-label .gv-practice-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid #5a4a30;
+}
+
+.gv-practice-rating {
+    color: #7a7672 !important;
+    font-style: italic;
+}
+
+.sp-practice { margin-top: 1.5rem; }
+
+.sp-practice-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #1a1410 0%, #201a12 100%);
+    border: 1px solid #3a2f24;
+    border-radius: 10px;
+}
+
+.sp-practice-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.sp-practice-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #e8dcc8;
+}
+
+.sp-practice-subtitle {
+    font-size: 0.75rem;
+    color: #b4a078;
+    font-style: italic;
+}
+
+.sp-practice-meta {
+    font-size: 0.7rem;
+    color: #6a6460;
+    letter-spacing: 0.03em;
+}
+
+.btn-practice {
+    background: #3a2f24 !important;
+    border: 1px solid #5a4a30 !important;
+    color: #b4a078 !important;
+}
+.btn-practice:hover {
+    background: #4a3f2a !important;
+    border-color: #8a7a50 !important;
+}
+
+.sp-practice-disclaimer {
+    margin-top: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #151210;
+    border: 1px solid #2a2420;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #b4a078;
+    font-style: italic;
+    text-align: center;
+}
+
+.sp-practice-disclaimer p { margin-bottom: 0.75rem; }
+
+.sp-practice-disclaimer .btn {
+    margin: 0 0.25rem;
+}
+
+/* ── Practice Summary Modal ── */
+
+.practice-summary-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    align-items: center;
+    justify-content: center;
+}
+.practice-summary-modal.active { display: flex; }
+
+.practice-summary-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(20,15,10,0.95) 0%, rgba(0,0,0,0.98) 100%);
+}
+
+.practice-summary-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 2rem 1.5rem;
+    max-width: 380px;
+    width: 90%;
+    background: linear-gradient(180deg, #1a1410 0%, #100d0a 100%);
+    border: 1px solid #3a2f24;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+}
+
+.practice-summary-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid #5a4a30;
+    margin-bottom: 0.75rem;
+}
+
+.practice-summary-title {
+    font-size: 1rem;
+    color: #b4a078;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.practice-summary-result {
+    font-size: 0.85rem;
+    color: #e8dcc8;
+    margin-bottom: 0.25rem;
+}
+
+.practice-summary-moves {
+    font-size: 0.78rem;
+    color: #7a7672;
+    margin-bottom: 0.75rem;
+}
+
+.practice-summary-enoch {
+    font-size: 0.85rem;
+    color: #b4a078;
+    font-style: italic;
+    margin-bottom: 1rem;
+    min-height: 1.2em;
+}
+
+.practice-summary-lore {
+    text-align: left;
+    padding: 0.75rem;
+    background: #0f0d0a;
+    border-radius: 8px;
+    border: 1px solid #2a2420;
+    margin-bottom: 1rem;
+}
+
+.practice-lore-wins {
+    font-size: 0.82rem;
+    color: #e8dcc8;
+    margin-bottom: 0.3rem;
+}
+
+.practice-lore-next {
+    font-size: 0.75rem;
+    color: #7a7672;
+    margin-bottom: 0.5rem;
+}
+
+.practice-lore-earned {
+    padding: 0.5rem;
+    background: #1a1410;
+    border: 1px solid #3a2f24;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+}
+
+.practice-lore-title {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #b4a078;
+}
+
+.practice-lore-desc {
+    display: block;
+    font-size: 0.75rem;
+    color: #7a7672;
+    font-style: italic;
+    margin-top: 0.2rem;
+}
+
+.practice-summary-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+/* ── Scrapbook Page ── */
+
+.scrapbook-enoch-intro {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #1a1410 0%, #201a12 100%);
+    border: 1px solid #3a2f24;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.scrapbook-intro-text h3 {
+    font-size: 1rem;
+    color: #e8dcc8;
+    margin-bottom: 0.25rem;
+}
+
+.scrapbook-lore {
+    padding: 1rem;
+    background: #0f0d0a;
+    border: 1px solid #2a2420;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.scrapbook-lore-title {
+    font-size: 0.85rem;
+    color: #b4a078;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.scrapbook-lore-stat {
+    font-size: 0.88rem;
+    color: #e8dcc8;
+    margin-bottom: 0.75rem;
+}
+
+.scrapbook-milestone {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #1a1614;
+    opacity: 0.5;
+}
+
+.scrapbook-milestone-done { opacity: 1; }
+
+.scrapbook-ms-check {
+    font-size: 0.9rem;
+    color: #b4a078;
+    width: 1.2em;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.scrapbook-milestone-done .scrapbook-ms-check { color: #8a7a50; }
+
+.scrapbook-ms-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.scrapbook-ms-title {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #e8dcc8;
+}
+
+.scrapbook-ms-req {
+    display: block;
+    font-size: 0.7rem;
+    color: #6a6460;
+}
+
+.scrapbook-ms-flavor {
+    font-size: 0.75rem;
+    color: #7a7672;
+    font-style: italic;
+    max-width: 200px;
+    text-align: right;
+}
+
 /* ── Mobile adjustments for drawer ── */
 
 @media (max-width: 480px) {
@@ -1804,4 +2103,6 @@ a:hover { text-decoration: underline; }
     .drawer-tooltip { width: 260px; }
     .enoch-modal-content { padding: 1.5rem 1rem 1rem; }
     .enoch-toast { right: 0.75rem; bottom: 0.75rem; max-width: 300px; }
+    .scrapbook-milestone { flex-wrap: wrap; }
+    .scrapbook-ms-flavor { max-width: 100%; text-align: left; margin-top: 0.25rem; }
 }

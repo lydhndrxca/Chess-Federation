@@ -34,6 +34,7 @@ class ChessBoard {
         this.isParticipant = config.isParticipant;
         this.lastMoveUci = config.lastMoveUci || null;
         this.hasCommended = config.hasCommended || false;
+        this.isPractice = config.isPractice || false;
         this.pollInterval = null;
 
         const orientation = this.playerColor === 'black' ? 'black' : 'white';
@@ -61,7 +62,7 @@ class ChessBoard {
             premovable: { enabled: false },
         });
 
-        if (!this.gameOver && !this.isPlayerTurn && this.isParticipant) {
+        if (!this.gameOver && !this.isPlayerTurn && this.isParticipant && !this.isPractice) {
             this.startPolling();
         }
 
@@ -129,27 +130,84 @@ class ChessBoard {
                 this.isPlayerTurn = false;
                 this.legalMoves = [];
 
-                this.ground.set({
-                    fen: data.fen,
-                    lastMove: uciToLastMove(uci),
-                    turnColor: this.otherColor(),
-                    movable: { color: undefined, dests: new Map() },
-                    viewOnly: false,
-                });
+                if (data.is_practice && data.enoch_move) {
+                    this.ground.set({
+                        fen: data.enoch_move.fen,
+                        lastMove: uciToLastMove(uci),
+                        turnColor: this.playerColor,
+                        movable: { color: undefined, dests: new Map() },
+                        viewOnly: false,
+                    });
+                    appendMove(data.move_number, data.san, this.playerColor);
 
-                appendMove(data.move_number, data.san, this.playerColor);
+                    await new Promise(r => setTimeout(r, 600));
 
-                if (data.enoch) updateEnoch(data.enoch);
-                if (data.sequence) updateSequence(data.sequence);
-                if (data.can_name_sequence) showNamingPrompt(this.gameId, data.can_name_sequence);
+                    this.ground.set({
+                        fen: data.fen,
+                        lastMove: uciToLastMove(data.enoch_move.uci),
+                        animation: { enabled: true, duration: 300 },
+                    });
+                    appendMove(null, data.enoch_move.san, this.otherColor());
 
-                if (data.game_over) {
-                    this.gameOver = true;
-                    this.ground.set({ viewOnly: true });
-                    runEndSequence(data, this.gameId, this.hasCommended);
+                    this.fen = data.fen;
+                    this.lastMoveUci = data.enoch_move.uci;
+
+                    if (data.enoch) updateEnoch(data.enoch);
+
+                    if (data.game_over) {
+                        this.gameOver = true;
+                        this.ground.set({ viewOnly: true });
+                        runPracticeEnd(data);
+                    } else {
+                        this.isPlayerTurn = true;
+                        const legalResp = await fetch(`/game/${this.gameId}/state`);
+                        const legalData = await legalResp.json();
+                        this.legalMoves = legalData.legal_moves || [];
+                        this.ground.set({
+                            turnColor: this.playerColor,
+                            movable: {
+                                color: this.playerColor,
+                                dests: buildDests(this.legalMoves),
+                            },
+                            viewOnly: false,
+                        });
+                        updateTurn(true);
+                    }
+                } else if (data.is_practice && !data.enoch_move) {
+                    this.ground.set({
+                        fen: data.fen,
+                        lastMove: uciToLastMove(uci),
+                        viewOnly: true,
+                    });
+                    appendMove(data.move_number, data.san, this.playerColor);
+                    if (data.enoch) updateEnoch(data.enoch);
+                    if (data.game_over) {
+                        this.gameOver = true;
+                        runPracticeEnd(data);
+                    }
                 } else {
-                    updateTurn(false);
-                    this.startPolling();
+                    this.ground.set({
+                        fen: data.fen,
+                        lastMove: uciToLastMove(uci),
+                        turnColor: this.otherColor(),
+                        movable: { color: undefined, dests: new Map() },
+                        viewOnly: false,
+                    });
+
+                    appendMove(data.move_number, data.san, this.playerColor);
+
+                    if (data.enoch) updateEnoch(data.enoch);
+                    if (data.sequence) updateSequence(data.sequence);
+                    if (data.can_name_sequence) showNamingPrompt(this.gameId, data.can_name_sequence);
+
+                    if (data.game_over) {
+                        this.gameOver = true;
+                        this.ground.set({ viewOnly: true });
+                        runEndSequence(data, this.gameId, this.hasCommended);
+                    } else {
+                        updateTurn(false);
+                        this.startPolling();
+                    }
                 }
             } else {
                 this.ground.set({
@@ -244,7 +302,12 @@ class ChessBoard {
                     this.gameOver = true;
                     this.stopPolling();
                     this.ground.set({ viewOnly: true });
-                    runEndSequence(data, this.gameId, this.hasCommended);
+                    if (data.is_practice) {
+                        if (data.enoch) updateEnoch(data.enoch);
+                        runPracticeEnd(data);
+                    } else {
+                        runEndSequence(data, this.gameId, this.hasCommended);
+                    }
                 }
             } catch (err) {
                 console.error('Resign failed:', err);
@@ -527,6 +590,69 @@ async function runEndSequence(data, gameId, hasCommended) {
     }
     showResult(data.result, data.result_type, data.rating_change);
     if (data.show_commend && !hasCommended) showCommendPrompt(gameId);
+}
+
+/* ── Practice Mode: End Summary ── */
+
+function runPracticeEnd(data) {
+    const summary = data.practice_summary;
+    const modal = document.getElementById('practiceSummaryModal');
+    if (!modal || !summary) {
+        showResult(data.result, data.result_type, null);
+        return;
+    }
+
+    showResult(data.result, data.result_type, null);
+
+    const resultEl = document.getElementById('practiceSummaryResult');
+    const movesEl = document.getElementById('practiceSummaryMoves');
+    const enochEl = document.getElementById('practiceSummaryEnoch');
+    const loreEl = document.getElementById('practiceSummaryLore');
+
+    if (resultEl) resultEl.textContent = `Result: ${summary.result}`;
+    if (movesEl) movesEl.textContent = `Moves: ${summary.move_count}`;
+
+    if (enochEl && data.enoch) {
+        enochEl.innerHTML = `<em>"${data.enoch}"</em>`;
+    }
+
+    if (loreEl) {
+        let html = `<p class="practice-lore-wins">Victories over the Steward: <strong>${summary.total_wins}</strong></p>`;
+        if (summary.next_milestone) {
+            html += `<p class="practice-lore-next">Next Milestone: ${summary.next_milestone.title} (${summary.next_milestone.wins} Wins)</p>`;
+        } else {
+            html += `<p class="practice-lore-next">All Enoch milestones achieved.</p>`;
+        }
+        if (summary.earned_lore && summary.earned_lore.length > 0) {
+            for (const item of summary.earned_lore) {
+                html += `<div class="practice-lore-earned">
+                    <span class="practice-lore-title">${item.name}</span>
+                    <span class="practice-lore-desc">"${item.enoch}"</span>
+                </div>`;
+            }
+        }
+        loreEl.innerHTML = html;
+    }
+
+    const rematch = document.getElementById('practiceRematch');
+    if (rematch) {
+        rematch.addEventListener('click', async () => {
+            rematch.disabled = true;
+            rematch.textContent = 'Descending\u2026';
+            try {
+                const resp = await fetch('/practice/new', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                const d = await resp.json();
+                if (d.url) window.location.href = d.url;
+            } catch (e) {
+                console.error(e);
+            }
+        });
+    }
+
+    setTimeout(() => modal.classList.add('active'), 400);
 }
 
 /* ── Init ── */

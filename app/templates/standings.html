@@ -152,11 +152,34 @@
         </div>
     </div>
 
+    {# ── Practice Opponents ── #}
+    <div class="sp-section sp-practice">
+        <h3 class="sp-section-title">Practice Opponents</h3>
+        <div class="sp-practice-card" id="practiceEnochCard">
+            <img src="{{ url_for('static', filename='img/enoch.png') }}" class="avatar avatar-sm avatar-enoch" alt="Enoch">
+            <div class="sp-practice-info">
+                <span class="sp-practice-name">Enoch</span>
+                <span class="sp-practice-subtitle">Steward Beneath the Board</span>
+                <span class="sp-practice-meta">Practice Match Only &middot; Est. Rating 500&ndash;600</span>
+            </div>
+            <button class="btn btn-sm btn-practice" id="btnChallengeEnoch">Challenge</button>
+        </div>
+        <div class="sp-practice-disclaimer" id="practiceDisclaimer" style="display:none;">
+            <p>&ldquo;This match will not stain the official Ledger. It is for your practice, and my amusement.&rdquo;</p>
+            <button class="btn btn-sm" id="btnConfirmPractice">Knock on the Floorboards</button>
+            <button class="btn btn-sm btn-outline" id="btnCancelPractice">Retreat</button>
+        </div>
+    </div>
+
     {# ── Footer links ── #}
     <div class="sp-footer">
         <a href="{{ url_for('main.archive') }}" class="sp-footer-link">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v4H3zM5 7v13h14V7"/><path d="M10 12h4"/></svg>
             Season Archive
+        </a>
+        <a href="{{ url_for('game.scrapbook') }}" class="sp-footer-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+            Scrapbook
         </a>
     </div>
 
@@ -197,6 +220,35 @@ document.addEventListener('DOMContentLoaded', function() {
     var dc = document.getElementById('decreeCountdown');
     if (mc) tickCountdown(mc.dataset.deadline, document.getElementById('matchTimer'));
     if (dc) tickCountdown(dc.dataset.deadline, document.getElementById('decreeTimer'));
+
+    var btnChallenge = document.getElementById('btnChallengeEnoch');
+    var disclaimer = document.getElementById('practiceDisclaimer');
+    var btnConfirm = document.getElementById('btnConfirmPractice');
+    var btnCancel = document.getElementById('btnCancelPractice');
+    if (btnChallenge) {
+        btnChallenge.addEventListener('click', function() {
+            disclaimer.style.display = 'block';
+            btnChallenge.disabled = true;
+        });
+    }
+    if (btnCancel) {
+        btnCancel.addEventListener('click', function() {
+            disclaimer.style.display = 'none';
+            btnChallenge.disabled = false;
+        });
+    }
+    if (btnConfirm) {
+        btnConfirm.addEventListener('click', function() {
+            btnConfirm.disabled = true;
+            btnConfirm.textContent = 'Descending\u2026';
+            fetch('/practice/new', {method: 'POST', headers: {'Content-Type': 'application/json'}})
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.url) window.location.href = d.url;
+                    else { alert(d.error || 'Failed'); btnConfirm.disabled = false; }
+                });
+        });
+    }
 });
 </script>
 {% endblock %}

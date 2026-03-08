@@ -20,6 +20,7 @@ class User(UserMixin, db.Model):
     is_active_player = db.Column(db.Boolean, default=True)
     can_name_openings = db.Column(db.Boolean, default=True)
     bio = db.Column(db.Text, default='')
+    is_bot = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def set_password(self, password):
@@ -64,6 +65,7 @@ class Game(db.Model):
     started_at = db.Column(db.DateTime)
     completed_at = db.Column(db.DateTime)
     deadline = db.Column(db.DateTime)
+    is_practice = db.Column(db.Boolean, default=False)
 
     white = db.relationship('User', foreign_keys=[white_id], backref='games_as_white')
     black = db.relationship('User', foreign_keys=[black_id], backref='games_as_black')

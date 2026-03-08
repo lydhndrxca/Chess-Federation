@@ -15,6 +15,7 @@ def _head_to_head(user_id, opponent_id):
     """Return (wins, losses, draws) for user_id vs opponent_id across all games."""
     games = Game.query.filter(
         Game.status.in_(['completed', 'forfeited']),
+        Game.is_practice == False,
         or_(
             and_(Game.white_id == user_id, Game.black_id == opponent_id),
             and_(Game.white_id == opponent_id, Game.black_id == user_id),
@@ -64,7 +65,7 @@ def standings():
     season_key = year * 100 + month
 
     weekly_games = Game.query.filter_by(
-        week_number=week, season=season_key
+        week_number=week, season=season_key, is_practice=False
     ).all()
 
     my_games = []
@@ -162,7 +163,7 @@ def _archive_month(year, month):
         if 1 <= m <= 12 and y > 2000:
             months_list.append({'year': y, 'month': m, 'season_key': s})
 
-    games = Game.query.filter_by(season=season_key).order_by(
+    games = Game.query.filter_by(season=season_key, is_practice=False).order_by(
         Game.week_number, Game.id
     ).all()
 

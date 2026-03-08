@@ -27,10 +27,14 @@ def _migrate_db(app):
         cur.execute('ALTER TABLE user ADD COLUMN can_name_openings BOOLEAN DEFAULT 1')
     if 'bio' not in user_cols:
         cur.execute("ALTER TABLE user ADD COLUMN bio TEXT DEFAULT ''")
+    if 'is_bot' not in user_cols:
+        cur.execute('ALTER TABLE user ADD COLUMN is_bot BOOLEAN DEFAULT 0')
 
     game_cols = {row[1] for row in cur.execute('PRAGMA table_info(game)').fetchall()}
     if 'power_holder_id' not in game_cols:
         cur.execute('ALTER TABLE game ADD COLUMN power_holder_id INTEGER')
+    if 'is_practice' not in game_cols:
+        cur.execute('ALTER TABLE game ADD COLUMN is_practice BOOLEAN DEFAULT 0')
 
     tables = {row[0] for row in cur.execute(
         "SELECT name FROM sqlite_master WHERE type='table'"
@@ -157,5 +161,23 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        _ensure_enoch_bot()
 
     return app
+
+
+def _ensure_enoch_bot():
+    """Create the Enoch bot user if it does not already exist."""
+    enoch = User.query.filter_by(username='Enoch').first()
+    if not enoch:
+        import secrets
+        enoch = User(
+            username='Enoch',
+            is_active_player=False,
+            is_bot=True,
+            bio='Steward Beneath the Board. Keeper of the scrap-ledger.',
+            rating=550,
+        )
+        enoch.set_password(secrets.token_hex(32))
+        db.session.add(enoch)
+        db.session.commit()

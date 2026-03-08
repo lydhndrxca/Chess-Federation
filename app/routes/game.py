@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from app.models import Commendation, Game, Move, PlayerCollectible, User, db
@@ -8,6 +8,14 @@ from app.services.chess_engine import ChessEngine
 from app.services.enoch import get_move_commentary, comment_game_start, get_title
 from app.services.sequences import get_sequence_info, name_sequence
 from app.services.collectibles_catalog import CATALOG_BY_ID
+from app.services.enoch_ai import pick_move, get_practice_commentary
+from app.services.practice_dialogue import (
+    PRACTICE_GAME_START, PRACTICE_AT_ENOCH_EASY, PRACTICE_AT_ENOCH_WHY,
+    PRACTICE_AT_ENOCH_WHO_WINNING, PRACTICE_AT_ENOCH_INSULT,
+    ENOCH_LORE_MILESTONES,
+)
+
+import random
 
 game_bp = Blueprint('game', __name__)
 
@@ -80,13 +88,33 @@ def view_game(game_id):
     opening_name = seq_info['match']['name'] if seq_info.get('match') else None
     last_san = moves[-1].move_san if moves else None
     is_over = game.status in ('completed', 'forfeited')
-    enoch_line = None
-    if last_san:
-        enoch_line = get_move_commentary(
-            last_san, len(moves), is_over, game.result_type,
-            opening_name=opening_name)
-    elif game.move_count == 0:
-        enoch_line = comment_game_start()
+
+    if game.is_practice:
+        enoch_line = None
+        if is_over:
+            enoch_user = _get_enoch_user()
+            player_won = (
+                (game.result == '1-0' and game.white_id == current_user.id) or
+                (game.result == '0-1' and game.black_id == current_user.id)
+            )
+            if player_won:
+                enoch_line = random.choice(PRACTICE_GAME_START)
+            elif game.result == '1/2-1/2':
+                from app.services.practice_dialogue import PRACTICE_DRAW
+                enoch_line = random.choice(PRACTICE_DRAW)
+            else:
+                from app.services.practice_dialogue import PRACTICE_ENOCH_WINS
+                enoch_line = random.choice(PRACTICE_ENOCH_WINS)
+        elif game.move_count == 0:
+            enoch_line = random.choice(PRACTICE_GAME_START)
+    else:
+        enoch_line = None
+        if last_san:
+            enoch_line = get_move_commentary(
+                last_san, len(moves), is_over, game.result_type,
+                opening_name=opening_name)
+        elif game.move_count == 0:
+            enoch_line = comment_game_start()
 
     return render_template(
         'game.html',
@@ -105,6 +133,7 @@ def view_game(game_id):
         has_commended=has_commended,
         enoch_line=enoch_line,
         enoch_title=get_title(),
+        is_practice=game.is_practice,
     )
 
 
@@ -152,7 +181,59 @@ def make_move(game_id):
     if is_over:
         _finish_game(game, result_type, player_color)
 
+    # --- Practice mode: Enoch auto-reply ---
+    enoch_reply = None
+    practice_line = None
+    if game.is_practice and not is_over:
+        enoch_reply = _make_enoch_reply(game)
+        if enoch_reply:
+            is_over = enoch_reply['game_over']
+            if is_over:
+                result_type = enoch_reply['result_type']
+            practice_line = get_practice_commentary(
+                result['san'], enoch_reply['san'], enoch_reply['mood'],
+                game.fen_current, game.move_count,
+                game_over=is_over,
+                result='enoch_win' if (is_over and game.result in ('0-1', '1-0') and
+                    ((game.result == '1-0' and game.white_id == _get_enoch_user().id) or
+                     (game.result == '0-1' and game.black_id == _get_enoch_user().id)))
+                else ('player_win' if is_over and game.result != '1/2-1/2' else None),
+            )
+
     db.session.commit()
+
+    if game.is_practice:
+        resp = {
+            'success': True,
+            'fen': game.fen_current,
+            'san': result['san'],
+            'turn': game.current_turn,
+            'game_over': is_over,
+            'result': game.result if is_over else None,
+            'result_type': result_type if is_over else None,
+            'move_number': result['move_number'],
+            'is_practice': True,
+        }
+        if enoch_reply:
+            resp['enoch_move'] = {
+                'san': enoch_reply['san'],
+                'uci': enoch_reply['uci'],
+                'fen': enoch_reply['fen'],
+            }
+        if practice_line:
+            resp['enoch'] = practice_line
+        if is_over:
+            earned_lore = []
+            enoch_user = _get_enoch_user()
+            player_won = (
+                (game.result == '1-0' and game.white_id == current_user.id) or
+                (game.result == '0-1' and game.black_id == current_user.id)
+            )
+            if player_won:
+                earned_lore = _check_enoch_lore(current_user.id, game.id)
+                db.session.commit()
+            resp['practice_summary'] = _practice_summary(current_user.id, game, earned_lore)
+        return jsonify(resp)
 
     seq = get_sequence_info(game.id)
     opening_name = seq['match']['name'] if seq.get('match') else None
@@ -199,6 +280,17 @@ def resign(game_id):
     game.result = '0-1' if player_color == 'white' else '1-0'
     _finish_game(game, 'resignation', player_color)
     db.session.commit()
+
+    if game.is_practice:
+        from app.services.practice_dialogue import PRACTICE_ENOCH_WINS
+        return jsonify({
+            'success': True,
+            'result': game.result,
+            'result_type': 'resignation',
+            'is_practice': True,
+            'enoch': random.choice(PRACTICE_ENOCH_WINS),
+            'practice_summary': _practice_summary(current_user.id, game, []),
+        })
 
     return jsonify({
         'success': True,
@@ -381,6 +473,9 @@ def _finish_game(game, result_type, last_mover):
     all_moves = Move.query.filter_by(game_id=game.id).order_by(Move.id).all()
     game.pgn = ChessEngine.build_pgn(all_moves, game)
 
+    if game.is_practice:
+        return
+
     try:
         from app.services.material import record_material
         white_diff = material['white'] - material['black']
@@ -411,3 +506,166 @@ def _finish_game(game, result_type, last_mover):
         evaluate_milestone_triggers(game.black_id, game.id)
     except Exception:
         pass
+
+
+# ---------------------------------------------------------------------------
+# PRACTICE MODE — Enoch as NPC opponent
+# ---------------------------------------------------------------------------
+
+def _practice_summary(user_id, game, earned_lore):
+    """Build the match summary object for a completed practice game."""
+    total_wins = _enoch_wins_against(user_id)
+    next_ms = None
+    for m in ENOCH_LORE_MILESTONES:
+        if total_wins < m['wins']:
+            next_ms = m
+            break
+    return {
+        'total_wins': total_wins,
+        'move_count': game.move_count,
+        'result': game.result,
+        'next_milestone': next_ms,
+        'earned_lore': earned_lore or [],
+    }
+
+def _get_enoch_user():
+    return User.query.filter_by(username='Enoch', is_bot=True).first()
+
+
+def _enoch_wins_against(user_id):
+    """Count how many practice games the player has won against Enoch."""
+    enoch = _get_enoch_user()
+    if not enoch:
+        return 0
+    wins = Game.query.filter(
+        Game.is_practice == True,
+        Game.status == 'completed',
+        (
+            ((Game.white_id == user_id) & (Game.black_id == enoch.id) & (Game.result == '1-0')) |
+            ((Game.black_id == user_id) & (Game.white_id == enoch.id) & (Game.result == '0-1'))
+        ),
+    ).count()
+    return wins
+
+
+def _check_enoch_lore(user_id, game_id):
+    """Award Enoch lore collectibles after a practice win."""
+    wins = _enoch_wins_against(user_id)
+    earned = []
+    for m in ENOCH_LORE_MILESTONES:
+        if wins >= m['wins']:
+            item_id = 150 + ENOCH_LORE_MILESTONES.index(m) + 1
+            already = PlayerCollectible.query.filter_by(
+                user_id=user_id, item_id=item_id
+            ).first()
+            if not already:
+                pc = PlayerCollectible(
+                    user_id=user_id, item_id=item_id, game_id=game_id)
+                db.session.add(pc)
+                from app.services.collectibles_catalog import CATALOG_BY_ID as cbi
+                cat = cbi.get(item_id)
+                if cat:
+                    earned.append({
+                        'id': cat['id'], 'name': cat['name'],
+                        'collection': cat['collection'], 'desc': cat['desc'],
+                        'enoch': cat['enoch'],
+                    })
+    return earned
+
+
+def _finish_practice(game, result_type, last_mover):
+    """Finish a practice game (no rating, no federation side effects)."""
+    _finish_game(game, result_type, last_mover)
+
+
+def _make_enoch_reply(game):
+    """Have Enoch make a move. Returns dict with move info or None if game over / no move."""
+    enoch_move, mood = pick_move(game.fen_current)
+    if enoch_move is None:
+        return None
+
+    enoch_color = 'black' if game.white_id != _get_enoch_user().id else 'white'
+    uci = enoch_move.uci()
+    result = ChessEngine.make_move(game.fen_current, uci)
+
+    move = Move(
+        game_id=game.id,
+        move_number=result['move_number'],
+        color=enoch_color,
+        move_san=result['san'],
+        move_uci=uci,
+        fen_after=result['fen'],
+    )
+    db.session.add(move)
+
+    game.fen_current = result['fen']
+    game.current_turn = result['turn']
+    game.move_count += 1
+
+    is_over, rt = ChessEngine.is_game_over(result['fen'])
+    if is_over:
+        _finish_practice(game, rt, enoch_color)
+
+    return {
+        'fen': result['fen'],
+        'san': result['san'],
+        'uci': uci,
+        'turn': result['turn'],
+        'move_number': result['move_number'],
+        'game_over': is_over,
+        'result': game.result if is_over else None,
+        'result_type': rt if is_over else None,
+        'mood': mood,
+    }
+
+
+@game_bp.route('/practice/new', methods=['POST'])
+@login_required
+def start_practice():
+    enoch = _get_enoch_user()
+    if not enoch:
+        return jsonify({'error': 'Enoch is not available'}), 500
+
+    game = Game(
+        white_id=current_user.id,
+        black_id=enoch.id,
+        week_number=0,
+        season=0,
+        status='active',
+        is_practice=True,
+        started_at=datetime.now(timezone.utc),
+    )
+    db.session.add(game)
+    db.session.commit()
+
+    return jsonify({'game_id': game.id, 'url': url_for('game.view_game', game_id=game.id)})
+
+
+@game_bp.route('/practice/scrapbook')
+@login_required
+def scrapbook():
+    enoch = _get_enoch_user()
+    if not enoch:
+        games = []
+    else:
+        games = Game.query.filter(
+            Game.is_practice == True,
+            (Game.white_id == current_user.id) | (Game.black_id == current_user.id),
+        ).order_by(Game.id.desc()).all()
+
+    total_wins = _enoch_wins_against(current_user.id)
+
+    next_milestone = None
+    for m in ENOCH_LORE_MILESTONES:
+        if total_wins < m['wins']:
+            next_milestone = m
+            break
+
+    return render_template(
+        'scrapbook.html',
+        games=games,
+        total_wins=total_wins,
+        milestones=ENOCH_LORE_MILESTONES,
+        next_milestone=next_milestone,
+        enoch=enoch,
+    )

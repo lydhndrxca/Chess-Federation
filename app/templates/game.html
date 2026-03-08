@@ -9,6 +9,14 @@
 
 {% block content %}
 <div class="gv">
+    {# ── Practice mode label ── #}
+    {% if is_practice %}
+    <div class="gv-practice-label">
+        <img src="{{ url_for('static', filename='img/enoch.png') }}" class="gv-practice-icon" alt="Enoch">
+        <span>Scrapbook Match &mdash; vs Enoch</span>
+    </div>
+    {% endif %}
+
     {# ── Move notation strip ── #}
     <div class="gv-moves-strip" id="movesStrip">
         {% for move in moves %}
@@ -25,13 +33,22 @@
     {# ── Opponent bar (top) ── #}
     {% set top_player = opponent if is_participant else game.white %}
     <div class="gv-player-bar">
+        {% if is_practice and top_player.is_bot %}
+        <div class="gv-player-link">
+            <img src="{{ url_for('static', filename='img/enoch.png') }}" class="avatar avatar-sm avatar-enoch" alt="Enoch">
+            <span class="gv-player-name">Enoch</span>
+            <span class="gv-player-rating gv-practice-rating">~550</span>
+        </div>
+        {% else %}
         <a href="{{ url_for('players.player_profile', username=top_player.username) }}" class="gv-player-link">
             {{ avatar(top_player, 'sm') }}
             <span class="gv-player-name">{{ top_player.username }}</span>
             <span class="gv-player-rating">({{ top_player.rating }})</span>
         </a>
+        {% endif %}
         <div class="gv-bar-right">
-            {% if game.status in ('completed', 'forfeited') %}
+            {% if is_practice %}
+            {% elif game.status in ('completed', 'forfeited') %}
                 {% if game.rating_change_white is not none %}
                     {% set opp_change = game.rating_change_black if player_color == 'white' else game.rating_change_white %}
                     <span class="gv-delta {{ 'rating-up' if opp_change >= 0 else 'rating-down' }}">{{ '%+.0f'|format(opp_change) }}</span>
@@ -84,7 +101,7 @@
     <div class="gv-status" id="turnIndicator">
         {% if game.status in ('completed', 'forfeited') %}
             <span class="game-over-text">{{ game.result }} — {{ game.result_type }}</span>
-            {% if game.rating_change_white is not none and is_participant %}
+            {% if not is_practice and game.rating_change_white is not none and is_participant %}
                 {% set my_rc = game.rating_change_white if player_color == 'white' else game.rating_change_black %}
                 <span class="rating-impact {{ 'rating-up' if my_rc >= 0 else 'rating-down' }}">{{ '%+.1f'|format(my_rc) }} rating</span>
             {% endif %}
@@ -167,6 +184,23 @@
     </div>
 </div>
 
+{# ── Practice Summary Modal ── #}
+<div class="practice-summary-modal" id="practiceSummaryModal">
+    <div class="practice-summary-overlay"></div>
+    <div class="practice-summary-content">
+        <img src="{{ url_for('static', filename='img/enoch.png') }}" class="practice-summary-avatar" alt="Enoch">
+        <h3 class="practice-summary-title" id="practiceSummaryTitle">Scrapbook Match Complete</h3>
+        <p class="practice-summary-result" id="practiceSummaryResult"></p>
+        <p class="practice-summary-moves" id="practiceSummaryMoves"></p>
+        <div class="practice-summary-enoch" id="practiceSummaryEnoch"></div>
+        <div class="practice-summary-lore" id="practiceSummaryLore"></div>
+        <div class="practice-summary-actions">
+            <a href="{{ url_for('main.standings') }}" class="btn btn-sm">Return to Standings</a>
+            <button class="btn btn-sm btn-primary" id="practiceRematch">Challenge Again</button>
+        </div>
+    </div>
+</div>
+
 <div class="commend-modal" id="commendModal">
     <div class="commend-overlay" id="commendOverlay"></div>
     <div class="commend-dialog">
@@ -204,6 +238,7 @@
         isParticipant: {{ 'true' if is_participant else 'false' }},
         lastMoveUci: {{ last_move_uci | tojson if last_move_uci else 'null' }},
         hasCommended: {{ 'true' if has_commended else 'false' }},
+        isPractice: {{ 'true' if is_practice else 'false' }},
     };
 </script>
 {% endautoescape %}

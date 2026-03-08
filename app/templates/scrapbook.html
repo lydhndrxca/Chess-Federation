@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% from "macros.html" import mini_board %}
+{% block title %}Scrapbook — Chess Federation{% endblock %}
+
+{% block content %}
+<div class="sp">
+    <div class="sp-header">
+        <span class="sp-season">Scrapbook</span>
+        <span class="sp-week">Practice Matches vs Enoch</span>
+    </div>
+
+    <div class="scrapbook-enoch-intro">
+        <img src="{{ url_for('static', filename='img/enoch.png') }}" class="avatar avatar-lg avatar-enoch" alt="Enoch">
+        <div class="scrapbook-intro-text">
+            <h3>Enoch &mdash; Steward Beneath the Board</h3>
+            <p class="text-muted">These matches do not stain the official Ledger. They are for your practice, and his amusement.</p>
+        </div>
+    </div>
+
+    {# ── Lore Progress ── #}
+    <div class="scrapbook-lore">
+        <h4 class="scrapbook-lore-title">Lore Progress</h4>
+        <p class="scrapbook-lore-stat">Victories over the Steward: <strong>{{ total_wins }}</strong></p>
+        {% for m in milestones %}
+        <div class="scrapbook-milestone {{ 'scrapbook-milestone-done' if total_wins >= m.wins else '' }}">
+            <span class="scrapbook-ms-check">{% if total_wins >= m.wins %}&#10003;{% else %}&#9675;{% endif %}</span>
+            <div class="scrapbook-ms-info">
+                <span class="scrapbook-ms-title">{{ m.title }}</span>
+                <span class="scrapbook-ms-req">{{ m.wins }} wins</span>
+            </div>
+            <span class="scrapbook-ms-flavor">{{ m.text }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# ── Match History ── #}
+    <div class="sp-section">
+        <h3 class="sp-section-title">Match History</h3>
+        {% if games %}
+        <div class="sp-games">
+            {% for g in games %}
+            {% set player_won = (g.result == '1-0' and g.white_id == current_user.id) or (g.result == '0-1' and g.black_id == current_user.id) %}
+            {% set is_draw = g.result == '1/2-1/2' %}
+            <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="gc">
+                <div class="gc-board">
+                    {{ mini_board(g.fen_final or g.fen_current, g.white_id != current_user.id) }}
+                    {% if g.status == 'completed' %}
+                    <div class="gc-board-overlay">
+                        <span>{{ g.result }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="gc-info">
+                    <div class="gc-opponent">
+                        <img src="{{ url_for('static', filename='img/enoch.png') }}" class="avatar avatar-sm avatar-enoch" alt="Enoch">
+                        <div class="gc-opp-detail">
+                            <span class="gc-opp-name">Enoch</span>
+                            <span class="gc-opp-rating">Scrapbook</span>
+                        </div>
+                    </div>
+                    <div class="gc-meta">
+                        <span class="gc-h2h">{{ g.move_count }} moves</span>
+                    </div>
+                    <div class="gc-status">
+                        {% if g.status == 'active' %}
+                            <span class="badge badge-active">In Progress</span>
+                        {% elif player_won %}
+                            <span class="badge badge-your-turn">Victory</span>
+                        {% elif is_draw %}
+                            <span class="badge badge-pending">Draw</span>
+                        {% else %}
+                            <span class="badge badge-forfeited">Defeat</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="sp-empty">
+            <p class="text-muted">No practice matches recorded. Knock on the floorboards to begin.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="sp-footer">
+        <a href="{{ url_for('main.standings') }}" class="sp-footer-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            Back to Standings
+        </a>
+    </div>
+</div>
+{% endblock %}

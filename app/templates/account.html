@@ -53,6 +53,21 @@
             <p class="account-tier-desc">{{ current_user.tier.desc }}</p>
             <a href="{{ url_for('players.player_profile', username=current_user.username) }}" class="btn btn-sm btn-outline" style="margin-top: 1rem;">View Public Profile</a>
         </div>
+
+        <div class="card">
+            <h2>Preferences</h2>
+            <div class="account-pref-row">
+                <div class="account-pref-info">
+                    <span class="account-pref-label">Name Openings &amp; Variations</span>
+                    <span class="account-pref-desc">When a never-before-seen sequence is played, you may inscribe its name into the Federation record.</span>
+                </div>
+                <form action="{{ url_for('players.toggle_naming') }}" method="post" class="account-pref-toggle">
+                    <button type="submit" class="toggle-btn {% if current_user.can_name_openings %}toggle-on{% endif %}">
+                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -703,6 +703,173 @@ a:hover { text-decoration: underline; }
          1px  0   0 #000;
 }
 
+/* ── Sequence bar ── */
+.gv-sequence {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    background: rgba(227, 179, 65, 0.06);
+    border-top: 1px solid rgba(227, 179, 65, 0.15);
+    font-size: 0.78rem;
+}
+.gv-seq-category {
+    color: var(--gold);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 0.5px;
+}
+.gv-seq-name {
+    color: var(--text);
+    font-weight: 600;
+    font-style: italic;
+}
+.gv-seq-creator {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+}
+
+/* ── Naming modal ── */
+.naming-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+}
+.naming-modal.active { display: flex; }
+.naming-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+.naming-dialog {
+    position: relative;
+    background: var(--bg-surface);
+    border: 1px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    width: 92%;
+    max-width: 380px;
+    text-align: center;
+}
+.naming-title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--gold);
+}
+.naming-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+.naming-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 0.95rem;
+    font-family: inherit;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+.naming-input:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(227, 179, 65, 0.15);
+}
+.naming-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+/* ── Commend modal ── */
+.commend-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+}
+.commend-modal.active { display: flex; }
+.commend-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+.commend-dialog {
+    position: relative;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    width: 92%;
+    max-width: 380px;
+    text-align: center;
+}
+.commend-title {
+    font-size: 1rem;
+    margin-bottom: 0.35rem;
+    color: var(--text);
+}
+.commend-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+.commend-choice-btns {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+.commend-type-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: border-color 0.15s, color 0.15s;
+}
+.commend-type-icon { font-size: 1.4rem; }
+.commend-type-commend:hover, .commend-type-commend.selected {
+    border-color: var(--green);
+    color: var(--green);
+}
+.commend-type-condemn:hover, .commend-type-condemn.selected {
+    border-color: var(--red);
+    color: var(--red);
+}
+.commend-textarea {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 0.88rem;
+    font-family: inherit;
+    resize: none;
+    margin-bottom: 1rem;
+}
+.commend-textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(129, 182, 76, 0.15);
+}
+.commend-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
 /* ── Status bar ── */
 .gv-status {
     text-align: center;
@@ -866,6 +1033,43 @@ a:hover { text-decoration: underline; }
 .record-value.draw { color: var(--yellow); }
 .record-value.forfeit { color: var(--orange); }
 
+/* ── Declarations (commend/condemn) ───── */
+.decl-section { margin-bottom: 1rem; }
+.decl-section:last-child { margin-bottom: 0; }
+.decl-heading {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+}
+.decl-commend-heading { color: var(--green); }
+.decl-condemn-heading { color: var(--red); }
+.decl-entry {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+}
+.decl-entry:last-child { border-bottom: none; }
+.decl-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.2rem;
+}
+.decl-author { font-weight: 600; font-size: 0.82rem; }
+.decl-date { font-size: 0.72rem; color: var(--text-muted); }
+.decl-text {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+.decl-commend { border-left: 2px solid var(--green); padding-left: 0.65rem; }
+.decl-condemn { border-left: 2px solid var(--red); padding-left: 0.65rem; }
+
 /* ── Chronicle / History ───────────────── */
 .chronicle-page h1 { margin-bottom: 1rem; padding: 0 0.75rem; }
 .history-list { display: flex; flex-direction: column; }
@@ -988,6 +1192,48 @@ a:hover { text-decoration: underline; }
 .info-row { display: flex; justify-content: space-between; align-items: center; }
 .info-label { font-size: 0.82rem; color: var(--text-muted); }
 .info-value { font-weight: 600; }
+
+.account-pref-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 0;
+}
+.account-pref-info { flex: 1; min-width: 0; }
+.account-pref-label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem; }
+.account-pref-desc { display: block; font-size: 0.75rem; color: var(--text-muted); line-height: 1.45; }
+.account-pref-toggle { flex-shrink: 0; }
+
+.toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+.toggle-track {
+    display: block;
+    width: 42px;
+    height: 24px;
+    border-radius: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    position: relative;
+    transition: background 0.2s, border-color 0.2s;
+}
+.toggle-thumb {
+    display: block;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s, background 0.2s;
+}
+.toggle-on .toggle-track { background: var(--accent); border-color: var(--accent); }
+.toggle-on .toggle-thumb { transform: translateX(18px); background: #fff; }
 
 
 /* ════════════════════════════════════════════

@@ -14,6 +14,7 @@ class ChessBoard {
         this.gameOver = config.gameOver || false;
         this.isParticipant = config.isParticipant;
         this.lastMoveUci = config.lastMoveUci || null;
+        this.hasCommended = config.hasCommended || false;
         this.selectedSquare = null;
         this.flipped = config.playerColor === 'black';
         this.pollInterval = null;
@@ -186,9 +187,13 @@ class ChessBoard {
                 this.render();
                 appendMove(data.move_number, data.san, this.playerColor);
 
+                if (data.sequence) updateSequence(data.sequence);
+                if (data.can_name_sequence) showNamingPrompt(this.gameId, data.can_name_sequence);
+
                 if (data.game_over) {
                     this.gameOver = true;
                     showResult(data.result, data.result_type, data.rating_change);
+                    if (data.show_commend && !this.hasCommended) showCommendPrompt(this.gameId);
                 } else {
                     updateTurn(false);
                     this.startPolling();
@@ -228,11 +233,13 @@ class ChessBoard {
                 if (data.last_move) {
                     appendMove(null, data.last_move.san, data.last_move.color);
                 }
+                if (data.sequence) updateSequence(data.sequence);
 
                 if (data.status === 'completed' || data.status === 'forfeited') {
                     this.gameOver = true;
                     this.stopPolling();
                     showResult(data.result, data.result_type, data.rating_change);
+                    if (!this.hasCommended) showCommendPrompt(this.gameId);
                     return;
                 }
 
@@ -263,6 +270,7 @@ class ChessBoard {
                     this.gameOver = true;
                     this.stopPolling();
                     showResult(data.result, data.result_type, data.rating_change);
+                    if (data.show_commend && !this.hasCommended) showCommendPrompt(this.gameId);
                 }
             } catch (err) {
                 console.error('Resign failed:', err);
@@ -368,6 +376,123 @@ function showResult(result, resultType, ratingChange) {
     }
     const btn = document.getElementById('resignBtn');
     if (btn) btn.style.display = 'none';
+}
+
+function updateSequence(seq) {
+    const bar = document.getElementById('sequenceBar');
+    if (!bar || !seq) return;
+    bar.innerHTML =
+        `<span class="gv-seq-category">${seq.category}</span>` +
+        `<span class="gv-seq-name">${seq.name}</span>` +
+        `<span class="gv-seq-creator">by ${seq.creator}</span>`;
+    bar.style.display = '';
+}
+
+function showNamingPrompt(gameId, info) {
+    const modal = document.getElementById('namingModal');
+    if (!modal) return;
+    document.getElementById('namingCategory').textContent = info.category.toLowerCase();
+    modal.classList.add('active');
+
+    const input = document.getElementById('namingInput');
+    const submitBtn = document.getElementById('namingSubmit');
+    const skipBtn = document.getElementById('namingSkip');
+    const overlay = document.getElementById('namingOverlay');
+
+    input.value = '';
+    input.focus();
+
+    const close = () => { modal.classList.remove('active'); };
+    skipBtn.onclick = close;
+    overlay.onclick = close;
+
+    submitBtn.onclick = async () => {
+        const name = input.value.trim();
+        if (!name) { input.focus(); return; }
+        submitBtn.disabled = true;
+        try {
+            const resp = await fetch(`/game/${gameId}/name-sequence`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name,
+                    moves_key: info.moves_key,
+                    half_moves: info.half_moves,
+                    category: info.category,
+                }),
+            });
+            const data = await resp.json();
+            if (data.success) {
+                updateSequence(data.sequence);
+                close();
+            } else {
+                input.value = '';
+                input.placeholder = data.error || 'Try again…';
+            }
+        } catch (e) {
+            console.error('Naming failed:', e);
+        }
+        submitBtn.disabled = false;
+    };
+
+    input.onkeydown = (e) => { if (e.key === 'Enter') submitBtn.click(); };
+}
+
+function showCommendPrompt(gameId) {
+    const modal = document.getElementById('commendModal');
+    if (!modal) return;
+
+    let selectedKind = null;
+    const typeBtns = modal.querySelectorAll('.commend-type-btn');
+    const textarea = document.getElementById('commendText');
+    const submitBtn = document.getElementById('commendSubmit');
+    const skipBtn = document.getElementById('commendSkip');
+    const overlay = document.getElementById('commendOverlay');
+
+    textarea.value = '';
+    submitBtn.disabled = true;
+
+    const close = () => { modal.classList.remove('active'); };
+    skipBtn.onclick = close;
+    overlay.onclick = close;
+
+    typeBtns.forEach(btn => {
+        btn.classList.remove('selected');
+        btn.onclick = () => {
+            typeBtns.forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedKind = btn.dataset.kind;
+            submitBtn.disabled = false;
+            textarea.focus();
+        };
+    });
+
+    submitBtn.onclick = async () => {
+        const text = textarea.value.trim();
+        if (!selectedKind || !text) {
+            textarea.focus();
+            return;
+        }
+        submitBtn.disabled = true;
+        try {
+            const resp = await fetch(`/game/${gameId}/commend`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ kind: selectedKind, text }),
+            });
+            const data = await resp.json();
+            if (data.success) close();
+            else {
+                textarea.value = '';
+                textarea.placeholder = data.error || 'Try again…';
+            }
+        } catch (e) {
+            console.error('Commend failed:', e);
+        }
+        submitBtn.disabled = false;
+    };
+
+    setTimeout(() => modal.classList.add('active'), 600);
 }
 
 function initBoard() {

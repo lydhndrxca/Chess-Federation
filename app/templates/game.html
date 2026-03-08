@@ -60,6 +60,15 @@
         </div>
     </div>
 
+    {# ── Named sequence display ── #}
+    <div class="gv-sequence" id="sequenceBar" {% if not seq_match %}style="display:none"{% endif %}>
+        {% if seq_match %}
+        <span class="gv-seq-category">{{ seq_match.category }}</span>
+        <span class="gv-seq-name">{{ seq_match.name }}</span>
+        <span class="gv-seq-creator">by {{ seq_match.creator }}</span>
+        {% endif %}
+    </div>
+
     {# ── Status / result bar ── #}
     <div class="gv-status" id="turnIndicator">
         {% if game.status in ('completed', 'forfeited') %}
@@ -114,6 +123,42 @@
     <div class="promotion-overlay"></div>
     <div class="promotion-choices" id="promotionChoices"></div>
 </div>
+
+<div class="naming-modal" id="namingModal">
+    <div class="naming-overlay" id="namingOverlay"></div>
+    <div class="naming-dialog">
+        <h3 class="naming-title">A new <span id="namingCategory"></span> has been played</h3>
+        <p class="naming-subtitle">No game in the Federation has seen this sequence. You may inscribe it into the record.</p>
+        <input type="text" id="namingInput" class="naming-input" maxlength="100" placeholder="Name this sequence…" autocomplete="off">
+        <div class="naming-actions">
+            <button class="btn btn-sm" id="namingSkip">Skip</button>
+            <button class="btn btn-sm btn-primary" id="namingSubmit">Inscribe</button>
+        </div>
+    </div>
+</div>
+
+<div class="commend-modal" id="commendModal">
+    <div class="commend-overlay" id="commendOverlay"></div>
+    <div class="commend-dialog">
+        <h3 class="commend-title">Post-Match Declaration</h3>
+        <p class="commend-subtitle">Do you wish to commend or condemn your opponent?</p>
+        <div class="commend-choice-btns">
+            <button class="commend-type-btn commend-type-commend" data-kind="commend">
+                <span class="commend-type-icon">&#9733;</span>
+                <span>Commend</span>
+            </button>
+            <button class="commend-type-btn commend-type-condemn" data-kind="condemn">
+                <span class="commend-type-icon">&#9760;</span>
+                <span>Condemn</span>
+            </button>
+        </div>
+        <textarea id="commendText" class="commend-textarea" maxlength="300" placeholder="Write your declaration…" rows="3"></textarea>
+        <div class="commend-actions">
+            <button class="btn btn-sm" id="commendSkip">Decline</button>
+            <button class="btn btn-sm btn-primary" id="commendSubmit" disabled>Submit</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -128,6 +173,7 @@
         gameOver: {{ 'true' if game.status in ('completed', 'forfeited') else 'false' }},
         isParticipant: {{ 'true' if is_participant else 'false' }},
         lastMoveUci: {{ last_move_uci | tojson if last_move_uci else 'null' }},
+        hasCommended: {{ 'true' if has_commended else 'false' }},
     };
 </script>
 {% endautoescape %}

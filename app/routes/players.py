@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
-from app.models import Game, User, db
+from app.models import Commendation, Game, User, db
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
@@ -28,7 +28,16 @@ def player_profile(username):
     ).filter(
         Game.status.in_(['completed', 'forfeited'])
     ).order_by(Game.completed_at.desc()).all()
-    return render_template('profile.html', player=player, games=games)
+    commendations = Commendation.query.filter_by(
+        subject_id=player.id, kind='commend'
+    ).order_by(Commendation.created_at.desc()).all()
+    condemnations = Commendation.query.filter_by(
+        subject_id=player.id, kind='condemn'
+    ).order_by(Commendation.created_at.desc()).all()
+    return render_template(
+        'profile.html', player=player, games=games,
+        commendations=commendations, condemnations=condemnations,
+    )
 
 
 @players_bp.route('/account')
@@ -60,6 +69,16 @@ def upload_avatar():
     current_user.avatar_filename = filename
     db.session.commit()
     flash('Avatar updated!', 'success')
+    return redirect(url_for('players.my_account'))
+
+
+@players_bp.route('/account/toggle-naming', methods=['POST'])
+@login_required
+def toggle_naming():
+    current_user.can_name_openings = not current_user.can_name_openings
+    db.session.commit()
+    state = 'enabled' if current_user.can_name_openings else 'disabled'
+    flash(f'Sequence naming {state}.', 'success')
     return redirect(url_for('players.my_account'))
 
 

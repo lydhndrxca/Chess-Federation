@@ -18,6 +18,7 @@ class User(UserMixin, db.Model):
     forfeits = db.Column(db.Integer, default=0)
     avatar_filename = db.Column(db.String(120))
     is_active_player = db.Column(db.Boolean, default=True)
+    can_name_openings = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def set_password(self, password):
@@ -108,6 +109,32 @@ class PowerRotationOrder(db.Model):
     position = db.Column(db.Integer, nullable=False)
 
     user = db.relationship('User', foreign_keys=[user_id])
+
+
+class Commendation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    kind = db.Column(db.String(10), nullable=False)  # 'commend' or 'condemn'
+    text = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    game = db.relationship('Game', foreign_keys=[game_id])
+    author = db.relationship('User', foreign_keys=[author_id])
+    subject = db.relationship('User', foreign_keys=[subject_id])
+
+
+class NamedSequence(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    moves = db.Column(db.Text, nullable=False)
+    half_moves = db.Column(db.Integer, nullable=False)
+    category = db.Column(db.String(20), nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    creator = db.relationship('User', foreign_keys=[creator_id])
 
 
 class SeasonMaterialStat(db.Model):

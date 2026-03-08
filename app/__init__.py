@@ -23,6 +23,8 @@ def _migrate_db(app):
     user_cols = {row[1] for row in cur.execute('PRAGMA table_info(user)').fetchall()}
     if 'avatar_filename' not in user_cols:
         cur.execute('ALTER TABLE user ADD COLUMN avatar_filename VARCHAR(120)')
+    if 'can_name_openings' not in user_cols:
+        cur.execute('ALTER TABLE user ADD COLUMN can_name_openings BOOLEAN DEFAULT 1')
 
     game_cols = {row[1] for row in cur.execute('PRAGMA table_info(game)').fetchall()}
     if 'power_holder_id' not in game_cols:
@@ -49,6 +51,32 @@ def _migrate_db(app):
             user_id INTEGER NOT NULL,
             position INTEGER NOT NULL,
             FOREIGN KEY(user_id) REFERENCES user(id)
+        )''')
+
+    if 'commendation' not in tables:
+        cur.execute('''CREATE TABLE commendation (
+            id INTEGER PRIMARY KEY,
+            game_id INTEGER NOT NULL,
+            author_id INTEGER NOT NULL,
+            subject_id INTEGER NOT NULL,
+            kind VARCHAR(10) NOT NULL,
+            text TEXT NOT NULL,
+            created_at DATETIME,
+            FOREIGN KEY(game_id) REFERENCES game(id),
+            FOREIGN KEY(author_id) REFERENCES user(id),
+            FOREIGN KEY(subject_id) REFERENCES user(id)
+        )''')
+
+    if 'named_sequence' not in tables:
+        cur.execute('''CREATE TABLE named_sequence (
+            id INTEGER PRIMARY KEY,
+            creator_id INTEGER NOT NULL,
+            name VARCHAR(120) NOT NULL,
+            moves TEXT NOT NULL,
+            half_moves INTEGER NOT NULL,
+            category VARCHAR(20) NOT NULL,
+            created_at DATETIME,
+            FOREIGN KEY(creator_id) REFERENCES user(id)
         )''')
 
     if 'season_material_stat' not in tables:

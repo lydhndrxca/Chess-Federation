@@ -4,8 +4,8 @@ from sqlalchemy import or_, and_
 
 from app.models import Game, User, WeeklySchedule, db
 from app.services.matchmaking import (
-    check_forfeits, get_current_season, get_current_week,
-    get_week_deadline, get_decree_deadline,
+    check_forfeits, generate_weekly_pairings, get_current_season,
+    get_current_week, get_week_deadline, get_decree_deadline,
 )
 
 main_bp = Blueprint('main', __name__)
@@ -51,6 +51,13 @@ def index():
 @login_required
 def standings():
     check_forfeits()
+
+    try:
+        from app.services.power import ensure_rotation_order
+        ensure_rotation_order()
+    except (ImportError, Exception):
+        pass
+    generate_weekly_pairings()
 
     week = get_current_week()
     year, month = get_current_season()

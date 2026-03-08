@@ -50,6 +50,40 @@
             </div>
         </div>
 
+        {% if commendations or condemnations %}
+        <div class="card">
+            <h2>Declarations</h2>
+            {% if commendations %}
+            <div class="decl-section">
+                <h3 class="decl-heading decl-commend-heading">Commendations ({{ commendations|length }})</h3>
+                {% for c in commendations %}
+                <div class="decl-entry decl-commend">
+                    <div class="decl-meta">
+                        <span class="decl-author">{{ c.author.username }}</span>
+                        <span class="decl-date">Wk {{ c.game.week_number }}</span>
+                    </div>
+                    <p class="decl-text">"{{ c.text }}"</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if condemnations %}
+            <div class="decl-section">
+                <h3 class="decl-heading decl-condemn-heading">Condemnations ({{ condemnations|length }})</h3>
+                {% for c in condemnations %}
+                <div class="decl-entry decl-condemn">
+                    <div class="decl-meta">
+                        <span class="decl-author">{{ c.author.username }}</span>
+                        <span class="decl-date">Wk {{ c.game.week_number }}</span>
+                    </div>
+                    <p class="decl-text">"{{ c.text }}"</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <div class="card">
             <h2>Record of Contests</h2>
             {% if games %}

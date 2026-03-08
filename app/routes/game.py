@@ -3,8 +3,9 @@ from datetime import datetime, timezone
 from flask import Blueprint, jsonify, render_template, request
 from flask_login import current_user, login_required
 
-from app.models import Game, Move, db
+from app.models import Commendation, Game, Move, User, db
 from app.services.chess_engine import ChessEngine
+from app.services.sequences import get_sequence_info, name_sequence
 
 game_bp = Blueprint('game', __name__)
 
@@ -51,6 +52,14 @@ def view_game(game_id):
     opponent = game.black if player_color == 'white' else game.white
     me = game.white if player_color == 'white' else game.black
 
+    seq_info = get_sequence_info(game.id)
+
+    has_commended = False
+    if player_color and game.status in ('completed', 'forfeited'):
+        has_commended = Commendation.query.filter_by(
+            game_id=game.id, author_id=current_user.id
+        ).first() is not None
+
     return render_template(
         'game.html',
         game=game,
@@ -64,6 +73,8 @@ def view_game(game_id):
         last_move_uci=last_move_uci,
         opponent=opponent,
         me=me,
+        seq_match=seq_info.get('match'),
+        has_commended=has_commended,
     )
 
 
@@ -125,6 +136,14 @@ def make_move(game_id):
     }
     if is_over:
         resp['rating_change'] = _my_rating_change(game, current_user.id)
+        resp['show_commend'] = True
+
+    seq = get_sequence_info(game.id)
+    if seq.get('match'):
+        resp['sequence'] = seq['match']
+    if seq.get('can_name') and current_user.can_name_openings:
+        resp['can_name_sequence'] = seq['can_name']
+
     return jsonify(resp)
 
 
@@ -147,6 +166,7 @@ def resign(game_id):
         'result': game.result,
         'result_type': 'resignation',
         'rating_change': _my_rating_change(game, current_user.id),
+        'show_commend': True,
     })
 
 
@@ -184,7 +204,87 @@ def game_state(game_id):
     }
     if game.status in ('completed', 'forfeited') and player_color:
         resp['rating_change'] = _my_rating_change(game, current_user.id)
+
+    seq = get_sequence_info(game.id)
+    if seq.get('match'):
+        resp['sequence'] = seq['match']
+
     return jsonify(resp)
+
+
+@game_bp.route('/game/<int:game_id>/commend', methods=['POST'])
+@login_required
+def commend_player(game_id):
+    game = Game.query.get_or_404(game_id)
+    player_color = _player_color(game)
+    if not player_color:
+        return jsonify({'error': 'Not a participant'}), 403
+    if game.status not in ('completed', 'forfeited'):
+        return jsonify({'error': 'Game is not finished'}), 400
+
+    existing = Commendation.query.filter_by(
+        game_id=game.id, author_id=current_user.id
+    ).first()
+    if existing:
+        return jsonify({'error': 'You have already submitted for this game'}), 409
+
+    data = request.get_json()
+    kind = (data.get('kind') or '').strip() if data else ''
+    text = (data.get('text') or '').strip() if data else ''
+
+    if kind not in ('commend', 'condemn'):
+        return jsonify({'error': 'Invalid type'}), 400
+    if not text or len(text) > 300:
+        return jsonify({'error': 'Text must be 1-300 characters'}), 400
+
+    opponent_id = game.black_id if player_color == 'white' else game.white_id
+
+    comm = Commendation(
+        game_id=game.id,
+        author_id=current_user.id,
+        subject_id=opponent_id,
+        kind=kind,
+        text=text,
+    )
+    db.session.add(comm)
+    db.session.commit()
+
+    return jsonify({'success': True})
+
+
+@game_bp.route('/game/<int:game_id>/name-sequence', methods=['POST'])
+@login_required
+def name_game_sequence(game_id):
+    game = Game.query.get_or_404(game_id)
+    player_color = _player_color(game)
+    if not player_color:
+        return jsonify({'error': 'Not a participant'}), 403
+    if not current_user.can_name_openings:
+        return jsonify({'error': 'Naming is disabled in your settings'}), 403
+
+    data = request.get_json()
+    seq_name = (data.get('name') or '').strip() if data else ''
+    moves_key = (data.get('moves_key') or '').strip() if data else ''
+    half_moves = data.get('half_moves', 0) if data else 0
+    category = (data.get('category') or '').strip() if data else ''
+
+    if not seq_name or len(seq_name) > 100:
+        return jsonify({'error': 'Name must be 1-100 characters'}), 400
+    if not moves_key or not half_moves or category not in ('Opening', 'Variation'):
+        return jsonify({'error': 'Invalid sequence data'}), 400
+
+    seq = name_sequence(current_user.id, seq_name, moves_key, half_moves, category)
+    if not seq:
+        return jsonify({'error': 'This sequence has already been named'}), 409
+
+    return jsonify({
+        'success': True,
+        'sequence': {
+            'name': seq.name,
+            'category': seq.category,
+            'creator': current_user.username,
+        },
+    })
 
 
 def _finish_game(game, result_type, last_mover):

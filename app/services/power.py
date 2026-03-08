@@ -37,11 +37,29 @@ def get_next_holder():
 
 
 def ensure_rotation_order():
-    """If no rotation order exists, create one from all active players."""
-    existing = PowerRotationOrder.query.first()
-    if existing:
+    """Create rotation if missing, and add any new players not yet in it."""
+    entries = PowerRotationOrder.query.order_by(PowerRotationOrder.position).all()
+
+    if not entries:
+        players = User.query.filter_by(is_active_player=True).order_by(User.id).all()
+        if not players:
+            return
+        n = len(players)
+        week = get_current_week()
+        ordered_ids = [None] * n
+        for i, p in enumerate(players):
+            ordered_ids[(week + i) % n] = p.id
+        set_rotation_order(ordered_ids)
         return
-    players = User.query.filter_by(is_active_player=True).order_by(User.id).all()
-    if not players:
-        return
-    set_rotation_order([p.id for p in players])
+
+    existing_ids = {e.user_id for e in entries}
+    active = User.query.filter_by(is_active_player=True).all()
+    max_pos = max(e.position for e in entries)
+    added = False
+    for p in active:
+        if p.id not in existing_ids:
+            max_pos += 1
+            db.session.add(PowerRotationOrder(user_id=p.id, position=max_pos))
+            added = True
+    if added:
+        db.session.commit()

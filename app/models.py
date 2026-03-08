@@ -30,10 +30,16 @@ class User(UserMixin, db.Model):
 
     @property
     def is_online(self):
-        if not self.last_seen:
+        try:
+            if not self.last_seen:
+                return False
+            seen = self.last_seen
+            if seen.tzinfo is None:
+                seen = seen.replace(tzinfo=timezone.utc)
+            delta = (datetime.now(timezone.utc) - seen).total_seconds()
+            return delta < 300
+        except Exception:
             return False
-        delta = (datetime.now(timezone.utc) - self.last_seen).total_seconds()
-        return delta < 300
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

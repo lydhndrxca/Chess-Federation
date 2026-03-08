@@ -16,6 +16,7 @@ class User(UserMixin, db.Model):
     losses = db.Column(db.Integer, default=0)
     draws = db.Column(db.Integer, default=0)
     forfeits = db.Column(db.Integer, default=0)
+    avatar_filename = db.Column(db.String(120))
     is_active_player = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 

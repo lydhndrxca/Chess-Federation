@@ -15,6 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     });
 
+    const avatarInput = document.querySelector('.avatar-upload-form input[type="file"]');
+    if (avatarInput) {
+        avatarInput.addEventListener('change', () => {
+            if (avatarInput.files.length) avatarInput.closest('form').submit();
+        });
+    }
+
     const deadlineEl = document.querySelector('.deadline-display');
     if (deadlineEl) {
         const iso = deadlineEl.dataset.deadline;

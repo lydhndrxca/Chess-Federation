@@ -562,6 +562,54 @@ a:hover { text-decoration: underline; }
 }
 .page-info { color: var(--text-muted); font-size: 0.85rem; }
 
+/* ── Avatars ────────────────────────────── */
+.avatar {
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    vertical-align: middle;
+}
+.avatar-xs { width: 24px; height: 24px; font-size: 0.65rem; }
+.avatar-sm { width: 36px; height: 36px; font-size: 0.85rem; }
+.avatar-md { width: 48px; height: 48px; font-size: 1.1rem; }
+.avatar-xl { width: 96px; height: 96px; font-size: 2.2rem; }
+
+.avatar-placeholder {
+    background: var(--accent);
+    color: #fff;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.profile-avatar-wrap {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 0.75rem;
+}
+
+.avatar-upload-form { position: absolute; bottom: 0; right: 0; }
+.avatar-upload-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.avatar-upload-btn:hover { background: var(--accent); border-color: var(--accent); }
+
+.nav-user-link { display: flex; align-items: center; gap: 0.4rem; }
+.standings-player { display: flex; align-items: center; gap: 0.4rem; }
+
 /* ── Mobile Responsive ──────────────────── */
 @media (max-width: 768px) {
     .nav-toggle { display: flex; }

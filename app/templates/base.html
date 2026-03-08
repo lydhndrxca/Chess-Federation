@@ -1,3 +1,4 @@
+{% from "macros.html" import avatar %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,7 +20,8 @@
                 <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
                 <a href="{{ url_for('players.player_list') }}">Players</a>
                 <a href="{{ url_for('players.match_history') }}">History</a>
-                <a href="{{ url_for('players.player_profile', username=current_user.username) }}">
+                <a href="{{ url_for('players.player_profile', username=current_user.username) }}" class="nav-user-link">
+                    {{ avatar(current_user, 'xs') }}
                     {{ current_user.username }}
                     <span class="nav-rating">{{ current_user.rating }}</span>
                 </a>

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "macros.html" import avatar %}
 {% block title %}Dashboard — Chess Federation{% endblock %}
 
 {% block content %}
@@ -108,7 +109,8 @@
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>
-                            <a href="{{ url_for('players.player_profile', username=player.username) }}">
+                            <a href="{{ url_for('players.player_profile', username=player.username) }}" class="standings-player">
+                                {{ avatar(player, 'xs') }}
                                 {{ player.username }}
                             </a>
                         </td>

@@ -1,9 +1,22 @@
 {% extends "base.html" %}
+{% from "macros.html" import avatar %}
 {% block title %}{{ player.username }} — Chess Federation{% endblock %}
 
 {% block content %}
 <div class="profile-page">
     <div class="profile-header">
+        <div class="profile-avatar-wrap">
+            {{ avatar(player, 'xl') }}
+            {% if current_user.id == player.id %}
+            <form action="{{ url_for('players.upload_avatar', username=player.username) }}"
+                  method="post" enctype="multipart/form-data" class="avatar-upload-form">
+                <label class="avatar-upload-btn" title="Change avatar">
+                    <input type="file" name="avatar" accept="image/*" hidden>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </label>
+            </form>
+            {% endif %}
+        </div>
         <h1>{{ player.username }}</h1>
         <div class="profile-stats-row">
             <div class="stat-block">

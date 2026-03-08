@@ -122,6 +122,33 @@ function initMuteButton() {
     });
 }
 
+/* ── Chess Move Sounds ── */
+
+const chessSounds = {};
+
+function initChessSounds() {
+    const base = '/static/audio/chess/';
+    const files = { move: 'Move.mp3', capture: 'Capture.mp3', check: 'GenericNotify.mp3', end: 'Confirmation.mp3' };
+    for (const [key, file] of Object.entries(files)) {
+        const a = new Audio(base + file);
+        a.preload = 'auto';
+        chessSounds[key] = a;
+    }
+}
+
+function playMoveSound(san, gameOver) {
+    if (!san || !chessSounds.move) return;
+    let key;
+    if (gameOver || san.includes('#'))   key = 'end';
+    else if (san.includes('+'))          key = 'check';
+    else if (san.includes('x'))          key = 'capture';
+    else                                 key = 'move';
+    const s = chessSounds[key];
+    if (!s) return;
+    s.currentTime = 0;
+    s.play().catch(() => {});
+}
+
 /* ── Material / Captured Pieces Display ── */
 
 const CAP_CHARS = {
@@ -282,6 +309,7 @@ class ChessBoard {
                         viewOnly: false,
                     });
                     appendMove(data.move_number, data.san, this.playerColor);
+                    playMoveSound(data.san, false);
 
                     const thinkTime = 1200 + Math.random() * 2300;
                     await new Promise(r => setTimeout(r, thinkTime));
@@ -292,6 +320,7 @@ class ChessBoard {
                         animation: { enabled: true, duration: 300 },
                     });
                     appendMove(null, data.enoch_move.san, this.otherColor());
+                    playMoveSound(data.enoch_move.san, data.game_over);
 
                     this.fen = data.fen;
                     this.lastMoveUci = data.enoch_move.uci;
@@ -325,6 +354,7 @@ class ChessBoard {
                         viewOnly: true,
                     });
                     appendMove(data.move_number, data.san, this.playerColor);
+                    playMoveSound(data.san, data.game_over);
                     updateCaptures(data.captures);
                     if (data.enoch) updateEnoch(data.enoch);
                     if (data.game_over) {
@@ -341,6 +371,7 @@ class ChessBoard {
                     });
 
                     appendMove(data.move_number, data.san, this.playerColor);
+                    playMoveSound(data.san, data.game_over);
                     updateCaptures(data.captures);
 
                     if (data.enoch) updateEnoch(data.enoch);
@@ -401,6 +432,7 @@ class ChessBoard {
 
                 if (data.last_move) {
                     appendMove(null, data.last_move.san, data.last_move.color);
+                    playMoveSound(data.last_move.san, data.status === 'completed' || data.status === 'forfeited');
                 }
                 if (data.captures) updateCaptures(data.captures);
                 if (data.enoch) updateEnoch(data.enoch);
@@ -912,5 +944,6 @@ if (cfg) {
 }
 initReplay();
 initPgnCopy();
+initChessSounds();
 loadAudioManifest();
 initMuteButton();

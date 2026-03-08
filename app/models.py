@@ -11,7 +11,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
-    rating = db.Column(db.Integer, default=800)
+    rating = db.Column(db.Integer, default=200)
     wins = db.Column(db.Integer, default=0)
     losses = db.Column(db.Integer, default=0)
     draws = db.Column(db.Integer, default=0)
@@ -58,12 +58,14 @@ class Game(db.Model):
     current_turn = db.Column(db.String(5), default='white')
     move_count = db.Column(db.Integer, default=0)
     rule_snapshot = db.Column(db.Text)
+    power_holder_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     started_at = db.Column(db.DateTime)
     completed_at = db.Column(db.DateTime)
     deadline = db.Column(db.DateTime)
 
     white = db.relationship('User', foreign_keys=[white_id], backref='games_as_white')
     black = db.relationship('User', foreign_keys=[black_id], backref='games_as_black')
+    power_holder = db.relationship('User', foreign_keys=[power_holder_id])
     moves = db.relationship('Move', backref='game', order_by='Move.id')
 
 
@@ -87,3 +89,34 @@ class WeeklySchedule(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     power_holder = db.relationship('User', foreign_keys=[power_position_holder_id])
+
+
+class ChatMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    content = db.Column(db.Text, nullable=False)
+    is_bot = db.Column(db.Boolean, default=False)
+    bot_name = db.Column(db.String(80))
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = db.relationship('User', foreign_keys=[user_id])
+
+
+class PowerRotationOrder(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    position = db.Column(db.Integer, nullable=False)
+
+    user = db.relationship('User', foreign_keys=[user_id])
+
+
+class SeasonMaterialStat(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    season_year = db.Column(db.Integer, nullable=False)
+    season_month = db.Column(db.Integer, nullable=False)
+    total_diff = db.Column(db.Float, default=0)
+    games_count = db.Column(db.Integer, default=0)
+    avg_diff = db.Column(db.Float, default=0)
+
+    user = db.relationship('User', foreign_keys=[user_id])

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "macros.html" import avatar %}
+{% block title %}Federation Hall — Chess Federation{% endblock %}
+
+{% block content %}
+<div class="hall-page">
+    <h1>Federation Hall</h1>
+
+    <div class="card chat-card">
+        <div class="chat-messages" id="chatMessages">
+            {% for msg in messages %}
+            <div class="chat-msg {{ 'chat-msg-bot' if msg.is_bot else '' }}" data-msg-id="{{ msg.id }}">
+                {% if msg.is_bot %}
+                <div class="chat-avatar-wrap">
+                    <span class="avatar avatar-sm avatar-bot">E</span>
+                </div>
+                <div class="chat-bubble chat-bubble-bot">
+                    <span class="chat-sender chat-sender-bot">{{ msg.bot_name or 'Enoch' }}</span>
+                    <p class="chat-text">{{ msg.content }}</p>
+                    <span class="chat-time">{{ msg.timestamp.strftime('%b %d, %I:%M %p') }}</span>
+                </div>
+                {% else %}
+                <div class="chat-avatar-wrap">
+                    {{ avatar(msg.user, 'sm') }}
+                </div>
+                <div class="chat-bubble">
+                    <span class="chat-sender">{{ msg.user.username }}</span>
+                    <p class="chat-text">{{ msg.content }}</p>
+                    <span class="chat-time">{{ msg.timestamp.strftime('%b %d, %I:%M %p') }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="chat-input-bar">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Say something..." maxlength="1000" autocomplete="off">
+            <button id="chatSendBtn" class="btn btn-primary btn-sm">Send</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/hall.js') }}"></script>
+{% endblock %}

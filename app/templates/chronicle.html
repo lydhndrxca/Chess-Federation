@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Match History — Chess Federation{% endblock %}
+{% block title %}Chronicle — Chess Federation{% endblock %}
 
 {% block content %}
-<div class="history-page">
-    <h1>Match History</h1>
+<div class="chronicle-page">
+    <h1>Chronicle</h1>
 
     {% if games.items %}
     <div class="card">
@@ -21,7 +21,7 @@
                 </div>
                 <div class="history-meta">
                     <span class="badge badge-sm">{{ game.result_type }}</span>
-                    <span class="text-muted">Season {{ game.season }}, Wk {{ game.week_number }}</span>
+                    <span class="text-muted">Wk {{ game.week_number }}</span>
                     {% if game.rating_change_white is not none %}
                     <span class="rating-delta">
                         {{ game.white.username }}: {{ '%+.1f'|format(game.rating_change_white) }}
@@ -37,11 +37,11 @@
     {% if games.pages > 1 %}
     <div class="pagination">
         {% if games.has_prev %}
-        <a href="{{ url_for('players.match_history', page=games.prev_num) }}" class="btn btn-sm">&laquo; Prev</a>
+        <a href="{{ url_for('players.chronicle', page=games.prev_num) }}" class="btn btn-sm">&laquo; Prev</a>
         {% endif %}
         <span class="page-info">Page {{ games.page }} of {{ games.pages }}</span>
         {% if games.has_next %}
-        <a href="{{ url_for('players.match_history', page=games.next_num) }}" class="btn btn-sm">Next &raquo;</a>
+        <a href="{{ url_for('players.chronicle', page=games.next_num) }}" class="btn btn-sm">Next &raquo;</a>
         {% endif %}
     </div>
     {% endif %}

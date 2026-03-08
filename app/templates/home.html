@@ -5,7 +5,7 @@
 <div class="hero">
     <div class="hero-content">
         <h1>Chess Federation</h1>
-        <p class="hero-subtitle">A private correspondence chess league with weekly matches, persistent rankings, and evolving rules.</p>
+        <p class="hero-subtitle">A private correspondence chess league with weekly matches, ceremonial rank titles, rotating decrees, and a persistent federation rating. Climb from Ordained Laborer to Lord of Schools.</p>
         <div class="hero-actions">
             <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Join the Federation</a>
             <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">Sign In</a>
@@ -25,15 +25,19 @@
 <div class="features">
     <div class="feature-card">
         <h3>Weekly Matches</h3>
-        <p>One match per week. Play on your schedule within a 7-day window.</p>
+        <p>One official match per week. Play on your schedule within the Sunday noon deadline.</p>
     </div>
     <div class="feature-card">
-        <h3>Federation Rankings</h3>
-        <p>Custom 10-tier rating system. Climb from Initiate to Lord of Schools.</p>
+        <h3>Ten Ceremonial Ranks</h3>
+        <p>From Ordained Laborer of the Stables to Lord of Schools. Rating-driven progression through all ten tiers.</p>
     </div>
     <div class="feature-card">
-        <h3>Full History</h3>
-        <p>Every game permanently recorded with notation, stats, and rating changes.</p>
+        <h3>Weekly Decree</h3>
+        <p>The Power Position rotates each week. The holder declares a new rule for the federation.</p>
+    </div>
+    <div class="feature-card">
+        <h3>Federation Hall</h3>
+        <p>Group chat with automated announcements from Enoch, the Federation's ceremonial orchestrator.</p>
     </div>
 </div>
 {% endblock %}

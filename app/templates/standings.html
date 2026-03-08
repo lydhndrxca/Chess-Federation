@@ -1,31 +1,46 @@
 {% extends "base.html" %}
-{% from "macros.html" import avatar %}
-{% block title %}Dashboard — Chess Federation{% endblock %}
+{% from "macros.html" import avatar, player_card %}
+{% block title %}Standings — Chess Federation{% endblock %}
 
 {% block content %}
-<div class="dashboard">
+<div class="standings-page">
     <div class="dash-header">
-        <h1>Season {{ season }} — Week {{ week }}</h1>
+        <h1>Season {{ season_month }}/{{ season_year }} — Week {{ week }}</h1>
     </div>
+
+    {% if schedule and schedule.power_holder %}
+    <div class="card decree-bar">
+        <div class="decree-bar-inner">
+            <div class="decree-holder">
+                <span class="decree-label">Power Position</span>
+                <strong>{{ schedule.power_holder.username }}</strong>
+            </div>
+            {% if schedule.rule_declaration %}
+            <div class="decree-text">
+                <span class="decree-label">Weekly Decree</span>
+                <p>{{ schedule.rule_declaration }}</p>
+            </div>
+            {% else %}
+            <div class="decree-text">
+                <span class="decree-label">Weekly Decree</span>
+                <p class="text-muted">No decree issued yet this week.</p>
+            </div>
+            {% endif %}
+            <a href="{{ url_for('decree.decree_page') }}" class="btn btn-sm btn-outline">View Decree</a>
+        </div>
+    </div>
+    {% endif %}
 
     {% if current_game %}
     <div class="card highlight-card">
         <h2>Your Match</h2>
         <div class="matchup-display">
             <div class="matchup-player {{ 'active-turn' if current_game.current_turn == 'white' }}">
-                <span class="piece-icon">♔</span>
-                <a href="{{ url_for('players.player_profile', username=current_game.white.username) }}">
-                    {{ current_game.white.username }}
-                </a>
-                <span class="player-rating">{{ current_game.white.rating }}</span>
+                {{ player_card(current_game.white, 'sm') }}
             </div>
             <span class="matchup-vs">vs</span>
             <div class="matchup-player {{ 'active-turn' if current_game.current_turn == 'black' }}">
-                <span class="piece-icon">♚</span>
-                <a href="{{ url_for('players.player_profile', username=current_game.black.username) }}">
-                    {{ current_game.black.username }}
-                </a>
-                <span class="player-rating">{{ current_game.black.rating }}</span>
+                {{ player_card(current_game.black, 'sm') }}
             </div>
         </div>
         <div class="matchup-status">
@@ -72,7 +87,7 @@
                     </div>
                     <div class="matchup-meta">
                         {% if game.status == 'pending' %}
-                        <span class="badge badge-pending">Pending</span>
+                        <span class="badge badge-pending">Unbegun</span>
                         {% elif game.status == 'active' %}
                         <span class="badge badge-active">{{ game.current_turn }}'s turn</span>
                         {% elif game.status == 'completed' %}
@@ -94,33 +109,24 @@
 
         <div class="card">
             <h2>Standings</h2>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Player</th>
-                        <th>Rating</th>
-                        <th>Tier</th>
-                        <th>W-L-D</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for player in standings %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td>
-                            <a href="{{ url_for('players.player_profile', username=player.username) }}" class="standings-player">
-                                {{ avatar(player, 'xs') }}
-                                {{ player.username }}
-                            </a>
-                        </td>
-                        <td>{{ player.rating }}</td>
-                        <td><span class="tier-badge">{{ player.tier.name }}</span></td>
-                        <td>{{ player.wins }}-{{ player.losses }}-{{ player.draws }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="standings-list">
+                {% for player in standings %}
+                <div class="standings-row">
+                    <span class="standings-rank">{{ loop.index }}</span>
+                    <div class="standings-player-info">
+                        {{ avatar(player, 'sm') }}
+                        <div class="standings-player-detail">
+                            <a href="{{ url_for('players.player_profile', username=player.username) }}">{{ player.username }}</a>
+                            <span class="standings-title">{{ player.tier.name }}</span>
+                        </div>
+                    </div>
+                    <div class="standings-nums">
+                        <span class="standings-rating">{{ player.rating }}</span>
+                        <span class="standings-record">{{ player.wins }}-{{ player.losses }}-{{ player.draws }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 

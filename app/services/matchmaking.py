@@ -1,23 +1,43 @@
 import random
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from app.models import Game, User, WeeklySchedule, db
 from app.services.rating import apply_result
 
+FEDERATION_TZ = ZoneInfo('America/Chicago')
+
+
+def _now_ct():
+    return datetime.now(FEDERATION_TZ)
+
 
 def get_current_week():
-    return datetime.now(timezone.utc).isocalendar()[1]
+    return _now_ct().isocalendar()[1]
 
 
 def get_current_season():
-    return datetime.now(timezone.utc).year
+    """Season = calendar month. Returns (year, month)."""
+    now = _now_ct()
+    return now.year, now.month
+
+
+def get_week_deadline():
+    """Next Sunday 12:00 PM Central Time."""
+    now = _now_ct()
+    days_until_sunday = (6 - now.weekday()) % 7
+    if days_until_sunday == 0 and now.hour >= 12:
+        days_until_sunday = 7
+    next_sunday = now.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(days=days_until_sunday)
+    return next_sunday.astimezone(timezone.utc)
 
 
 def generate_weekly_pairings(week=None, season=None):
     if week is None:
         week = get_current_week()
     if season is None:
-        season = get_current_season()
+        year, month = get_current_season()
+        season = year * 100 + month
 
     existing = Game.query.filter_by(week_number=week, season=season).first()
     if existing:
@@ -28,8 +48,17 @@ def generate_weekly_pairings(week=None, season=None):
         return {'week': week, 'games_created': 0, 'message': 'Not enough players'}
 
     random.shuffle(players)
-    deadline = datetime.now(timezone.utc) + timedelta(days=7)
+    deadline = get_week_deadline()
     games_created = 0
+
+    power_holder_id = None
+    try:
+        from app.services.power import get_current_holder
+        holder = get_current_holder()
+        if holder:
+            power_holder_id = holder.id
+    except (ImportError, Exception):
+        pass
 
     for i in range(0, len(players) - 1, 2):
         if random.random() < 0.5:
@@ -43,14 +72,21 @@ def generate_weekly_pairings(week=None, season=None):
             week_number=week,
             season=season,
             deadline=deadline,
+            power_holder_id=power_holder_id,
         )
         db.session.add(game)
         games_created += 1
 
-    schedule = WeeklySchedule(week_number=week, season=season)
-    db.session.add(schedule)
-    db.session.commit()
+    schedule = WeeklySchedule.query.filter_by(week_number=week, season=season).first()
+    if not schedule:
+        schedule = WeeklySchedule(
+            week_number=week,
+            season=season,
+            power_position_holder_id=power_holder_id,
+        )
+        db.session.add(schedule)
 
+    db.session.commit()
     return {'week': week, 'games_created': games_created}
 
 

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "macros.html" import player_card %}
 {% block title %}Game #{{ game.id }} — Chess Federation{% endblock %}
 
 {% block content %}
@@ -7,17 +8,9 @@
         <div class="game-board-col">
             <div class="player-bar opponent-bar">
                 {% if player_color == 'black' or (not player_color and true) %}
-                <span class="piece-icon">♔</span>
-                <a href="{{ url_for('players.player_profile', username=game.white.username) }}">
-                    {{ game.white.username }}
-                </a>
-                <span class="player-rating">{{ game.white.rating }}</span>
+                {{ player_card(game.white, 'sm') }}
                 {% else %}
-                <span class="piece-icon">♚</span>
-                <a href="{{ url_for('players.player_profile', username=game.black.username) }}">
-                    {{ game.black.username }}
-                </a>
-                <span class="player-rating">{{ game.black.rating }}</span>
+                {{ player_card(game.black, 'sm') }}
                 {% endif %}
             </div>
 
@@ -27,17 +20,9 @@
 
             <div class="player-bar self-bar">
                 {% if player_color == 'black' %}
-                <span class="piece-icon">♚</span>
-                <a href="{{ url_for('players.player_profile', username=game.black.username) }}">
-                    {{ game.black.username }}
-                </a>
-                <span class="player-rating">{{ game.black.rating }}</span>
+                {{ player_card(game.black, 'sm') }}
                 {% else %}
-                <span class="piece-icon">♔</span>
-                <a href="{{ url_for('players.player_profile', username=game.white.username) }}">
-                    {{ game.white.username }}
-                </a>
-                <span class="player-rating">{{ game.white.rating }}</span>
+                {{ player_card(game.white, 'sm') }}
                 {% endif %}
             </div>
         </div>

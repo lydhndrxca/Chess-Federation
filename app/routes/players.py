@@ -63,11 +63,11 @@ def upload_avatar():
     return redirect(url_for('players.my_account'))
 
 
-@players_bp.route('/history')
+@players_bp.route('/chronicle')
 @login_required
-def match_history():
+def chronicle():
     page = request.args.get('page', 1, type=int)
     games = Game.query.filter(
         Game.status.in_(['completed', 'forfeited'])
     ).order_by(Game.completed_at.desc()).paginate(page=page, per_page=20)
-    return render_template('history.html', games=games)
+    return render_template('chronicle.html', games=games)

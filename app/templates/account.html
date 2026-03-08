@@ -34,8 +34,12 @@
                     <span class="info-value">{{ current_user.rating }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Tier</span>
-                    <span class="info-value"><span class="tier-badge">{{ current_user.tier.name }}</span></span>
+                    <span class="info-label">Title</span>
+                    <span class="info-value pcard-title-inline">{{ current_user.tier.name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Rank</span>
+                    <span class="info-value"><span class="tier-badge">{{ current_user.tier.tier }}</span></span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Record</span>

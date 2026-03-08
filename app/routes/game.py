@@ -182,5 +182,13 @@ def _finish_game(game, result_type, last_mover):
     all_moves = Move.query.filter_by(game_id=game.id).order_by(Move.id).all()
     game.pgn = ChessEngine.build_pgn(all_moves, game)
 
+    try:
+        from app.services.material import record_material
+        white_diff = material['white'] - material['black']
+        record_material(game.white_id, white_diff)
+        record_material(game.black_id, -white_diff)
+    except (ImportError, Exception):
+        pass
+
     from app.services.rating import apply_result
     apply_result(game)

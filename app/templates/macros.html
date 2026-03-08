@@ -6,3 +6,20 @@
 <span class="avatar avatar-{{ size }} avatar-placeholder">{{ user.username[0]|upper }}</span>
 {% endif %}
 {% endmacro %}
+
+{% macro player_card(user, size='md', link=true) %}
+<div class="pcard pcard-{{ size }}">
+    {% if link %}
+    <a href="{{ url_for('players.player_profile', username=user.username) }}" class="pcard-link">
+    {% endif %}
+        {{ avatar(user, 'sm' if size == 'sm' else ('xl' if size == 'lg' else 'md')) }}
+        <div class="pcard-info">
+            <span class="pcard-name">{{ user.username }}</span>
+            <span class="pcard-title">{{ user.tier.name }}</span>
+            <span class="pcard-stats">{{ user.rating }} · {{ user.wins }}-{{ user.losses }}-{{ user.draws }}</span>
+        </div>
+    {% if link %}
+    </a>
+    {% endif %}
+</div>
+{% endmacro %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "macros.html" import avatar %}
+{% from "macros.html" import avatar, player_card %}
 {% block title %}Players — Chess Federation{% endblock %}
 
 {% block content %}
@@ -8,18 +8,14 @@
     <div class="player-grid">
         {% for player in players %}
         <a href="{{ url_for('players.player_profile', username=player.username) }}" class="player-card">
-            <div class="player-card-header">
-                {{ avatar(player, 'sm') }}
+            <div class="player-card-top">
+                {{ avatar(player, 'md') }}
                 <span class="player-name">{{ player.username }}</span>
+            </div>
+            <div class="player-card-title">{{ player.tier.name }}</div>
+            <div class="player-card-bottom">
                 <span class="player-rating-lg">{{ player.rating }}</span>
-            </div>
-            <div class="player-card-tier">
-                <span class="tier-badge">{{ player.tier.name }}</span>
-            </div>
-            <div class="player-card-stats">
-                <span>{{ player.wins }}W</span>
-                <span>{{ player.losses }}L</span>
-                <span>{{ player.draws }}D</span>
+                <span class="player-card-stats">{{ player.wins }}W · {{ player.losses }}L · {{ player.draws }}D</span>
             </div>
         </a>
         {% endfor %}

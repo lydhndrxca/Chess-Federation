@@ -12,3 +12,4 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.path.join(basedir, 'app', 'static', 'uploads', 'avatars')
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # 2 MB
+    FEDERATION_TIMEZONE = 'America/Chicago'

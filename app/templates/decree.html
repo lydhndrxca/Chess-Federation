@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "macros.html" import avatar, player_card %}
+{% block title %}Weekly Decree — Chess Federation{% endblock %}
+
+{% block content %}
+<div class="decree-page">
+    <h1>Weekly Decree</h1>
+
+    <div class="card decree-current">
+        {% if schedule and schedule.power_holder %}
+        <div class="decree-holder-section">
+            <h2>Power Position — Week {{ week }}</h2>
+            {{ player_card(schedule.power_holder, 'md') }}
+        </div>
+
+        {% if schedule.rule_declaration %}
+        <div class="decree-content">
+            <h3>The Decree</h3>
+            <blockquote class="decree-quote">{{ schedule.rule_declaration }}</blockquote>
+        </div>
+        {% else %}
+        <p class="text-muted">No decree has been issued yet this week.</p>
+        {% endif %}
+
+        {% if current_user.id == schedule.power_position_holder_id and not schedule.rule_declaration %}
+        <form method="post" action="{{ url_for('decree.post_decree') }}" class="decree-form">
+            <div class="form-group">
+                <label for="decree">Issue your decree</label>
+                <textarea id="decree" name="decree" rows="3" class="form-textarea"
+                          placeholder="State the new rule change..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Issue Decree</button>
+        </form>
+        {% endif %}
+        {% else %}
+        <p class="text-muted">No Power Position holder assigned this week. Generate weekly pairings first.</p>
+        {% endif %}
+    </div>
+
+    {% if past_decrees %}
+    <div class="card">
+        <h2>Decree Ledger</h2>
+        <div class="decree-ledger">
+            {% for entry in past_decrees %}
+            <div class="decree-entry">
+                <div class="decree-entry-header">
+                    <span class="decree-entry-week">Week {{ entry.week_number }}</span>
+                    {% if entry.power_holder %}
+                    <span class="decree-entry-holder">{{ entry.power_holder.username }}</span>
+                    {% endif %}
+                </div>
+                <p class="decree-entry-text">{{ entry.rule_declaration }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

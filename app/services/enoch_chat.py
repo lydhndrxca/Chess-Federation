@@ -23,13 +23,13 @@ _last_reply_ts = 0.0
 _last_idle_ts = 0.0
 _last_lurk_ts = 0.0
 
-REPLY_COOLDOWN = 60
-IDLE_MIN_SILENCE = 43200
-IDLE_COOLDOWN = 43200
-LURK_COOLDOWN = 3600
-LURK_MSG_THRESHOLD = 5
-LURK_WINDOW = 180
-LURK_CHANCE = 0.08
+REPLY_COOLDOWN = 600
+IDLE_MIN_SILENCE = 86400
+IDLE_COOLDOWN = 86400
+LURK_COOLDOWN = 43200
+LURK_MSG_THRESHOLD = 12
+LURK_WINDOW = 300
+LURK_CHANCE = 0.03
 
 _TRIGGER_PATTERNS = [
     (re.compile(r'@\s*enoch\s+standings?\b', re.I), 'cmd_standings'),
@@ -38,38 +38,9 @@ _TRIGGER_PATTERNS = [
     (re.compile(r'@\s*enoch\s+help\b', re.I), 'cmd_help'),
     (re.compile(r'@\s*enoch\b', re.I), 'greeting'),
     (re.compile(r'\b(?:hello|hey|hi|greetings|sup|yo)\s+enoch\b', re.I), 'greeting'),
-    (re.compile(r'\benoch\b', re.I), 'greeting'),
 ]
 
-_KEYWORD_RULES = [
-    (re.compile(r'\bwho(?:\'?s| is)\s+winning\b', re.I), 'who_winning'),
-    (re.compile(r'\bwho(?:\'?s| is)\s+ahead\b', re.I), 'who_winning'),
-    (re.compile(r'\bwinning\b', re.I), 'who_winning'),
-
-    (re.compile(r'\b(?:violin|cello|orchestra|band|music|instrument|trumpet|flute|piano|drum|bassoon|clarinet|tuba|oboe|harp)\b', re.I), 'orchestra'),
-    (re.compile(r'\bschool\b', re.I), 'orchestra'),
-
-    (re.compile(r'\bwhy\s+(?:do\s+we|play)\b', re.I), 'philosophy'),
-    (re.compile(r'\bmeaning\s+of\b', re.I), 'philosophy'),
-    (re.compile(r'\bwhat\s+is\s+chess\b', re.I), 'philosophy'),
-    (re.compile(r'\bphilosoph', re.I), 'philosophy'),
-
-    (re.compile(r'\b(?:help|advice|what\s+should\s+i\s+do|suggest|recommend|tip)\b', re.I), 'strategy'),
-
-    (re.compile(r'\b(?:good\s+move|great\s+move|nice\s+move|brilliant|look\s+at\s+this|what\s+do\s+you\s+think|thoughts|analyze)\b', re.I), 'game_commentary'),
-
-    (re.compile(r'(?:i\'?m\s+the\s+best|too\s+easy|crush(?:ed)?|destroy(?:ed)?|wreck(?:ed)?|dominat|unstoppable|fear\s+me|bow\s+(?:down|to)|king\s+of|ez\b|gg\s+ez|i\s+am\s+the\s+best|get\s+rekt|git\s+gud)', re.I), 'bragging'),
-
-    (re.compile(r'\b(?:unfair|lucky|luck|lag|rigged|cheat|hate\s+this|hate\s+chess|bs|stupid|garbage|trash\s+game)\b', re.I), 'complaining'),
-
-    (re.compile(r'\b(?:federation|this\s+place|the\s+vault|the\s+archive|ledger|how\s+long|history)\b', re.I), 'federation_lore'),
-
-    (re.compile(r'\b(?:lol|lmao|rofl|haha|hehe|funny|joke|hilarious|comedy|laugh)\b', re.I), 'humor'),
-
-    (re.compile(r'\b(?:how\s+are\s+you|what\'?s\s+up|how\s+goes|how\s+do\s+you\s+feel|what\s+are\s+you\s+doing|weather|cold|warm|today)\b', re.I), 'smalltalk'),
-
-    (re.compile(r'\b(?:fuck|shit|damn|ass|bitch|idiot|moron|stupid|dumb|suck|loser|pathetic|screw\s+you|shut\s+up)\b', re.I), 'insults'),
-]
+_KEYWORD_RULES = []
 
 _POOLS = {
     'greeting': CHAT_GREETING,
@@ -197,6 +168,7 @@ def _maybe_lurk():
 def process_message(user, text):
     """Analyze a user's chat message and optionally return an Enoch response.
 
+    Only responds to direct @Enoch mentions and commands.
     Returns the ChatMessage object if Enoch responds, or None.
     Caller must commit the session."""
     if not _can_reply():
@@ -205,7 +177,7 @@ def process_message(user, text):
     category = _classify(text)
 
     if category is None:
-        return _maybe_lurk()
+        return None
 
     if category.startswith('cmd_'):
         response = _handle_command(category, user)

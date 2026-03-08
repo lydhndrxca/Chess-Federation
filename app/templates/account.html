@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "macros.html" import avatar %}
+{% block title %}My Account — Chess Federation{% endblock %}
+
+{% block content %}
+<div class="account-page">
+    <h1>My Account</h1>
+
+    <div class="account-grid">
+        <div class="card account-avatar-card">
+            <h2>Avatar</h2>
+            <div class="account-avatar-section">
+                {{ avatar(current_user, 'xl') }}
+                <form action="{{ url_for('players.upload_avatar') }}"
+                      method="post" enctype="multipart/form-data" class="avatar-form">
+                    <label class="btn btn-sm avatar-choose-btn">
+                        Choose Photo
+                        <input type="file" name="avatar" accept="image/*" hidden>
+                    </label>
+                    <p class="text-muted avatar-hint">PNG, JPG, GIF, or WebP — 2 MB max</p>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Account Info</h2>
+            <div class="account-info">
+                <div class="info-row">
+                    <span class="info-label">Username</span>
+                    <span class="info-value">{{ current_user.username }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Rating</span>
+                    <span class="info-value">{{ current_user.rating }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Tier</span>
+                    <span class="info-value"><span class="tier-badge">{{ current_user.tier.name }}</span></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Record</span>
+                    <span class="info-value">{{ current_user.wins }}W – {{ current_user.losses }}L – {{ current_user.draws }}D</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Member since</span>
+                    <span class="info-value">{{ current_user.created_at.strftime('%b %d, %Y') }}</span>
+                </div>
+            </div>
+            <a href="{{ url_for('players.player_profile', username=current_user.username) }}" class="btn btn-sm btn-outline" style="margin-top: 1rem;">View Public Profile</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

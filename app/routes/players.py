@@ -31,35 +31,36 @@ def player_profile(username):
     return render_template('profile.html', player=player, games=games)
 
 
-@players_bp.route('/player/<username>/avatar', methods=['POST'])
+@players_bp.route('/account')
 @login_required
-def upload_avatar(username):
-    player = User.query.filter_by(username=username).first_or_404()
-    if player.id != current_user.id:
-        flash('You can only change your own avatar.', 'error')
-        return redirect(url_for('players.player_profile', username=username))
+def my_account():
+    return render_template('account.html')
 
+
+@players_bp.route('/account/avatar', methods=['POST'])
+@login_required
+def upload_avatar():
     file = request.files.get('avatar')
     if not file or file.filename == '':
         flash('No file selected.', 'error')
-        return redirect(url_for('players.player_profile', username=username))
+        return redirect(url_for('players.my_account'))
 
     ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
     if ext not in ALLOWED_EXTENSIONS:
         flash('Only PNG, JPG, GIF, and WebP images are allowed.', 'error')
-        return redirect(url_for('players.player_profile', username=username))
+        return redirect(url_for('players.my_account'))
 
-    if player.avatar_filename:
-        old_path = os.path.join(current_app.config['UPLOAD_FOLDER'], player.avatar_filename)
+    if current_user.avatar_filename:
+        old_path = os.path.join(current_app.config['UPLOAD_FOLDER'], current_user.avatar_filename)
         if os.path.exists(old_path):
             os.remove(old_path)
 
     filename = f'{uuid.uuid4().hex}.{ext}'
     file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-    player.avatar_filename = filename
+    current_user.avatar_filename = filename
     db.session.commit()
     flash('Avatar updated!', 'success')
-    return redirect(url_for('players.player_profile', username=username))
+    return redirect(url_for('players.my_account'))
 
 
 @players_bp.route('/history')

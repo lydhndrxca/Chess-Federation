@@ -119,14 +119,29 @@ if (btn) btn.addEventListener('click', function() {
 </div>
 
 <div class="cr-main">
-    <div class="cr-board-wrap">
-        <div id="cryptBoard" class="cr-board cg-wrap"></div>
+    <div class="cr-board-col">
+        <div class="cr-board-wrap">
+            <div id="cryptBoard" class="cr-board cg-wrap"></div>
+        </div>
+
+        {# ── Your Pieces (always visible under board during placement) ── #}
+        <div class="cr-inventory-strip" id="inventoryStrip">
+            <div class="cr-inv-title">Your Pieces <span class="cr-inv-hint">(select → click rank 1–2)</span></div>
+            <div class="cr-inv-grid" id="invGrid"></div>
+        </div>
+
+        {# ── Action buttons under board ── #}
+        <div class="cr-board-actions" id="boardActions">
+            <button class="btn cr-armory-btn" id="btnArmory">Armory</button>
+            <button class="btn btn-primary cr-deploy-btn" id="btnDeploy" disabled>Deploy Forces</button>
+            <button class="btn btn-sm cr-abandon-btn" id="btnAbandon">Abandon Run</button>
+        </div>
     </div>
 
     {# ── Side panel ── #}
     <div class="cr-side" id="cryptSide">
-        {# ── Progression Ladder (always visible in-game) ── #}
-        <div class="cr-ladder-compact" id="ladderCompact">
+        {# ── Progression Ladder (hidden, shown between waves) ── #}
+        <div class="cr-ladder-compact" id="ladderCompact" style="display:none">
             {% for step in ladder|reverse %}
             <div class="cr-lc-step{% if step.is_boss %} cr-lc-boss{% elif step.is_milestone %} cr-lc-milestone{% endif %}" data-wave="{{ step.wave }}">
                 <span class="cr-lc-num">{{ step.wave }}</span>
@@ -139,28 +154,10 @@ if (btn) btn.addEventListener('click', function() {
             {% endfor %}
         </div>
 
-        {# ── Placement / Shop Panel ── #}
+        {# ── Placement Panel (now just a placeholder for the side during placement) ── #}
         <div class="cr-panel cr-panel-placement" id="panelPlacement">
-            <h3 class="cr-panel-title">Armory</h3>
-
-            <div class="cr-shop" id="cryptShop">
-                <div class="cr-shop-title">Buy Pieces</div>
-                {% for piece, price in shop_prices.items() %}
-                <button class="cr-shop-btn" data-piece="{{ piece }}" data-price="{{ price }}">
-                    <span class="cr-shop-icon cr-piece-{{ piece }}"></span>
-                    <span class="cr-shop-name">{{ piece }}</span>
-                    <span class="cr-shop-cost">{{ price }}g</span>
-                </button>
-                {% endfor %}
-            </div>
-
-            <div class="cr-inventory">
-                <div class="cr-inv-title">Your Pieces <span class="cr-inv-hint">(click to select, then click a square on ranks 1–2)</span></div>
-                <div class="cr-inv-grid" id="invGrid"></div>
-            </div>
-
-            <button class="btn btn-primary cr-deploy-btn" id="btnDeploy" disabled>Deploy Forces</button>
-            <button class="btn btn-sm cr-abandon-btn" id="btnAbandon">Abandon Run</button>
+            <div class="cr-enoch-say" id="placementEnochSay"></div>
+            <div class="cr-placement-tip">Place your King and pieces on ranks 1–2, then deploy.</div>
         </div>
 
         {# ── Battle Panel ── #}
@@ -199,6 +196,27 @@ if (btn) btn.addEventListener('click', function() {
             <div class="cr-enoch-say cr-gameover-enoch" id="gameoverEnoch"></div>
             <a href="{{ url_for('crypt.crypt_home') }}" class="btn btn-primary">Return to Surface</a>
         </div>
+    </div>
+</div>
+
+{# ── Armory Modal ── #}
+<div class="cr-armory-overlay" id="armoryOverlay" style="display:none">
+    <div class="cr-armory-modal">
+        <div class="cr-armory-header">
+            <h3>Armory</h3>
+            <button class="cr-armory-close" id="armoryClose">&times;</button>
+        </div>
+        <div class="cr-shop" id="cryptShop">
+            <div class="cr-shop-title">Buy Pieces</div>
+            {% for piece, price in shop_prices.items() %}
+            <button class="cr-shop-btn" data-piece="{{ piece }}" data-price="{{ price }}">
+                <span class="cr-shop-icon cr-piece-{{ piece }}"></span>
+                <span class="cr-shop-name">{{ piece }}</span>
+                <span class="cr-shop-cost">{{ price }}g</span>
+            </button>
+            {% endfor %}
+        </div>
+        <div class="cr-armory-gold">Gold: <strong id="armoryGold">{{ game.gold }}</strong></div>
     </div>
 </div>
 

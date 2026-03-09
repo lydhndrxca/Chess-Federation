@@ -349,6 +349,7 @@
         audioBaseUrl: "{{ audio_cdn_base }}enoch/",
         manifestVersion: "{{ manifest_version }}",
         initialEnochLine: {{ (enoch_line or '') | tojson }},
+        customRuleName: {{ (game.custom_rule_name or '') | tojson }},
     };
 </script>
 {% endautoescape %}

@@ -222,6 +222,157 @@ function buildDests(legalMoves) {
     return dests;
 }
 
+/* ── Opponent piece preview (client-side pseudo-legal squares) ── */
+
+function parseFenBoard(fen) {
+    const board = new Map();
+    const ranks = fen.split(' ')[0].split('/');
+    for (let r = 0; r < 8; r++) {
+        let f = 0;
+        for (const ch of ranks[r]) {
+            if (ch >= '1' && ch <= '8') { f += parseInt(ch); }
+            else {
+                const sq = 'abcdefgh'[f] + (8 - r);
+                const color = ch === ch.toUpperCase() ? 'white' : 'black';
+                const piece = ch.toLowerCase();
+                board.set(sq, { color, piece });
+                f++;
+            }
+        }
+    }
+    return board;
+}
+
+const STANDARD_KNIGHT = [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
+const EXTENDED_KNIGHT = [[3,2],[3,-2],[-3,2],[-3,-2],[2,3],[2,-3],[-2,3],[-2,-3]];
+
+function pseudoLegalSquares(sq, board, customRule) {
+    const info = board.get(sq);
+    if (!info) return [];
+    const { color, piece } = info;
+    const f = sq.charCodeAt(0) - 97;
+    const r = parseInt(sq[1]) - 1;
+    const targets = [];
+
+    function inBounds(ff, rr) { return ff >= 0 && ff <= 7 && rr >= 0 && rr <= 7; }
+    function sqName(ff, rr) { return 'abcdefgh'[ff] + (rr + 1); }
+    function canLand(ff, rr) {
+        const s = sqName(ff, rr);
+        const occ = board.get(s);
+        return !occ || occ.color !== color;
+    }
+    function isEmpty(ff, rr) { return !board.get(sqName(ff, rr)); }
+
+    function addSlide(df, dr) {
+        let ff = f + df, rr = r + dr;
+        while (inBounds(ff, rr)) {
+            const s = sqName(ff, rr);
+            const occ = board.get(s);
+            if (occ) {
+                if (occ.color !== color) targets.push(s);
+                break;
+            }
+            targets.push(s);
+            ff += df; rr += dr;
+        }
+    }
+
+    if (piece === 'p') {
+        const dir = color === 'white' ? 1 : -1;
+        const startRank = color === 'white' ? 1 : 6;
+        if (inBounds(f, r + dir) && isEmpty(f, r + dir)) {
+            targets.push(sqName(f, r + dir));
+            if (r === startRank && isEmpty(f, r + 2 * dir))
+                targets.push(sqName(f, r + 2 * dir));
+        }
+        for (const df of [-1, 1]) {
+            if (inBounds(f + df, r + dir)) {
+                const s = sqName(f + df, r + dir);
+                const occ = board.get(s);
+                if (occ && occ.color !== color) targets.push(s);
+            }
+        }
+    } else if (piece === 'n') {
+        const offsets = (customRule && customRule.includes('Extended Knight'))
+            ? EXTENDED_KNIGHT : STANDARD_KNIGHT;
+        for (const [df, dr] of offsets) {
+            if (inBounds(f+df, r+dr) && canLand(f+df, r+dr))
+                targets.push(sqName(f+df, r+dr));
+        }
+    } else if (piece === 'b') {
+        for (const [df, dr] of [[1,1],[1,-1],[-1,1],[-1,-1]]) addSlide(df, dr);
+    } else if (piece === 'r') {
+        for (const [df, dr] of [[1,0],[-1,0],[0,1],[0,-1]]) addSlide(df, dr);
+    } else if (piece === 'q') {
+        for (const [df, dr] of [[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]]) addSlide(df, dr);
+    } else if (piece === 'k') {
+        for (const [df, dr] of [[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]]) {
+            if (inBounds(f+df, r+dr) && canLand(f+df, r+dr))
+                targets.push(sqName(f+df, r+dr));
+        }
+    }
+    return targets;
+}
+
+function setupOpponentPreview(boardInstance) {
+    const el = document.getElementById('chessBoard');
+    if (!el) return;
+
+    let previewSq = null;
+
+    el.addEventListener('click', (e) => {
+        if (boardInstance.gameOver) return;
+        const cg = el.querySelector('cg-board');
+        if (!cg) return;
+        const rect = cg.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const orientation = boardInstance.playerColor || 'white';
+        let fileIdx = Math.floor(x / (rect.width / 8));
+        let rankIdx = Math.floor(y / (rect.height / 8));
+        if (orientation === 'white') {
+            rankIdx = 7 - rankIdx;
+        } else {
+            fileIdx = 7 - fileIdx;
+        }
+        if (fileIdx < 0 || fileIdx > 7 || rankIdx < 0 || rankIdx > 7) {
+            boardInstance.ground.setAutoShapes([]);
+            previewSq = null;
+            return;
+        }
+        const sq = 'abcdefgh'[fileIdx] + (rankIdx + 1);
+
+        if (previewSq === sq) {
+            boardInstance.ground.setAutoShapes([]);
+            previewSq = null;
+            return;
+        }
+
+        const board = parseFenBoard(boardInstance.fen);
+        const info = board.get(sq);
+        if (!info || info.color === boardInstance.playerColor) {
+            boardInstance.ground.setAutoShapes([]);
+            previewSq = null;
+            return;
+        }
+
+        const customRule = boardInstance.customRuleName || '';
+        const targets = pseudoLegalSquares(sq, board, customRule);
+        if (targets.length === 0) {
+            boardInstance.ground.setAutoShapes([]);
+            previewSq = null;
+            return;
+        }
+
+        const shapes = [{ orig: sq, brush: 'red' }];
+        for (const t of targets) {
+            shapes.push({ orig: sq, dest: t, brush: 'red' });
+        }
+        boardInstance.ground.setAutoShapes(shapes);
+        previewSq = sq;
+    });
+}
+
 function uciToLastMove(uci) {
     if (!uci || uci.length < 4) return undefined;
     return [uci.substring(0, 2), uci.substring(2, 4)];
@@ -239,6 +390,7 @@ class ChessBoard {
         this.lastMoveUci = config.lastMoveUci || null;
         this.hasCommended = config.hasCommended || false;
         this.isPractice = config.isPractice || false;
+        this.customRuleName = config.customRuleName || '';
         this.pollInterval = null;
 
         const orientation = this.playerColor === 'black' ? 'black' : 'white';
@@ -279,6 +431,7 @@ class ChessBoard {
         this.setupResign();
         this.setupToggleMoves();
         this.startDeadlineTimer();
+        setupOpponentPreview(this);
     }
 
     otherColor() {
@@ -287,6 +440,7 @@ class ChessBoard {
 
     onMove(orig, dest) {
         unlockAudio();
+        this.ground.setAutoShapes([]);
         this.pendingOrig = orig;
         this.pendingDest = dest;
         this.preMoveLastMove = this.lastMoveUci ? uciToLastMove(this.lastMoveUci) : undefined;

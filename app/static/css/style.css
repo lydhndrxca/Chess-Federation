@@ -3626,6 +3626,7 @@ a:hover { text-decoration: underline; }
     max-width: 960px; margin: 0 auto;
     align-items: flex-start;
 }
+.cr-board-col { flex: 0 0 auto; display: flex; flex-direction: column; }
 .cr-board-wrap { flex: 0 0 auto; }
 .cr-board {
     width: min(440px, 55vw); height: min(440px, 55vw);
@@ -3634,12 +3635,76 @@ a:hover { text-decoration: underline; }
     flex: 1 1 280px; min-width: 240px;
 }
 
+/* ── Inventory strip (under board) ── */
+.cr-inventory-strip {
+    margin-top: .5rem; padding: .5rem;
+    background: var(--card-bg); border-radius: 6px;
+}
+.cr-inv-title { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); margin-bottom: .35rem; }
+.cr-inv-hint { font-size: .65rem; opacity: .6; text-transform: none; letter-spacing: 0; }
+.cr-inv-grid { display: flex; flex-wrap: wrap; gap: .3rem; }
+.cr-inv-btn {
+    width: 40px; height: 40px; border-radius: 4px;
+    background: rgba(255,255,255,.06); border: 2px solid transparent;
+    cursor: pointer; position: relative; transition: border-color .15s, background .15s;
+    display: flex; align-items: center; justify-content: center;
+}
+.cr-inv-btn:hover { background: rgba(255,255,255,.12); }
+.cr-inv-btn.selected { border-color: var(--accent); background: rgba(255,255,255,.14); }
+.cr-inv-btn.cr-inv-king { border-color: var(--gold, #d4a017); }
+.cr-piece-icon {
+    display: block; width: 30px; height: 30px;
+    background-size: contain; background-repeat: no-repeat; background-position: center;
+}
+
+/* ── Board action buttons ── */
+.cr-board-actions {
+    display: flex; gap: .5rem; margin-top: .5rem; align-items: center;
+}
+.cr-armory-btn {
+    background: rgba(255,255,255,.08); border: 1px solid var(--border);
+    color: var(--gold, #d4a017); font-weight: 600; padding: .45rem .9rem;
+    border-radius: 6px; cursor: pointer; font-size: .85rem;
+    transition: background .15s, border-color .15s;
+}
+.cr-armory-btn:hover { background: rgba(255,255,255,.14); border-color: var(--gold, #d4a017); }
+.cr-deploy-btn { flex: 1; }
+.cr-abandon-btn { background: transparent; color: var(--text-dim); border: 1px solid var(--border); padding: .45rem .7rem; font-size: .8rem; }
+.cr-abandon-btn:hover { background: rgba(255,0,0,.08); color: #f88; border-color: #f88; }
+
 /* ── Panels ── */
 .cr-panel { background: var(--card-bg); border-radius: 8px; padding: 1rem; }
 .cr-panel-title { margin: 0 0 .8rem; font-size: 1.1rem; color: var(--accent); }
+.cr-placement-tip { font-size: .85rem; color: var(--text-dim); margin-top: .5rem; }
 
-/* ── Shop ── */
-.cr-shop { margin-bottom: 1rem; }
+/* ── Armory modal ── */
+.cr-armory-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,.6); backdrop-filter: blur(3px);
+    display: flex; align-items: center; justify-content: center;
+}
+.cr-armory-modal {
+    background: var(--card-bg, #1e1e2e); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.2rem; width: 320px; max-width: 90vw;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+}
+.cr-armory-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: .8rem;
+}
+.cr-armory-header h3 { margin: 0; font-size: 1.1rem; color: var(--gold, #d4a017); }
+.cr-armory-close {
+    background: none; border: none; color: var(--text-dim); font-size: 1.4rem;
+    cursor: pointer; padding: 0 .3rem; line-height: 1;
+}
+.cr-armory-close:hover { color: var(--text); }
+.cr-armory-gold {
+    margin-top: .6rem; text-align: center; font-size: .9rem; color: var(--text-dim);
+}
+.cr-armory-gold strong { color: var(--gold, #d4a017); }
+
+/* ── Shop (inside armory modal) ── */
+.cr-shop { margin-bottom: .5rem; }
 .cr-shop-title { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); margin-bottom: .4rem; }
 .cr-shop-btn {
     display: flex; align-items: center; gap: .5rem;
@@ -3660,30 +3725,6 @@ a:hover { text-decoration: underline; }
 .cr-shop-btn[data-piece="R"] .cr-shop-icon { background-image: url('https://lichess1.org/assets/piece/cburnett/wR.svg'); }
 .cr-shop-btn[data-piece="Q"] .cr-shop-icon { background-image: url('https://lichess1.org/assets/piece/cburnett/wQ.svg'); }
 .cr-shop-cost { margin-left: auto; color: var(--gold, #d4a017); font-weight: 600; font-size: .85rem; }
-
-/* ── Inventory ── */
-.cr-inventory { margin-bottom: 1rem; }
-.cr-inv-title { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); margin-bottom: .4rem; }
-.cr-inv-hint { font-size: .7rem; opacity: .6; text-transform: none; letter-spacing: 0; }
-.cr-inv-grid { display: flex; flex-wrap: wrap; gap: .35rem; }
-.cr-inv-btn {
-    width: 44px; height: 44px; border-radius: 4px;
-    background: rgba(255,255,255,.06); border: 2px solid transparent;
-    cursor: pointer; position: relative; transition: border-color .15s, background .15s;
-    display: flex; align-items: center; justify-content: center;
-}
-.cr-inv-btn:hover { background: rgba(255,255,255,.12); }
-.cr-inv-btn.selected { border-color: var(--accent); background: rgba(255,255,255,.14); }
-.cr-inv-btn.cr-inv-king { border-color: var(--gold, #d4a017); }
-.cr-piece-icon {
-    display: block; width: 34px; height: 34px;
-    background-size: contain; background-repeat: no-repeat; background-position: center;
-}
-
-/* ── Deploy / Abandon buttons ── */
-.cr-deploy-btn { width: 100%; margin-bottom: .5rem; }
-.cr-abandon-btn { width: 100%; background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
-.cr-abandon-btn:hover { background: rgba(255,0,0,.08); color: #f88; border-color: #f88; }
 
 /* ── Battle panel ── */
 .cr-mute-btn {
@@ -3792,12 +3833,15 @@ a:hover { text-decoration: underline; }
 /* ── Responsive ── */
 @media (max-width: 700px) {
     .cr-main { flex-direction: column; align-items: center; }
+    .cr-board-col { width: 100%; max-width: 420px; align-items: stretch; }
     .cr-board { width: min(360px, 90vw); height: min(360px, 90vw); }
     .cr-side { width: 100%; max-width: 420px; }
 }
 @media (max-width: 400px) {
     .cr-board { width: 92vw; height: 92vw; }
     .cr-hud { gap: .8rem; }
+    .cr-inv-btn { width: 36px; height: 36px; }
+    .cr-piece-icon { width: 26px; height: 26px; }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -3880,10 +3924,10 @@ body.theme-crypt cg-board square.selected {
 
 /* Move destinations still use white outlines for clarity */
 body.theme-crypt cg-board square.move-dest {
-    box-shadow: inset 0 0 0 5px rgba(200, 180, 230, .7);
+    box-shadow: inset 0 0 0 5px rgba(200, 180, 230, .7), inset 0 0 0 7px rgba(0, 0, 0, .5);
 }
 body.theme-crypt cg-board square.move-dest.oc {
-    box-shadow: inset 0 0 0 5px rgba(200, 180, 230, .7);
+    box-shadow: inset 0 0 0 5px rgba(200, 180, 230, .7), inset 0 0 0 7px rgba(0, 0, 0, .5);
 }
 
 /* Check highlight: deeper red */
@@ -3951,6 +3995,28 @@ body.theme-crypt .cr-inv-btn:hover {
 body.theme-crypt .cr-inv-btn.selected {
     border-color: var(--accent);
     background: rgba(155, 93, 229, .18);
+}
+
+/* Armory button */
+body.theme-crypt .cr-armory-btn {
+    background: rgba(155, 93, 229, .1);
+    border-color: #3a2040;
+    color: var(--gold);
+}
+body.theme-crypt .cr-armory-btn:hover {
+    background: rgba(155, 93, 229, .2);
+    border-color: var(--gold);
+}
+
+/* Armory modal */
+body.theme-crypt .cr-armory-modal {
+    background: #1a141a;
+    border-color: #3a2540;
+}
+
+/* Inventory strip */
+body.theme-crypt .cr-inventory-strip {
+    background: rgba(10, 6, 12, .5);
 }
 
 /* Deploy/Abandon */

@@ -44,8 +44,14 @@ function buildDests(moves) {
 
 const $board      = document.getElementById('cryptBoard');
 const $invGrid    = document.getElementById('invGrid');
+const $invStrip   = document.getElementById('inventoryStrip');
+const $boardActions = document.getElementById('boardActions');
 const $btnDeploy  = document.getElementById('btnDeploy');
 const $btnAbandon = document.getElementById('btnAbandon');
+const $btnArmory  = document.getElementById('btnArmory');
+const $armoryOverlay = document.getElementById('armoryOverlay');
+const $armoryClose = document.getElementById('armoryClose');
+const $armoryGold  = document.getElementById('armoryGold');
 const $panelPlace = document.getElementById('panelPlacement');
 const $panelBattle= document.getElementById('panelBattle');
 const $panelWave  = document.getElementById('panelWaveDone');
@@ -160,11 +166,20 @@ function updateHud() {
     if ($hudKills) $hudKills.textContent = kills;
 }
 
+const $placementEnoch = document.getElementById('placementEnochSay');
+
 function setEnoch(text) {
-    if ($enochSay && text) {
-        $enochSay.textContent = text;
-        $enochSay.classList.add('cr-enoch-flash');
-        setTimeout(() => $enochSay.classList.remove('cr-enoch-flash'), 600);
+    if (text) {
+        if ($enochSay) {
+            $enochSay.textContent = text;
+            $enochSay.classList.add('cr-enoch-flash');
+            setTimeout(() => $enochSay.classList.remove('cr-enoch-flash'), 600);
+        }
+        if ($placementEnoch) {
+            $placementEnoch.textContent = text;
+            $placementEnoch.classList.add('cr-enoch-flash');
+            setTimeout(() => $placementEnoch.classList.remove('cr-enoch-flash'), 600);
+        }
     }
     playEnochLine(text);
 }
@@ -189,6 +204,12 @@ function showPanel(name) {
     $panelBattle.style.display = name === 'battle' ? '' : 'none';
     $panelWave.style.display = name === 'wave' ? '' : 'none';
     $panelOver.style.display = name === 'gameover' ? '' : 'none';
+
+    const isPlacement = name === 'placement';
+    if ($invStrip) $invStrip.style.display = isPlacement ? '' : 'none';
+    if ($boardActions) $boardActions.style.display = isPlacement ? 'flex' : 'none';
+
+    if ($ladderCompact) $ladderCompact.style.display = (name === 'wave') ? '' : 'none';
 }
 
 /* ── Init board ───────────────────────────────────────── */
@@ -338,6 +359,24 @@ function updateShopButtons() {
     });
 }
 
+/* ── Armory modal ─────────────────────────────────────── */
+
+function openArmory() {
+    if ($armoryOverlay) {
+        if ($armoryGold) $armoryGold.textContent = gold;
+        updateShopButtons();
+        $armoryOverlay.style.display = 'flex';
+    }
+}
+function closeArmory() {
+    if ($armoryOverlay) $armoryOverlay.style.display = 'none';
+}
+if ($btnArmory) $btnArmory.addEventListener('click', openArmory);
+if ($armoryClose) $armoryClose.addEventListener('click', closeArmory);
+if ($armoryOverlay) $armoryOverlay.addEventListener('click', (e) => {
+    if (e.target === $armoryOverlay) closeArmory();
+});
+
 /* ── Shop ─────────────────────────────────────────────── */
 
 document.querySelectorAll('.cr-shop-btn').forEach(btn => {
@@ -358,6 +397,7 @@ document.querySelectorAll('.cr-shop-btn').forEach(btn => {
             updateHud();
             renderInventory();
             updateShopButtons();
+            if ($armoryGold) $armoryGold.textContent = gold;
             if (d.enoch) setEnoch(d.enoch);
         });
     });
@@ -732,8 +772,6 @@ if ($muteBtn) {
 /* ═══════════════════════════════════════════════════════
    INIT
    ═══════════════════════════════════════════════════════ */
-
-updateLadder(wave);
 
 if (phase === 'placement') {
     enterPlacement();

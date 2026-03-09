@@ -63,6 +63,7 @@ class Game(db.Model):
     black_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     week_number = db.Column(db.Integer, nullable=False)
     season = db.Column(db.Integer, default=1)
+    game_type = db.Column(db.String(10), default='weekly')  # 'weekly' or 'casual'
     status = db.Column(db.String(20), default='pending')
     result = db.Column(db.String(10))
     result_type = db.Column(db.String(20))
@@ -90,6 +91,19 @@ class Game(db.Model):
     black = db.relationship('User', foreign_keys=[black_id], backref='games_as_black')
     power_holder = db.relationship('User', foreign_keys=[power_holder_id])
     moves = db.relationship('Move', backref='game', order_by='Move.id')
+
+
+class Challenge(db.Model):
+    """A challenge request from one player to another for a casual game."""
+    id = db.Column(db.Integer, primary_key=True)
+    challenger_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    challenged_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    status = db.Column(db.String(10), default='pending')  # 'pending', 'accepted', 'declined'
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    challenger = db.relationship('User', foreign_keys=[challenger_id])
+    challenged = db.relationship('User', foreign_keys=[challenged_id])
 
 
 class Move(db.Model):

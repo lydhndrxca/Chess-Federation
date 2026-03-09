@@ -15,16 +15,19 @@ from app.services.dialogue import (
     CHAT_ORCHESTRA, CHAT_PHILOSOPHY, CHAT_IDLE, CHAT_HUMOR,
     CHAT_FEDERATION_LORE,
     CMD_STANDINGS, CMD_RATING, CMD_DECREE, CMD_HELP,
+    CHAT_LATE_NIGHT, CHAT_QUIRKS, CHAT_CASUAL_ANNOUNCE,
 )
 
 BOT_NAME = 'Enoch'
 
 _last_reply_ts = 0.0
 _last_idle_ts = 0.0
+_last_quirk_ts = 0.0
 
 REPLY_COOLDOWN = 600
 IDLE_MIN_SILENCE = 86400
 IDLE_COOLDOWN = 86400
+QUIRK_COOLDOWN = 14400  # 4 hours between quirks
 
 _TRIGGER_PATTERNS = [
     (re.compile(r'@\s*enoch\s+standings?\b', re.I), 'cmd_standings'),
@@ -174,3 +177,53 @@ def maybe_idle_interjection():
     _last_idle_ts = now
     _mark_replied()
     return _post_bot(random.choice(CHAT_IDLE))
+
+
+_casual_announced = False
+
+
+def ensure_casual_announcement():
+    """Post a one-time Enoch chat announcement about casual matches."""
+    global _casual_announced
+    if _casual_announced:
+        return
+    existing = ChatMessage.query.filter(
+        ChatMessage.is_bot == True,
+        ChatMessage.content.contains('challenge one another to standard matches'),
+    ).first()
+    if existing:
+        _casual_announced = True
+        return
+    _casual_announced = True
+    msg = _post_bot(CHAT_CASUAL_ANNOUNCE)
+    db.session.commit()
+    return msg
+
+
+def maybe_quirk_interjection():
+    """Occasional creepy Enoch quirks — late-night murmurings and accidental DMs.
+
+    Called during poll. Returns a ChatMessage if posted, else None."""
+    global _last_quirk_ts
+    now = time.time()
+
+    if now - _last_quirk_ts < QUIRK_COOLDOWN:
+        return None
+
+    from zoneinfo import ZoneInfo
+    ct_now = datetime.now(ZoneInfo('America/Chicago'))
+    hour = ct_now.hour
+
+    is_late_night = 0 <= hour < 4
+    chance = 0.06 if is_late_night else 0.02
+
+    if random.random() > chance:
+        return None
+
+    if is_late_night:
+        line = random.choice(CHAT_LATE_NIGHT)
+    else:
+        line = random.choice(CHAT_QUIRKS)
+
+    _last_quirk_ts = now
+    return _post_bot(line)

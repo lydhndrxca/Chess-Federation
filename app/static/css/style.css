@@ -459,6 +459,78 @@ a:hover { text-decoration: underline; }
     align-items: baseline;
     padding: 0.6rem 0.5rem;
 }
+
+/* ── Compact top bar ── */
+.sp-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0.5rem;
+    background: var(--bg-surface);
+    border-radius: 8px;
+    margin-bottom: 0.6rem;
+    font-size: 0.75rem;
+}
+.sp-topbar-season { color: var(--text-muted); font-weight: 600; }
+.sp-topbar-deadline {
+    display: flex; align-items: center; gap: 0.3rem;
+    color: var(--text-muted);
+}
+.sp-topbar-deadline span { color: var(--accent); font-weight: 700; }
+
+/* ── Section header with rule tag ── */
+.sp-section-header { display: flex; align-items: center; margin-bottom: 0.3rem; }
+.sp-rule-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    background: rgba(212,167,44,0.15);
+    color: var(--yellow);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+.sp-sub-section { margin-top: 0.5rem; }
+.sp-sub-title { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.3rem; padding-left: 0.2rem; }
+
+/* ── Challenge UI ── */
+.sp-challenges-in { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.5rem; }
+.sp-challenge-card {
+    display: flex; align-items: center; gap: 0.5rem;
+    background: rgba(0,132,255,0.08); border: 1px solid rgba(0,132,255,0.2);
+    border-radius: 8px; padding: 0.5rem 0.65rem;
+}
+.sp-challenge-info { flex: 1; }
+.sp-challenge-name { font-weight: 600; font-size: 0.85rem; }
+.sp-challenge-rating { font-size: 0.75rem; color: var(--text-muted); margin-left: 0.2rem; }
+.sp-challenge-label { font-size: 0.72rem; color: #0084ff; margin-left: 0.3rem; }
+.sp-challenge-actions { display: flex; gap: 0.3rem; }
+
+.sp-challenge-bar {
+    margin-top: 0.5rem; padding: 0.5rem;
+    background: var(--bg-surface); border-radius: 8px;
+}
+.sp-challenge-prompt { font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem; }
+.sp-challenge-players { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.sp-challenge-btn {
+    display: flex; align-items: center; gap: 0.25rem;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.5rem;
+    cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    color: var(--text); font-size: 0.75rem;
+}
+.sp-challenge-btn:hover { border-color: #0084ff; background: rgba(0,132,255,0.06); }
+.sp-challenge-btn-name { font-weight: 600; }
+
+.badge-casual {
+    background: rgba(0,132,255,0.12);
+    color: #0084ff;
+    font-size: 0.65rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
 .sp-season { font-size: 0.8rem; color: var(--text-muted); }
 .sp-week { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
 

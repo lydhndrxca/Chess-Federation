@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 
 from app.models import ChatMessage, db
 from app.services.enoch import get_title
-from app.services.enoch_chat import process_message, maybe_idle_interjection
+from app.services.enoch_chat import process_message, maybe_idle_interjection, maybe_quirk_interjection
 
 hall_bp = Blueprint('hall', __name__)
 
@@ -101,6 +101,10 @@ def poll_messages():
         idle_msg = maybe_idle_interjection()
         if idle_msg:
             db.session.commit()
+        else:
+            quirk_msg = maybe_quirk_interjection()
+            if quirk_msg:
+                db.session.commit()
     except Exception:
         pass
 

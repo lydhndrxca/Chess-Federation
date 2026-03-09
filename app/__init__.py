@@ -49,6 +49,8 @@ def _migrate_db(app):
         cur.execute('ALTER TABLE game ADD COLUMN is_practice BOOLEAN DEFAULT 0')
     if 'custom_rule_name' not in game_cols:
         cur.execute('ALTER TABLE game ADD COLUMN custom_rule_name VARCHAR(100)')
+    if 'game_type' not in game_cols:
+        cur.execute("ALTER TABLE game ADD COLUMN game_type VARCHAR(10) DEFAULT 'weekly'")
 
     tables = {row[0] for row in cur.execute(
         "SELECT name FROM sqlite_master WHERE type='table'"
@@ -197,6 +199,19 @@ def _migrate_db(app):
         if 'cashed_out' not in crypt_cols:
             cur.execute('ALTER TABLE crypt_game ADD COLUMN cashed_out BOOLEAN DEFAULT 0')
 
+    if 'challenge' not in tables:
+        cur.execute('''CREATE TABLE challenge (
+            id INTEGER PRIMARY KEY,
+            challenger_id INTEGER NOT NULL,
+            challenged_id INTEGER NOT NULL,
+            status VARCHAR(10) DEFAULT 'pending',
+            game_id INTEGER,
+            created_at DATETIME,
+            FOREIGN KEY(challenger_id) REFERENCES user(id),
+            FOREIGN KEY(challenged_id) REFERENCES user(id),
+            FOREIGN KEY(game_id) REFERENCES game(id)
+        )''')
+
     if '_migration_flags' not in tables:
         cur.execute('''CREATE TABLE _migration_flags (
             flag VARCHAR(100) PRIMARY KEY
@@ -249,6 +264,9 @@ def create_app():
     app.register_blueprint(hall_bp)
     app.register_blueprint(fp_bp)
     app.register_blueprint(crypt_bp)
+
+    from app.routes.challenge import challenge_bp
+    app.register_blueprint(challenge_bp)
 
     _migrate_db(app)
 

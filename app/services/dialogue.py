@@ -2370,3 +2370,77 @@ CUSTOM_KNIGHT_RULE = [
     "The knight lands on a square the opponent forgot to guard. The new geometry is cruel.",
     "Every knight move this week rewrites the tactical vocabulary. Three and two. Remember it.",
 ]
+
+
+# ──────────────────────────────────────────────────────────────
+# LATE NIGHT MURMURINGS (12am–4am CT) — creepy, unsettling
+# ──────────────────────────────────────────────────────────────
+CHAT_LATE_NIGHT = [
+    "...is anyone still here? I thought I heard breathing.",
+    "The pipes are singing again. They only do that when someone is awake.",
+    "I found a tooth on the floor. Not mine. I have checked.",
+    "If you are reading this at this hour, you should not be awake. Neither should I.",
+    "Something moved behind the boiler. I have decided not to investigate.",
+    "The candle went out on its own. I did not blow it out. I was across the room.",
+    "I keep hearing footsteps above me but the building has been empty since midnight.",
+    "I was organizing my ledger and I found a page I do not remember writing.",
+    "The temperature dropped six degrees in the last hour. The furnace is on.",
+    "I just sneezed and something in the wall sneezed back.",
+    "The cobweb in the northeast corner has moved. The spider has been dead for weeks.",
+    "I can hear the church bells but it is not the hour. They should not be ringing.",
+    "The ink in my pen has turned slightly red. I am choosing not to examine it.",
+    "I woke up at my desk. I do not remember falling asleep. I do not remember sitting down.",
+    "There are scratch marks on the underside of my desk that were not there yesterday.",
+    "The floorboards are warm in one specific spot. There is nothing beneath them. I have checked. Twice.",
+    "I just counted the chairs in the sub-basement. There is one more than there should be.",
+    "The shadows in the corner are darker than the ones by the door. Significantly darker.",
+    "I hear a music box. We do not own a music box.",
+    "I found a note folded in the ledger. It is in my handwriting but I did not write it.",
+]
+
+
+# ──────────────────────────────────────────────────────────────
+# ENOCH QUIRKS — accidental DMs, odd non-sequiturs, saving face
+# ──────────────────────────────────────────────────────────────
+CHAT_QUIRKS = [
+    # Accidental DM → recovery
+    "Yes, the shipment of formaldehyde arrives Thursday. Meet me at the—\n...that was not meant for this channel.",
+    "Tell Margaret the violins are ready and the strings are made from—\n...ignore that. Wrong window.",
+    "I need you to bring the jar. The LARGE jar. And gloves.\n...apologies. Private correspondence misfired.",
+    "The teeth are sorted by size now, you can pick them up whenever—\n...maintenance notes. Disregard.",
+    "Do NOT open the crate until the smell subsides.\n...internal memo. Please disregard.",
+    "She said the hair sample matched. I am not surprised.\n...wrong recipient. Absolutely nothing to worry about.",
+
+    # Odd non-sequiturs
+    "I just realized I have not blinked in approximately forty minutes.",
+    "Has anyone else noticed the walls are slightly closer together than they were last month?",
+    "I found a photograph of this room from 1943. I am in it. That is not possible.",
+    "The rat that lives behind the register just stared at me for an uncomfortably long time. I stared back. I believe I won.",
+    "I have been humming the same four notes for three hours. I do not know the song.",
+    "My tea tastes different today. Everything tastes different today.",
+    "I attempted to go outside today. I made it to the stairs. Then I came back. The stairs felt wrong.",
+    "I organized my pencils by emotional weight. The red one is the heaviest.",
+    "Someone left a chess piece on my desk. A black king. I do not recall anyone entering.",
+    "I tried to write a letter to my sister. I got as far as 'Dear' before I remembered I do not have a sister.",
+    "The ceiling dripped on my ledger. The drip was warm. The pipes carry cold water.",
+    "I counted the bricks in the east wall again. The number has changed. I am not going to count a third time.",
+    "I pressed my hand against the wall and it felt like something pressed back.",
+    "I caught myself waving at no one. Or possibly at someone I cannot see.",
+
+    # Enoch news-style updates
+    "Quarterly report: zero sunlight received. Morale is consistent. The spiders have unionized.",
+    "Update: I have named the drip from the ceiling pipe. His name is Gerald. He is reliable.",
+    "I have started a garden in the sub-basement. Nothing grows but the mushrooms seem... aware.",
+    "Annual review of basement conditions: damp. Assessment: unchanged. Recommendation: acceptance.",
+]
+
+
+# ──────────────────────────────────────────────────────────────
+# CASUAL MATCHES CHAT ANNOUNCEMENT
+# ──────────────────────────────────────────────────────────────
+CHAT_CASUAL_ANNOUNCE = (
+    "I found another chessboard behind the boiler. It has been cleaned. Mostly. "
+    "You may now challenge one another to standard matches — no decrees, no modified rules. "
+    "These games count toward your rating. There is no deadline. "
+    "One active game per opponent. I will be watching. Naturally."
+)

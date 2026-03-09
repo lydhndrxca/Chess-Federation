@@ -87,7 +87,9 @@ def _get_captures(fen):
 
 def _use_custom_rules(game):
     """True if this game should use the weekly custom rule."""
-    return _WEEKLY_RULE_ACTIVE and not game.is_practice
+    return (_WEEKLY_RULE_ACTIVE
+            and not game.is_practice
+            and getattr(game, 'game_type', 'weekly') != 'casual')
 
 
 def _player_color(game):

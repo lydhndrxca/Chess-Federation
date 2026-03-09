@@ -2,7 +2,7 @@ from flask import Blueprint, redirect, render_template, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_, and_
 
-from app.models import Game, User, WeeklySchedule, ChatMessage, db
+from app.models import Game, User, WeeklySchedule, ChatMessage, Challenge, db
 from app.services.matchmaking import (
     check_forfeits, generate_weekly_pairings, get_current_season,
     get_current_week, get_week_deadline, get_decree_deadline,
@@ -64,32 +64,62 @@ def standings():
     year, month = get_current_season()
     season_key = year * 100 + month
 
-    weekly_games = Game.query.filter_by(
-        week_number=week, season=season_key, is_practice=False
+    weekly_games = Game.query.filter(
+        Game.week_number == week, Game.season == season_key,
+        Game.is_practice == False,
+        or_(Game.game_type == 'weekly', Game.game_type == None),
     ).all()
 
-    my_games = []
-    for g in weekly_games:
-        if current_user.id not in (g.white_id, g.black_id):
-            continue
+    def _build_game_card(g):
         my_color = 'white' if current_user.id == g.white_id else 'black'
         opponent = g.black if my_color == 'white' else g.white
         is_my_turn = (g.status in ('pending', 'active') and g.current_turn == my_color)
         h2h = _head_to_head(current_user.id, opponent.id)
-        my_games.append({
+        return {
             'game': g,
             'opponent': opponent,
             'my_color': my_color,
             'is_my_turn': is_my_turn,
             'h2h': h2h,
-        })
+        }
 
-    # Sort: games where it's your turn first, then active, then completed
+    my_games = []
+    for g in weekly_games:
+        if current_user.id not in (g.white_id, g.black_id):
+            continue
+        my_games.append(_build_game_card(g))
+
     turn_order = {True: 0, False: 1}
     status_order = {'pending': 0, 'active': 1, 'completed': 2, 'forfeited': 3}
     my_games.sort(key=lambda x: (turn_order.get(x['is_my_turn'], 1), status_order.get(x['game'].status, 9)))
 
     other_games = [g for g in weekly_games if current_user.id not in (g.white_id, g.black_id)]
+
+    # Casual games (standard rules, no deadline, unlimited)
+    casual_games_q = Game.query.filter(
+        Game.game_type == 'casual',
+        Game.is_practice == False,
+        or_(Game.white_id == current_user.id, Game.black_id == current_user.id),
+        Game.status.in_(['pending', 'active', 'completed']),
+    ).order_by(Game.id.desc()).limit(20).all()
+
+    my_casual_games = [_build_game_card(g) for g in casual_games_q]
+    my_casual_games.sort(key=lambda x: (
+        turn_order.get(x['is_my_turn'], 1),
+        status_order.get(x['game'].status, 9),
+    ))
+
+    # Pending challenges
+    incoming_challenges = Challenge.query.filter_by(
+        challenged_id=current_user.id, status='pending'
+    ).all()
+
+    # All players for challenging
+    all_players = User.query.filter(
+        User.is_active_player == True,
+        User.is_bot == False,
+        User.id != current_user.id,
+    ).order_by(User.username).all()
 
     standings_list = User.query.filter_by(
         is_active_player=True
@@ -149,6 +179,12 @@ def standings():
     except ImportError:
         pass
 
+    try:
+        from app.services.enoch_chat import ensure_casual_announcement
+        ensure_casual_announcement()
+    except (ImportError, Exception):
+        pass
+
     recent_chat = ChatMessage.query.order_by(
         ChatMessage.timestamp.desc()
     ).limit(15).all()
@@ -162,6 +198,9 @@ def standings():
         weekly_games=weekly_games,
         my_games=my_games,
         other_games=other_games,
+        my_casual_games=my_casual_games,
+        incoming_challenges=incoming_challenges,
+        all_players=all_players,
         standings=standings_list,
         schedule=schedule,
         match_deadline_iso=match_deadline_iso,

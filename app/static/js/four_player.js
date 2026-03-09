@@ -151,7 +151,7 @@
 
     var gameId = container.dataset.gameId;
     var mySeat = container.dataset.mySeat || null;
-    var currentTurn = container.dataset.currentTurn;
+    var currentTurn = container.dataset.currentTurn || null;
     var gameStatus = container.dataset.status;
     var legalMoves = {};
     try { legalMoves = JSON.parse(container.dataset.legal || '{}'); } catch (e) {}
@@ -171,12 +171,11 @@
 
     /* ── Selection & move highlights ────────────────────────────── */
 
-    board.addEventListener('click', function (e) {
+    function handleCellClick(cell) {
         if (gameStatus !== 'active' || mySeat !== currentTurn) return;
-
-        var cell = e.target.closest('.rk-cell-sq');
         if (!cell) return;
         var r = cell.dataset.r, c = cell.dataset.c;
+        if (r === undefined || c === undefined) return;
         var key = r + ',' + c;
 
         if (selectedSq && isLegalTarget(selectedSq, key)) {
@@ -205,6 +204,10 @@
         } else {
             selectedSq = null;
         }
+    }
+
+    board.addEventListener('click', function (e) {
+        handleCellClick(e.target.closest('.rk-cell-sq'));
     });
 
     function isLegalTarget(fromKey, toKey) {

@@ -125,23 +125,35 @@
     <div class="sp-section sp-chat-section">
         <div class="sp-chat-header">
             <h3 class="sp-section-title">Federation Hall</h3>
-            <a href="{{ url_for('hall.federation_hall') }}" class="sp-chat-expand">Open Full Chat</a>
+            <a href="{{ url_for('hall.federation_hall') }}" class="sp-chat-expand">Open Full Chat &rarr;</a>
         </div>
         <div class="sp-chat-messages" id="spChatMessages">
             {% for msg in recent_chat %}
-            <div class="sp-chat-msg {{ 'sp-chat-bot' if msg.is_bot else '' }}" data-msg-id="{{ msg.id }}">
-                {% if msg.is_bot %}
-                <span class="sp-chat-name sp-chat-name-bot">Enoch</span>
-                {% else %}
-                <span class="sp-chat-name">{{ msg.user.username }}</span>
+            {% set is_own = (not msg.is_bot and msg.user_id == current_user.id) %}
+            <div class="sp-chat-row {{ 'sp-chat-row-own' if is_own else ('sp-chat-row-bot' if msg.is_bot else '') }}" data-msg-id="{{ msg.id }}">
+                {% if not is_own %}
+                <div class="sp-chat-av">
+                    {% if msg.is_bot %}
+                    <img src="{{ url_for('static', filename='img/enoch.png') }}" class="sp-chat-av-img" alt="">
+                    {% else %}
+                    <span class="sp-chat-av-letter">{{ msg.user.username[0]|upper }}</span>
+                    {% endif %}
+                </div>
                 {% endif %}
-                <span class="sp-chat-text">{{ msg.content|truncate(200) }}</span>
+                <div class="sp-chat-pill {{ 'sp-chat-pill-own' if is_own else ('sp-chat-pill-bot' if msg.is_bot else 'sp-chat-pill-other') }}">
+                    {% if not is_own %}
+                    <span class="sp-chat-pill-name {{ 'sp-chat-pill-name-bot' if msg.is_bot else '' }}">{{ 'Enoch' if msg.is_bot else msg.user.username }}</span>
+                    {% endif %}
+                    <span class="sp-chat-pill-text">{{ msg.content|truncate(200) }}</span>
+                </div>
             </div>
             {% endfor %}
         </div>
-        <div class="sp-chat-input-bar">
-            <input type="text" id="spChatInput" class="sp-chat-input" placeholder="Say something..." maxlength="1000" autocomplete="off">
-            <button id="spChatSendBtn" class="btn btn-sm btn-primary">Send</button>
+        <div class="sp-chat-composer">
+            <input type="text" id="spChatInput" class="sp-chat-composer-input" placeholder="Type a message..." maxlength="1000" autocomplete="off">
+            <button id="spChatSendBtn" class="sp-chat-send-btn" type="button" aria-label="Send">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
         </div>
     </div>
 
@@ -483,27 +495,58 @@ document.addEventListener('DOMContentLoaded', function() {
     var spChatInput = document.getElementById('spChatInput');
     var spChatSend = document.getElementById('spChatSendBtn');
     var spChatLastId = 0;
+    var spMyId = {{ current_user.id }};
 
     if (spChatBox) {
-        var msgs = spChatBox.querySelectorAll('.sp-chat-msg');
-        if (msgs.length) spChatLastId = parseInt(msgs[msgs.length - 1].dataset.msgId) || 0;
+        var rows = spChatBox.querySelectorAll('.sp-chat-row');
+        if (rows.length) spChatLastId = parseInt(rows[rows.length - 1].dataset.msgId) || 0;
         spChatBox.scrollTop = spChatBox.scrollHeight;
+    }
+
+    function spEscape(s) {
+        var d = document.createElement('div'); d.textContent = s; return d.innerHTML;
     }
 
     function spAppendMsg(m) {
         if (!spChatBox) return;
-        var div = document.createElement('div');
-        div.className = 'sp-chat-msg' + (m.is_bot ? ' sp-chat-bot' : '');
-        div.dataset.msgId = m.id;
-        var name = document.createElement('span');
-        name.className = 'sp-chat-name' + (m.is_bot ? ' sp-chat-name-bot' : '');
-        name.textContent = m.is_bot ? 'Enoch' : m.username;
-        var text = document.createElement('span');
-        text.className = 'sp-chat-text';
-        text.textContent = m.content.length > 200 ? m.content.substring(0, 200) + '...' : m.content;
-        div.appendChild(name);
-        div.appendChild(text);
-        spChatBox.appendChild(div);
+        var isOwn = !m.is_bot && m.user_id === spMyId;
+
+        var row = document.createElement('div');
+        row.className = 'sp-chat-row' + (isOwn ? ' sp-chat-row-own' : (m.is_bot ? ' sp-chat-row-bot' : ''));
+        row.dataset.msgId = m.id;
+
+        if (!isOwn) {
+            var av = document.createElement('div');
+            av.className = 'sp-chat-av';
+            if (m.is_bot) {
+                av.innerHTML = '<img src="{{ url_for("static", filename="img/enoch.png") }}" class="sp-chat-av-img" alt="">';
+            } else {
+                var letter = document.createElement('span');
+                letter.className = 'sp-chat-av-letter';
+                letter.textContent = (m.username || '?')[0].toUpperCase();
+                av.appendChild(letter);
+            }
+            row.appendChild(av);
+        }
+
+        var pill = document.createElement('div');
+        pill.className = 'sp-chat-pill ' + (isOwn ? 'sp-chat-pill-own' : (m.is_bot ? 'sp-chat-pill-bot' : 'sp-chat-pill-other'));
+
+        if (!isOwn) {
+            var nameSpan = document.createElement('span');
+            nameSpan.className = 'sp-chat-pill-name' + (m.is_bot ? ' sp-chat-pill-name-bot' : '');
+            nameSpan.textContent = m.is_bot ? 'Enoch' : (m.username || '');
+            pill.appendChild(nameSpan);
+        }
+
+        var textSpan = document.createElement('span');
+        textSpan.className = 'sp-chat-pill-text';
+        var txt = m.content || '';
+        textSpan.textContent = txt.length > 200 ? txt.substring(0, 200) + '...' : txt;
+        pill.appendChild(textSpan);
+
+        row.appendChild(pill);
+        spChatBox.appendChild(row);
         spChatBox.scrollTop = spChatBox.scrollHeight;
     }
 
@@ -535,9 +578,12 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(function(r) { return r.json(); })
         .then(function(d) {
-            if (d.message && d.message.id > spChatLastId) {
-                spChatLastId = d.message.id;
-                spAppendMsg(d.message);
+            if (d.message) {
+                d.message.user_id = spMyId;
+                if (d.message.id > spChatLastId) {
+                    spChatLastId = d.message.id;
+                    spAppendMsg(d.message);
+                }
             }
             if (d.enoch_reply && d.enoch_reply.id > spChatLastId) {
                 spChatLastId = d.enoch_reply.id;

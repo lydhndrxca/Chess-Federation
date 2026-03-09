@@ -39,6 +39,7 @@ def send_message():
         if enoch_msg:
             enoch_reply = {
                 'id': enoch_msg.id,
+                'user_id': enoch_msg.user_id,
                 'username': None,
                 'avatar': None,
                 'content': enoch_msg.content,
@@ -62,6 +63,7 @@ def send_message():
         'success': True,
         'message': {
             'id': msg.id,
+            'user_id': current_user.id,
             'username': current_user.username,
             'avatar': current_user.avatar_filename,
             'content': msg.content,
@@ -110,6 +112,7 @@ def poll_messages():
     for m in messages:
         result.append({
             'id': m.id,
+            'user_id': m.user_id,
             'username': m.user.username if m.user else None,
             'avatar': m.user.avatar_filename if m.user else None,
             'content': m.content,

@@ -4,41 +4,66 @@
 
 {% block content %}
 <div class="hall-page">
-    <h1 class="hall-title">Federation Hall</h1>
+    <div class="chat-header">
+        <a href="{{ url_for('main.standings') }}" class="chat-back" aria-label="Back">&#8592;</a>
+        <div class="chat-header-info">
+            <h1 class="chat-header-title">Federation Hall</h1>
+            <span class="chat-header-sub" id="chatOnline"></span>
+        </div>
+    </div>
 
-    <div class="card chat-card">
+    <div class="chat-body" id="chatBody">
         <div class="chat-messages" id="chatMessages">
+            {% set ns = namespace(prev_user=None, prev_bot=None) %}
             {% for msg in messages %}
-            <div class="chat-msg {{ 'chat-msg-bot' if msg.is_bot else '' }}" data-msg-id="{{ msg.id }}">
-                {% if msg.is_bot %}
-                <div class="chat-avatar-wrap">
+            {% set is_own = (not msg.is_bot and msg.user_id == current_user.id) %}
+            {% set same_sender = (msg.is_bot == ns.prev_bot) and (not msg.is_bot and msg.user_id == ns.prev_user or msg.is_bot and ns.prev_bot) %}
+            {% if not same_sender %}
+            <div class="msg-group {{ 'msg-group-own' if is_own else ('msg-group-bot' if msg.is_bot else 'msg-group-other') }}">
+                {% if not is_own %}
+                <div class="msg-avatar">
+                    {% if msg.is_bot %}
                     <img src="{{ url_for('static', filename='img/enoch.png') }}" class="avatar avatar-sm avatar-enoch" alt="Enoch">
-                </div>
-                <div class="chat-bubble chat-bubble-bot">
-                    <span class="chat-sender chat-sender-bot">{{ enoch_title }}</span>
-                    <p class="chat-text chat-text-bot">{{ msg.content }}</p>
-                    <span class="chat-time">{{ msg.timestamp.strftime('%b %d, %I:%M %p') }}</span>
-                </div>
-                {% else %}
-                <div class="chat-avatar-wrap">
+                    {% else %}
                     {{ avatar(msg.user, 'sm') }}
-                </div>
-                <div class="chat-bubble">
-                    <span class="chat-sender">{{ msg.user.username }}</span>
-                    <p class="chat-text">{{ msg.content }}</p>
-                    <span class="chat-time">{{ msg.timestamp.strftime('%b %d, %I:%M %p') }}</span>
+                    {% endif %}
                 </div>
                 {% endif %}
-            </div>
+                <div class="msg-stack">
+                    {% if not is_own %}
+                    <span class="msg-author {{ 'msg-author-bot' if msg.is_bot else '' }}">{{ enoch_title if msg.is_bot else msg.user.username }}</span>
+                    {% endif %}
+            {% endif %}
+
+                    <div class="msg-row {{ 'msg-row-own' if is_own else '' }}" data-msg-id="{{ msg.id }}" data-user-id="{{ '' if msg.is_bot else msg.user_id }}" data-is-bot="{{ '1' if msg.is_bot else '0' }}">
+                        <div class="msg-bubble {{ 'msg-bubble-own' if is_own else ('msg-bubble-bot' if msg.is_bot else 'msg-bubble-other') }}">
+                            <p class="msg-text">{{ msg.content }}</p>
+                        </div>
+                        <span class="msg-time">{{ msg.timestamp.strftime('%I:%M %p') }}</span>
+                    </div>
+
+            {% set next_msg = messages[loop.index] if loop.index < messages|length else None %}
+            {% set next_same = next_msg and (next_msg.is_bot == msg.is_bot) and (not next_msg.is_bot and next_msg.user_id == msg.user_id or next_msg.is_bot and msg.is_bot) if next_msg else False %}
+            {% if not next_same %}
+                </div>{# end msg-stack #}
+            </div>{# end msg-group #}
+            {% endif %}
+
+            {% set ns.prev_user = msg.user_id if not msg.is_bot else None %}
+            {% set ns.prev_bot = msg.is_bot %}
             {% endfor %}
         </div>
+    </div>
 
-        <div class="chat-input-bar">
-            <div class="chat-input-wrap">
-                <input type="text" id="chatInput" class="chat-input" placeholder="Say something..." maxlength="1000" autocomplete="off" aria-label="Chat message">
-                <button class="emoji-toggle" id="emojiToggle" type="button" title="Emoji" aria-label="Insert emoji">😀</button>
-            </div>
-            <button id="chatSendBtn" class="btn btn-primary btn-sm">Send</button>
+    <button class="chat-scroll-fab" id="chatScrollFab" aria-label="Scroll to bottom">&#8595;</button>
+
+    <div class="chat-composer">
+        <div class="chat-composer-inner">
+            <button class="chat-emoji-btn" id="emojiToggle" type="button" title="Emoji" aria-label="Insert emoji">&#128578;</button>
+            <input type="text" id="chatInput" class="chat-composer-input" placeholder="Type a message..." maxlength="1000" autocomplete="off" aria-label="Chat message">
+            <button class="chat-send-btn" id="chatSendBtn" type="button" aria-label="Send">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
         </div>
         <div class="emoji-picker" id="emojiPicker">
             <div class="emoji-tabs" id="emojiTabs"></div>
@@ -49,5 +74,14 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+window.CHAT_CONFIG = {
+    currentUserId: {{ current_user.id }},
+    currentUsername: {{ current_user.username | tojson }},
+    enochTitle: {{ enoch_title | tojson }},
+    enochImg: "{{ url_for('static', filename='img/enoch.png') }}",
+    staticBase: "{{ url_for('static', filename='') }}"
+};
+</script>
 <script src="{{ url_for('static', filename='js/hall.js') }}"></script>
 {% endblock %}

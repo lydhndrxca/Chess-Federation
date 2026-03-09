@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ── Universal Award Popup (available globally) ── */
-    window._awardBell = new Audio((window.STATIC_BASE || '/static/') + 'audio/chess/Bell.wav');
+    window._awardBell = new Audio((window.AUDIO_CDN || (window.STATIC_BASE || '/static/') + 'audio/') + 'chess/Bell.wav');
     window._awardBell.preload = 'auto';
 
     window.showAwardItem = function(item) {

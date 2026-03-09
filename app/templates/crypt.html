@@ -240,7 +240,7 @@ if (btn) btn.addEventListener('click', function() {
         bossReward: {{ boss_reward }},
         ladder: {{ ladder | tojson }},
         audioManifestUrl: "{{ url_for('static', filename='audio/enoch/manifest.json') }}",
-        audioBaseUrl: "{{ url_for('static', filename='audio/enoch/') }}",
+        audioBaseUrl: "{{ audio_cdn_base }}enoch/",
         manifestVersion: "{{ manifest_version }}",
     };
 </script>

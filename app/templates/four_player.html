@@ -187,7 +187,7 @@
 <script>
 window.RK_AUDIO_CONFIG = {
     manifestUrl: "{{ url_for('static', filename='audio/enoch/manifest.json') }}",
-    audioBase: "{{ url_for('static', filename='audio/enoch/') }}",
+    audioBase: "{{ audio_cdn_base }}enoch/",
     manifestVersion: "{{ manifest_version }}",
 };
 </script>

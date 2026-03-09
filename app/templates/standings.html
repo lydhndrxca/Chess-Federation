@@ -471,8 +471,8 @@ document.addEventListener('DOMContentLoaded', function() {
     /* ── Background audio preloader ── */
     if (window.EnochCache) {
         var manifestUrl = "{{ url_for('static', filename='audio/enoch/manifest.json') }}";
-        var audioBase = "{{ url_for('static', filename='audio/enoch/') }}";
-        var chessBase = (window.STATIC_BASE || '/static/') + 'audio/chess/';
+        var audioBase = "{{ audio_cdn_base }}enoch/";
+        var chessBase = "{{ audio_cdn_base }}chess/";
         var PRELOAD_CATS = [
             'game_start/', 'practice_game_start/',
             'check/', 'checkmate/', 'capture_queen/',

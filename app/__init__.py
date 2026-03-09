@@ -254,7 +254,10 @@ def create_app():
 
     @app.context_processor
     def _inject_manifest_version():
-        return {'manifest_version': app.config.get('MANIFEST_VERSION', '1')}
+        return {
+            'manifest_version': app.config.get('MANIFEST_VERSION', '1'),
+            'audio_cdn_base': 'https://raw.githubusercontent.com/lydhndrxca/Chess-Federation/main/app/static/audio/',
+        }
 
     @app.after_request
     def _touch_last_seen(response):

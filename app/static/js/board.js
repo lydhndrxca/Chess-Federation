@@ -133,7 +133,7 @@ function initMuteButton() {
 const chessSounds = {};
 
 function initChessSounds() {
-    const base = (window.STATIC_BASE || '/static/') + 'audio/chess/';
+    const base = (window.AUDIO_CDN || (window.STATIC_BASE || '/static/') + 'audio/') + 'chess/';
     const files = {
         move: 'Move.mp3', capture: 'Capture.mp3',
         check: 'GenericNotify.mp3', end: 'Confirmation.mp3',

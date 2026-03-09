@@ -346,7 +346,7 @@
         activeWager: {{ active_wager | tojson if active_wager else 'null' }},
         replayFens: {{ replay_fens | tojson }},
         audioManifestUrl: "{{ url_for('static', filename='audio/enoch/manifest.json') }}",
-        audioBaseUrl: "{{ url_for('static', filename='audio/enoch/') }}",
+        audioBaseUrl: "{{ audio_cdn_base }}enoch/",
         manifestVersion: "{{ manifest_version }}",
         initialEnochLine: {{ (enoch_line or '') | tojson }},
     };

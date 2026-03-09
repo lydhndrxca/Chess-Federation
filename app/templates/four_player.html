@@ -111,7 +111,7 @@
     </div>
 
     {# ── Board ── #}
-    <div class="rk-board-wrap">
+    <div class="rk-board-wrap" id="rkBoardWrap">
         <div class="rk-board" id="rkBoard">
             {% for row in grid %}
             {% set outer_r = loop.index0 %}
@@ -131,6 +131,13 @@
             {% endfor %}
             {% endfor %}
         </div>
+    </div>
+
+    {# ── Zoom controls ── #}
+    <div class="rk-zoom-controls" id="rkZoomControls">
+        <button class="rk-zoom-btn" id="rkZoomIn" title="Zoom in">+</button>
+        <button class="rk-zoom-btn" id="rkZoomReset" title="Reset zoom">&#8634;</button>
+        <button class="rk-zoom-btn" id="rkZoomOut" title="Zoom out">&minus;</button>
     </div>
 
     {# ── Turn / status banner ── #}

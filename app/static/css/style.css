@@ -3469,7 +3469,11 @@ a:hover { text-decoration: underline; }
 .avatar-xs { width: 22px; height: 22px; border-radius: 50%; }
 
 /* ── Board ── */
-.rk-board-wrap { overflow-x: auto; margin: 0 auto 0.5rem; }
+.rk-board-wrap {
+    overflow: auto; margin: 0 auto 0.5rem;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+}
 .rk-board {
     display: grid;
     grid-template-columns: repeat(14, 1fr);
@@ -3477,6 +3481,8 @@ a:hover { text-decoration: underline; }
     width: min(100%, 560px);
     aspect-ratio: 1;
     margin: 0 auto;
+    transform-origin: center center;
+    transition: transform 0.2s ease;
     border: 2px solid var(--border);
     border-radius: 4px;
     background: var(--bg);
@@ -3485,21 +3491,41 @@ a:hover { text-decoration: underline; }
 .rk-cell-void { background: transparent; }
 .rk-cell-light { background: #b7b2a5; }
 .rk-cell-dark { background: #8a8477; }
-.rk-cell-selected { box-shadow: inset 0 0 0 2px #c9a84c; z-index: 2; }
-.rk-cell-legal { box-shadow: inset 0 0 0 2px rgba(100,200,100,0.7); z-index: 1; cursor: pointer; }
+.rk-cell-selected { box-shadow: inset 0 0 0 3px #f0c040; z-index: 2; }
+.rk-cell-legal { box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 5px #000; z-index: 1; cursor: pointer; }
 .rk-cell-legal::after {
-    content: ''; position: absolute; width: 30%; height: 30%;
-    border-radius: 50%; background: rgba(100,200,100,0.45);
+    content: ''; position: absolute; width: 28%; height: 28%;
+    border-radius: 50%; background: rgba(255,255,255,0.5);
 }
 
 .rk-piece {
-    font-size: clamp(16px, 3vw, 28px); line-height: 1; cursor: default;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5); user-select: none;
+    font-size: clamp(18px, 3.2vw, 30px); line-height: 1; cursor: default;
+    user-select: none;
+    -webkit-text-stroke: 1px #111;
+    paint-order: stroke fill;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.4));
 }
-.rk-piece-south { color: #f0ece4; }
-.rk-piece-west { color: #5b8dd9; }
-.rk-piece-north { color: #c9a84c; }
-.rk-piece-east { color: #d45555; }
+.rk-piece-south { color: #f5f5f5; -webkit-text-stroke-color: #333; }
+.rk-piece-west { color: #4a9eff; -webkit-text-stroke-color: #0a2a55; }
+.rk-piece-north { color: #f0c040; -webkit-text-stroke-color: #4a3500; }
+.rk-piece-east { color: #ff5252; -webkit-text-stroke-color: #4a0000; }
+
+/* ── Zoom controls ── */
+.rk-zoom-controls {
+    position: fixed; bottom: 80px; right: 12px; z-index: 50;
+    display: flex; flex-direction: column; gap: 4px;
+}
+.rk-zoom-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--card-bg, #2a2a2a); border: 1px solid var(--border, #444);
+    color: var(--text, #eee); font-size: 1.3rem; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: background 0.15s, transform 0.1s;
+    line-height: 1; padding: 0;
+}
+.rk-zoom-btn:hover { background: var(--bg-hover, #383838); }
+.rk-zoom-btn:active { transform: scale(0.92); }
 
 /* ── Status bar ── */
 .rk-status { text-align: center; padding: 0.4rem; font-size: 0.85rem; }

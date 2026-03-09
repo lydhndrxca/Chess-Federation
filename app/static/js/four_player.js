@@ -165,8 +165,8 @@
     var lastMoveCount = mcEl ? parseInt(mcEl.textContent.replace('#', ''), 10) || 0 : 0;
 
     var COLOR_CSS = {
-        south: '#e8e0d0', west: '#5b8dd9',
-        north: '#c9a84c', east: '#d45555',
+        south: '#f5f5f5', west: '#4a9eff',
+        north: '#f0c040', east: '#ff5252',
     };
 
     /* ── Selection & move highlights ────────────────────────────── */
@@ -385,4 +385,40 @@
     if (gameStatus === 'active' || gameStatus === 'waiting') {
         setTimeout(poll, 3000);
     }
+
+    /* ── Zoom controls ─────────────────────────────────────────── */
+
+    var rkBoardEl = document.getElementById('rkBoard');
+    var rkBoardWrap = document.getElementById('rkBoardWrap');
+    var rkZoomIn = document.getElementById('rkZoomIn');
+    var rkZoomOut = document.getElementById('rkZoomOut');
+    var rkZoomReset = document.getElementById('rkZoomReset');
+    var zoomLevel = 1;
+    var ZOOM_MIN = 1;
+    var ZOOM_MAX = 2.5;
+    var ZOOM_STEP = 0.25;
+
+    function applyZoom() {
+        if (!rkBoardEl) return;
+        rkBoardEl.style.transform = 'scale(' + zoomLevel + ')';
+        if (zoomLevel > 1) {
+            rkBoardEl.style.width = 'min(100%, 560px)';
+            if (rkBoardWrap) rkBoardWrap.style.overflow = 'auto';
+        } else {
+            if (rkBoardWrap) rkBoardWrap.style.overflow = 'auto';
+        }
+    }
+
+    if (rkZoomIn) rkZoomIn.addEventListener('click', function () {
+        zoomLevel = Math.min(ZOOM_MAX, zoomLevel + ZOOM_STEP);
+        applyZoom();
+    });
+    if (rkZoomOut) rkZoomOut.addEventListener('click', function () {
+        zoomLevel = Math.max(ZOOM_MIN, zoomLevel - ZOOM_STEP);
+        applyZoom();
+    });
+    if (rkZoomReset) rkZoomReset.addEventListener('click', function () {
+        zoomLevel = 1;
+        applyZoom();
+    });
 })();

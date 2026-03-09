@@ -26,10 +26,10 @@ HUMAN_SEATS = ['south', 'west', 'east']
 SEAT_LABELS = {'south': 'South', 'west': 'West', 'north': 'North', 'east': 'East'}
 
 COLOR_MAP = {
-    'south': '#e8e0d0',
-    'west': '#5b8dd9',
-    'north': '#c9a84c',
-    'east': '#d45555',
+    'south': '#f5f5f5',
+    'west': '#4a9eff',
+    'north': '#f0c040',
+    'east': '#ff5252',
 }
 
 
@@ -158,7 +158,7 @@ def _render_game(game):
     moves_by_str = {}
     for m in legal:
         fk = f"{m['from'][0]},{m['from'][1]}"
-        moves_by_str.setdefault(fk, []).append(m)
+        moves_by_str.setdefault(fk, []).append(move_to_str(m))
 
     grid = board_to_grid(state)
     recent_moves = FourPlayerMove.query.filter_by(game_id=game.id)\

@@ -290,7 +290,39 @@
         </div>
         {% endif %}
 
-        {# ── 5. Enoch's Drawer (always last) ── #}
+        {# ── 5. The Crypt ── #}
+        {% if crypt_best_wave > 0 %}
+        <div class="card">
+            <h2>The Crypt</h2>
+            <p class="drawer-subtitle">Wave-defence personal record</p>
+            <div class="record-bars">
+                <div class="record-row">
+                    <span class="record-label">Highest Wave</span>
+                    <span class="record-value win">{{ crypt_best_wave }}</span>
+                </div>
+                <div class="record-row">
+                    <span class="record-label">Best Score</span>
+                    <span class="record-value">{{ crypt_best_score }}</span>
+                </div>
+                <div class="record-row">
+                    <span class="record-label">Total Kills</span>
+                    <span class="record-value">{{ crypt_total_kills }}</span>
+                </div>
+                <div class="record-row">
+                    <span class="record-label">Runs</span>
+                    <span class="record-value">{{ crypt_runs }}</span>
+                </div>
+                <div class="record-row">
+                    <span class="record-label">Net Rating from Crypt</span>
+                    <span class="record-value {% if crypt_rating_net >= 0 %}win{% else %}loss{% endif %}">
+                        {% if crypt_rating_net >= 0 %}+{% endif %}{{ crypt_rating_net }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {# ── 6. Enoch's Drawer (always last) ── #}
         <div class="card drawer-card">
             <h2>Enoch's Drawer</h2>
             <p class="drawer-subtitle">Items recovered from the sub-basement</p>

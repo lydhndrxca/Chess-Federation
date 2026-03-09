@@ -167,6 +167,36 @@ def _migrate_db(app):
             FOREIGN KEY(game_id) REFERENCES four_player_game(id)
         )''')
 
+    if 'crypt_game' not in tables:
+        cur.execute('''CREATE TABLE crypt_game (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            wave INTEGER DEFAULT 1,
+            score INTEGER DEFAULT 0,
+            gold INTEGER DEFAULT 5,
+            gold_earned INTEGER DEFAULT 5,
+            gold_spent INTEGER DEFAULT 0,
+            kills INTEGER DEFAULT 0,
+            phase VARCHAR(20) DEFAULT 'placement',
+            fen_current VARCHAR(100),
+            inventory TEXT DEFAULT '["K","Q","P","P","P"]',
+            rating_entry INTEGER DEFAULT 5,
+            rating_result INTEGER,
+            cashed_out BOOLEAN DEFAULT 0,
+            started_at DATETIME,
+            completed_at DATETIME,
+            FOREIGN KEY(user_id) REFERENCES user(id)
+        )''')
+    else:
+        crypt_cols = {r[1] for r in cur.execute(
+            'PRAGMA table_info(crypt_game)').fetchall()}
+        if 'rating_entry' not in crypt_cols:
+            cur.execute('ALTER TABLE crypt_game ADD COLUMN rating_entry INTEGER DEFAULT 5')
+        if 'rating_result' not in crypt_cols:
+            cur.execute('ALTER TABLE crypt_game ADD COLUMN rating_result INTEGER')
+        if 'cashed_out' not in crypt_cols:
+            cur.execute('ALTER TABLE crypt_game ADD COLUMN cashed_out BOOLEAN DEFAULT 0')
+
     if '_migration_flags' not in tables:
         cur.execute('''CREATE TABLE _migration_flags (
             flag VARCHAR(100) PRIMARY KEY
@@ -208,6 +238,7 @@ def create_app():
     from app.routes.decree import decree_bp
     from app.routes.hall import hall_bp
     from app.routes.four_player import fp_bp
+    from app.routes.crypt import crypt_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -217,6 +248,7 @@ def create_app():
     app.register_blueprint(decree_bp)
     app.register_blueprint(hall_bp)
     app.register_blueprint(fp_bp)
+    app.register_blueprint(crypt_bp)
 
     _migrate_db(app)
 

@@ -19,26 +19,27 @@ RULE_ACTIVE = True
 RULE_TITLE = "The Extended Knight"
 
 RULE_DESCRIPTION = (
-    "This week, knights ride with longer strides — three squares in one "
-    "direction and two to the side, instead of the standard two and one."
+    "This week, knights ride with longer strides — three squares forward "
+    "and two to the side, in any direction, replacing the standard 2+1."
 )
 
 RULE_ENOCH_ANNOUNCEMENT = (
     "A decree echoes through the vaults. The knights have been fed. They now "
-    "leap three squares forward and two to the side. The old L-shape is "
-    "forbidden in Federation matches this week. I have amended the ledger."
+    "leap three squares forward and two to the side — any direction they "
+    "choose. The old two-and-one is suspended. I have amended the ledger."
 )
 
 RULE_REMINDER = (
-    "Knights move 3+2 instead of the standard 2+1 this week."
+    "Knights move 3 forward + 2 to the side (any direction) this week."
 )
 
 RULE_EXPLANATION = (
     "This week's custom rule changes how knights move. Instead of the "
     "standard L-shape (2 squares in one direction, 1 to the side), "
-    "knights now move in an extended L-shape: 3 squares in one direction "
-    "and 2 to the side. This applies to all player-vs-player Federation "
-    "matches. Enoch practice matches use standard rules."
+    "knights now move 3 squares in any cardinal direction and 2 to the "
+    "side. Same L-shape concept, just one extra square on each leg. "
+    "This applies to all player-vs-player Federation matches. Enoch "
+    "practice matches use standard rules."
 )
 
 _CHAT_ANNOUNCED = False
@@ -54,7 +55,7 @@ def ensure_chat_announcement():
         from app.models import ChatMessage, db
         already = ChatMessage.query.filter(
             ChatMessage.is_bot == True,
-            ChatMessage.content.contains('knights ride with longer strides'),
+            ChatMessage.content.contains('knights have been fed'),
         ).first()
         if already:
             return
@@ -70,7 +71,7 @@ def ensure_chat_announcement():
         pass
 
 
-# ── Custom knight offsets (3+2 instead of 2+1) ──────
+# ── Custom knight offsets (3+2 replaces standard 2+1) ──
 
 CUSTOM_KNIGHT_OFFSETS = [
     (3, 2), (3, -2), (-3, 2), (-3, -2),

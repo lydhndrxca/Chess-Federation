@@ -238,6 +238,28 @@ class FourPlayerMove(db.Model):
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
+class CryptGame(db.Model):
+    """Wave-defense solo mode — 'The Crypt'. 10 waves, Millionaire-style."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    wave = db.Column(db.Integer, default=1)
+    score = db.Column(db.Integer, default=0)
+    gold = db.Column(db.Integer, default=5)
+    gold_earned = db.Column(db.Integer, default=5)
+    gold_spent = db.Column(db.Integer, default=0)
+    kills = db.Column(db.Integer, default=0)
+    phase = db.Column(db.String(20), default='placement')
+    fen_current = db.Column(db.String(100))
+    inventory = db.Column(db.Text, default='["K","Q","P","P","P"]')
+    rating_entry = db.Column(db.Integer, default=5)
+    rating_result = db.Column(db.Integer)
+    cashed_out = db.Column(db.Boolean, default=False)
+    started_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    completed_at = db.Column(db.DateTime)
+
+    user = db.relationship('User', foreign_keys=[user_id])
+
+
 class EnochWager(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

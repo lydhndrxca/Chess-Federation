@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% block title %}The Crypt — Chess Federation{% endblock %}
+{% block body_class %}theme-crypt{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.1.0/assets/chessground.base.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chessground-theme.css') }}">
+{% endblock %}
+
+{% block content %}
+
+{# ── No active game — landing page ── #}
+{% if not game %}
+<div class="cr-landing">
+    <div class="cr-landing-header">
+        <img src="{{ url_for('static', filename='img/enoch.png') }}" class="cr-enoch-avatar" alt="Enoch">
+        <div>
+            <h2 class="cr-title">The Crypt</h2>
+            <p class="cr-subtitle">Enoch's Sub-Basement Defence</p>
+        </div>
+    </div>
+
+    <div class="cr-description">
+        <p>Survive 10 waves. Enoch sends increasingly brutal forces up through the grates.
+        You start with a King, a Queen, and three Pawns — plus a handful of gold.</p>
+        <p>Between waves, spend gold to recruit reinforcements. At milestones you can <strong>cash out</strong>
+        your points — or push deeper for greater rewards.</p>
+        <p>Wave 10 is the <strong>Boss Wave</strong> — Enoch himself. Beat him for the ultimate payout.</p>
+    </div>
+
+    {# ── Progression Ladder ── #}
+    <div class="cr-ladder-preview">
+        <h3 class="cr-ladder-title">The Descent</h3>
+        <div class="cr-ladder">
+            {% for step in ladder|reverse %}
+            <div class="cr-ladder-step{% if step.is_boss %} cr-step-boss{% elif step.is_milestone %} cr-step-milestone{% endif %}">
+                <span class="cr-step-wave">{{ step.wave }}</span>
+                <span class="cr-step-label">
+                    {% if step.is_boss %}
+                        ENOCH BOSS — <strong>+{{ step.reward }} pts</strong>
+                    {% elif step.is_milestone %}
+                        Cash out: <strong>+{{ step.cashout }} pts</strong> · Safety net: +{{ step.safety_net }}
+                    {% else %}
+                        &mdash;
+                    {% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="cr-entry-info">
+        <div class="cr-entry-cost">Entry Cost: <strong>{{ entry_cost }} rating points</strong></div>
+        <div class="cr-daily-limit">
+            Runs today: <strong>{{ daily_runs }} / {{ daily_limit }}</strong>
+        </div>
+        {% if best_wave > 0 %}
+        <div class="cr-personal-best">
+            Personal best: <strong>Wave {{ best_wave }}</strong>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if can_enter %}
+    <button class="btn btn-primary cr-start-btn" id="btnStartCrypt">
+        Descend Into the Crypt <span class="cr-cost-badge">(−{{ entry_cost }} pts)</span>
+    </button>
+    {% else %}
+    <button class="btn cr-start-btn" disabled>
+        {% if daily_runs >= daily_limit %}Daily limit reached{% else %}Not enough rating points{% endif %}
+    </button>
+    {% endif %}
+
+    {% if leaderboard %}
+    <div class="cr-leaderboard">
+        <h3 class="cr-lb-title">The Ledger</h3>
+        <table class="cr-lb-table">
+            <thead><tr>
+                <th>#</th><th>Player</th><th>Wave</th><th>Score</th><th>Kills</th>
+            </tr></thead>
+            <tbody>
+            {% for entry in leaderboard %}
+            <tr{% if entry.user_id == current_user.id %} class="cr-lb-you"{% endif %}>
+                <td>{{ loop.index }}</td>
+                <td>{{ entry.user.username }}</td>
+                <td>{{ entry.wave }}</td>
+                <td>{{ entry.score }}</td>
+                <td>{{ entry.kills }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+var btn = document.getElementById('btnStartCrypt');
+if (btn) btn.addEventListener('click', function() {
+    this.disabled = true;
+    this.textContent = 'Descending…';
+    fetch('/crypt/new', {method: 'POST', headers: {'Content-Type': 'application/json'}})
+    .then(r => r.json())
+    .then(d => {
+        if (d.ok) window.location.href = '/crypt/' + d.game_id;
+        else { alert(d.error || 'Error'); this.disabled = false; this.innerHTML = 'Descend Into the Crypt <span class="cr-cost-badge">(−{{ entry_cost }} pts)</span>'; }
+    });
+});
+</script>
+
+{% else %}
+{# ── Active game ── #}
+
+<div class="cr-hud" id="cryptHud">
+    <div class="cr-hud-item"><span class="cr-hud-label">Wave</span><span class="cr-hud-val" id="hudWave">{{ game.wave }}<span class="cr-hud-max">/{{ max_waves }}</span></span></div>
+    <div class="cr-hud-item"><span class="cr-hud-label">Score</span><span class="cr-hud-val" id="hudScore">{{ game.score }}</span></div>
+    <div class="cr-hud-item cr-hud-gold"><span class="cr-hud-label">Gold</span><span class="cr-hud-val" id="hudGold">{{ game.gold }}</span></div>
+    <div class="cr-hud-item"><span class="cr-hud-label">Kills</span><span class="cr-hud-val" id="hudKills">{{ game.kills }}</span></div>
+</div>
+
+<div class="cr-main">
+    <div class="cr-board-wrap">
+        <div id="cryptBoard" class="cr-board cg-wrap"></div>
+    </div>
+
+    {# ── Side panel ── #}
+    <div class="cr-side" id="cryptSide">
+        {# ── Progression Ladder (always visible in-game) ── #}
+        <div class="cr-ladder-compact" id="ladderCompact">
+            {% for step in ladder|reverse %}
+            <div class="cr-lc-step{% if step.is_boss %} cr-lc-boss{% elif step.is_milestone %} cr-lc-milestone{% endif %}" data-wave="{{ step.wave }}">
+                <span class="cr-lc-num">{{ step.wave }}</span>
+                {% if step.is_boss %}
+                <span class="cr-lc-info">+{{ step.reward }}</span>
+                {% elif step.is_milestone %}
+                <span class="cr-lc-info">+{{ step.cashout }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        {# ── Placement / Shop Panel ── #}
+        <div class="cr-panel cr-panel-placement" id="panelPlacement">
+            <h3 class="cr-panel-title">Armory</h3>
+
+            <div class="cr-shop" id="cryptShop">
+                <div class="cr-shop-title">Buy Pieces</div>
+                {% for piece, price in shop_prices.items() %}
+                <button class="cr-shop-btn" data-piece="{{ piece }}" data-price="{{ price }}">
+                    <span class="cr-shop-icon cr-piece-{{ piece }}"></span>
+                    <span class="cr-shop-name">{{ piece }}</span>
+                    <span class="cr-shop-cost">{{ price }}g</span>
+                </button>
+                {% endfor %}
+            </div>
+
+            <div class="cr-inventory">
+                <div class="cr-inv-title">Your Pieces <span class="cr-inv-hint">(click to select, then click a square on ranks 1–2)</span></div>
+                <div class="cr-inv-grid" id="invGrid"></div>
+            </div>
+
+            <button class="btn btn-primary cr-deploy-btn" id="btnDeploy" disabled>Deploy Forces</button>
+            <button class="btn btn-sm cr-abandon-btn" id="btnAbandon">Abandon Run</button>
+        </div>
+
+        {# ── Battle Panel ── #}
+        <div class="cr-panel cr-panel-battle" id="panelBattle" style="display:none">
+            <button class="cr-mute-btn" id="cryptMuteBtn" title="Mute Enoch">&#128264;</button>
+            <div class="cr-enoch-say" id="enochSay"></div>
+            <div class="cr-battle-info">
+                <p>Eliminate all enemy pieces to clear the wave.</p>
+                <p>If your King falls, it's over.</p>
+            </div>
+            <div class="cr-confirm-bar" id="crConfirmBar" style="display:none">
+                <button class="cr-confirm-no" id="crConfirmNo" title="Cancel">&#10005;</button>
+                <button class="cr-confirm-yes" id="crConfirmYes" title="Confirm">&#10003;</button>
+            </div>
+        </div>
+
+        {# ── Wave Complete / Milestone Overlay ── #}
+        <div class="cr-panel cr-panel-wave-done" id="panelWaveDone" style="display:none">
+            <h3 class="cr-wave-done-title" id="waveDoneTitle">Wave Cleared!</h3>
+            <div class="cr-wave-done-stats" id="waveDoneStats"></div>
+            <div class="cr-milestone-box" id="milestoneBox" style="display:none">
+                <div class="cr-milestone-msg" id="milestoneMsg"></div>
+                <div class="cr-milestone-actions" id="milestoneActions">
+                    <button class="btn cr-cashout-btn" id="btnCashout">Cash Out</button>
+                    <button class="btn btn-primary" id="btnContinue">Push Deeper</button>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="btnNextWave" style="display:none">Prepare Next Wave</button>
+        </div>
+
+        {# ── Game Over Overlay ── #}
+        <div class="cr-panel cr-panel-gameover" id="panelGameover" style="display:none">
+            <h3 class="cr-gameover-title" id="gameoverTitle">The Crypt Claims You</h3>
+            <div class="cr-gameover-stats" id="gameoverStats"></div>
+            <div class="cr-rating-change" id="gameoverRating"></div>
+            <div class="cr-enoch-say cr-gameover-enoch" id="gameoverEnoch"></div>
+            <a href="{{ url_for('crypt.crypt_home') }}" class="btn btn-primary">Return to Surface</a>
+        </div>
+    </div>
+</div>
+
+{% if leaderboard %}
+<div class="cr-leaderboard cr-lb-ingame">
+    <h3 class="cr-lb-title">The Ledger</h3>
+    <table class="cr-lb-table">
+        <thead><tr>
+            <th>#</th><th>Player</th><th>Wave</th><th>Score</th><th>Kills</th>
+        </tr></thead>
+        <tbody>
+        {% for entry in leaderboard %}
+        <tr{% if entry.user_id == current_user.id %} class="cr-lb-you"{% endif %}>
+            <td>{{ loop.index }}</td>
+            <td>{{ entry.user.username }}</td>
+            <td>{{ entry.wave }}</td>
+            <td>{{ entry.score }}</td>
+            <td>{{ entry.kills }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% autoescape false %}
+<script>
+    window.CRYPT_CONFIG = {
+        gameId: {{ game.id }},
+        phase: "{{ game.phase }}",
+        wave: {{ game.wave }},
+        score: {{ game.score }},
+        gold: {{ game.gold }},
+        kills: {{ game.kills }},
+        inventory: {{ game.inventory | safe }},
+        fen: {{ (game.fen_current or '') | tojson }},
+        legalMoves: {% if game.phase == 'battle' and game.fen_current %}{{ legal_moves | default([]) | tojson }}{% else %}[]{% endif %},
+        maxWaves: {{ max_waves }},
+        bossReward: {{ boss_reward }},
+        ladder: {{ ladder | tojson }},
+        audioManifestUrl: "{{ url_for('static', filename='audio/enoch/manifest.json') }}",
+        audioBaseUrl: "{{ url_for('static', filename='audio/enoch/') }}",
+        manifestVersion: "{{ manifest_version }}",
+    };
+</script>
+{% endautoescape %}
+<script src="{{ url_for('static', filename='js/audio-cache.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/crypt.js') }}"></script>
+
+{% endif %}
+{% endblock %}

@@ -3556,3 +3556,519 @@ a:hover { text-decoration: underline; }
     .rk-board { width: 100%; }
     .rk-player { flex: 1 1 100%; }
 }
+
+/* ════════════════════════════════════════════
+   THE CRYPT  (cr- prefix)
+   ════════════════════════════════════════════ */
+
+/* ── Landing page ── */
+.cr-landing { max-width: 580px; margin: 2rem auto; padding: 0 1rem; }
+.cr-landing-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.cr-enoch-avatar { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--accent); }
+.cr-title { font-size: 1.6rem; margin: 0; color: var(--accent); }
+.cr-subtitle { margin: .2rem 0 0; color: var(--text-dim); font-size: .85rem; letter-spacing: .04em; }
+.cr-description { color: var(--text-dim); line-height: 1.65; margin-bottom: 1.5rem; }
+.cr-desc-dim { opacity: .6; font-style: italic; }
+.cr-personal-best { font-size: 1rem; margin-bottom: .5rem; color: var(--gold, #d4a017); }
+.cr-start-btn { display: block; width: 100%; font-size: 1.05rem; padding: .8rem; }
+.cr-cost-badge { font-size: .85rem; opacity: .7; }
+
+/* ── Entry info ── */
+.cr-entry-info {
+    margin-bottom: 1.2rem; padding: .8rem 1rem;
+    background: rgba(0,0,0,.25); border-radius: 8px; border: 1px solid var(--border);
+}
+.cr-entry-cost { font-size: 1rem; margin-bottom: .3rem; }
+.cr-daily-limit { font-size: .9rem; color: var(--text-dim); margin-bottom: .3rem; }
+
+/* ── Landing Ladder Preview ── */
+.cr-ladder-preview { margin-bottom: 1.5rem; }
+.cr-ladder-title { font-size: 1rem; color: var(--accent); margin-bottom: .6rem; }
+.cr-ladder { display: flex; flex-direction: column; gap: 2px; }
+.cr-ladder-step {
+    display: flex; align-items: center; gap: .8rem;
+    padding: .4rem .7rem; border-radius: 4px;
+    background: rgba(255,255,255,.03); border-left: 3px solid rgba(255,255,255,.08);
+    font-size: .85rem;
+}
+.cr-step-wave {
+    font-weight: 700; min-width: 1.8rem; text-align: center;
+    color: var(--text-dim);
+}
+.cr-step-label { color: var(--text-dim); }
+.cr-step-milestone {
+    border-left-color: var(--gold, #d4a017);
+    background: rgba(212,160,23,.06);
+}
+.cr-step-milestone .cr-step-wave { color: var(--gold, #d4a017); }
+.cr-step-milestone .cr-step-label { color: var(--text); }
+.cr-step-boss {
+    border-left-color: #c44;
+    background: rgba(200,60,60,.08);
+}
+.cr-step-boss .cr-step-wave { color: #e55; font-size: 1rem; }
+.cr-step-boss .cr-step-label { color: #e88; font-weight: 600; }
+
+/* ── HUD ── */
+.cr-hud {
+    display: flex; justify-content: center; gap: 1.5rem; padding: .6rem 1rem;
+    background: rgba(0,0,0,.35); border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+.cr-hud-item { text-align: center; min-width: 60px; }
+.cr-hud-label { display: block; font-size: .65rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); }
+.cr-hud-val { display: block; font-size: 1.2rem; font-weight: 700; color: var(--text); }
+.cr-hud-gold .cr-hud-val { color: var(--gold, #d4a017); }
+
+/* ── Main layout ── */
+.cr-main {
+    display: flex; gap: 1.2rem; padding: 1rem;
+    max-width: 960px; margin: 0 auto;
+    align-items: flex-start;
+}
+.cr-board-wrap { flex: 0 0 auto; }
+.cr-board {
+    width: min(440px, 55vw); height: min(440px, 55vw);
+}
+.cr-side {
+    flex: 1 1 280px; min-width: 240px;
+}
+
+/* ── Panels ── */
+.cr-panel { background: var(--card-bg); border-radius: 8px; padding: 1rem; }
+.cr-panel-title { margin: 0 0 .8rem; font-size: 1.1rem; color: var(--accent); }
+
+/* ── Shop ── */
+.cr-shop { margin-bottom: 1rem; }
+.cr-shop-title { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); margin-bottom: .4rem; }
+.cr-shop-btn {
+    display: flex; align-items: center; gap: .5rem;
+    width: 100%; padding: .45rem .6rem; margin-bottom: .3rem;
+    background: rgba(255,255,255,.04); border: 1px solid var(--border);
+    border-radius: 4px; color: var(--text); cursor: pointer;
+    transition: background .15s;
+}
+.cr-shop-btn:hover:not(:disabled) { background: rgba(255,255,255,.09); }
+.cr-shop-btn:disabled { opacity: .4; cursor: default; }
+.cr-shop-icon {
+    width: 28px; height: 28px; background-size: contain;
+    background-repeat: no-repeat; background-position: center;
+}
+.cr-piece-P .cr-shop-icon, .cr-shop-btn[data-piece="P"] .cr-shop-icon { background-image: url('https://lichess1.org/assets/piece/cburnett/wP.svg'); }
+.cr-shop-btn[data-piece="N"] .cr-shop-icon { background-image: url('https://lichess1.org/assets/piece/cburnett/wN.svg'); }
+.cr-shop-btn[data-piece="B"] .cr-shop-icon { background-image: url('https://lichess1.org/assets/piece/cburnett/wB.svg'); }
+.cr-shop-btn[data-piece="R"] .cr-shop-icon { background-image: url('https://lichess1.org/assets/piece/cburnett/wR.svg'); }
+.cr-shop-btn[data-piece="Q"] .cr-shop-icon { background-image: url('https://lichess1.org/assets/piece/cburnett/wQ.svg'); }
+.cr-shop-cost { margin-left: auto; color: var(--gold, #d4a017); font-weight: 600; font-size: .85rem; }
+
+/* ── Inventory ── */
+.cr-inventory { margin-bottom: 1rem; }
+.cr-inv-title { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); margin-bottom: .4rem; }
+.cr-inv-hint { font-size: .7rem; opacity: .6; text-transform: none; letter-spacing: 0; }
+.cr-inv-grid { display: flex; flex-wrap: wrap; gap: .35rem; }
+.cr-inv-btn {
+    width: 44px; height: 44px; border-radius: 4px;
+    background: rgba(255,255,255,.06); border: 2px solid transparent;
+    cursor: pointer; position: relative; transition: border-color .15s, background .15s;
+    display: flex; align-items: center; justify-content: center;
+}
+.cr-inv-btn:hover { background: rgba(255,255,255,.12); }
+.cr-inv-btn.selected { border-color: var(--accent); background: rgba(255,255,255,.14); }
+.cr-inv-btn.cr-inv-king { border-color: var(--gold, #d4a017); }
+.cr-piece-icon {
+    display: block; width: 34px; height: 34px;
+    background-size: contain; background-repeat: no-repeat; background-position: center;
+}
+
+/* ── Deploy / Abandon buttons ── */
+.cr-deploy-btn { width: 100%; margin-bottom: .5rem; }
+.cr-abandon-btn { width: 100%; background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+.cr-abandon-btn:hover { background: rgba(255,0,0,.08); color: #f88; border-color: #f88; }
+
+/* ── Battle panel ── */
+.cr-mute-btn {
+    float: right; background: none; border: none; font-size: 1.2rem;
+    cursor: pointer; opacity: .6; padding: .2rem; color: var(--text);
+}
+.cr-mute-btn:hover { opacity: 1; }
+.cr-enoch-say {
+    font-style: italic; color: var(--text-dim); padding: .6rem;
+    background: rgba(0,0,0,.25); border-radius: 6px;
+    margin-bottom: .8rem; min-height: 2rem;
+    transition: background .3s;
+}
+.cr-enoch-flash { background: rgba(200,160,80,.12); }
+.cr-battle-info { font-size: .85rem; color: var(--text-dim); line-height: 1.5; }
+
+.cr-confirm-bar {
+    display: flex; justify-content: center; gap: 1.5rem;
+    margin-top: 1rem; padding: .6rem;
+    background: rgba(0,0,0,.3); border-radius: 6px;
+}
+.cr-confirm-yes, .cr-confirm-no {
+    width: 48px; height: 48px; border-radius: 50%;
+    font-size: 1.3rem; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+.cr-confirm-yes { background: #2a7d2a; color: #fff; }
+.cr-confirm-yes:hover { background: #35a035; }
+.cr-confirm-no { background: #7d2a2a; color: #fff; }
+.cr-confirm-no:hover { background: #a03535; }
+
+/* ── Compact in-game ladder ── */
+.cr-ladder-compact {
+    display: flex; flex-direction: column; gap: 1px;
+    margin-bottom: .8rem; padding: .3rem;
+    background: rgba(0,0,0,.2); border-radius: 6px;
+    max-height: 180px; overflow-y: auto;
+}
+.cr-lc-step {
+    display: flex; align-items: center; gap: .4rem;
+    padding: .2rem .5rem; border-radius: 3px; font-size: .75rem;
+    background: rgba(255,255,255,.02); transition: background .2s;
+}
+.cr-lc-num { font-weight: 700; min-width: 1.2rem; text-align: center; color: var(--text-dim); }
+.cr-lc-info { color: var(--text-dim); font-size: .7rem; margin-left: auto; }
+.cr-lc-milestone { border-left: 2px solid var(--gold, #d4a017); }
+.cr-lc-milestone .cr-lc-num { color: var(--gold, #d4a017); }
+.cr-lc-milestone .cr-lc-info { color: var(--gold, #d4a017); }
+.cr-lc-boss { border-left: 2px solid #e55; }
+.cr-lc-boss .cr-lc-num { color: #e55; }
+.cr-lc-boss .cr-lc-info { color: #e88; }
+.cr-lc-current {
+    background: rgba(var(--accent-rgb, 180,140,50), .15) !important;
+    outline: 1px solid var(--accent);
+}
+.cr-lc-cleared { opacity: .4; }
+.cr-hud-max { font-size: .7rem; font-weight: 400; color: var(--text-dim); }
+
+/* ── Wave complete ── */
+.cr-wave-done-title { color: var(--accent); margin: 0 0 1rem; }
+.cr-wd-row { display: flex; justify-content: space-between; padding: .3rem 0; border-bottom: 1px solid var(--border); font-size: .9rem; }
+.cr-wd-row:last-child { border: none; }
+
+/* ── Milestone box ── */
+.cr-milestone-box {
+    margin-top: 1rem; padding: .8rem;
+    background: rgba(212,160,23,.08); border: 1px solid var(--gold, #d4a017);
+    border-radius: 8px;
+}
+.cr-ms-title {
+    font-size: .8rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--gold, #d4a017); font-weight: 700; margin-bottom: .5rem;
+}
+.cr-ms-detail { font-size: .9rem; color: var(--text); line-height: 1.5; margin-bottom: .8rem; }
+.cr-milestone-actions { display: flex; gap: .6rem; }
+.cr-cashout-btn {
+    flex: 1; background: rgba(212,160,23,.15); color: var(--gold, #d4a017);
+    border: 1px solid var(--gold, #d4a017); font-weight: 600;
+}
+.cr-cashout-btn:hover { background: rgba(212,160,23,.25); }
+
+/* ── Game over ── */
+.cr-gameover-title { color: #c44; margin: 0 0 1rem; }
+.cr-victory-title { color: var(--gold, #d4a017) !important; }
+.cr-gameover-stats { margin-bottom: 1rem; }
+.cr-gameover-enoch { white-space: pre-line; margin-bottom: 1rem; }
+.cr-new-best {
+    text-align: center; padding: .5rem; margin-bottom: .8rem;
+    background: rgba(212,160,23,.12); border: 1px solid var(--gold, #d4a017);
+    border-radius: 6px; color: var(--gold, #d4a017); font-weight: 700;
+}
+.cr-rating-change { margin-bottom: 1rem; text-align: center; }
+.cr-rating-result { font-size: 1.1rem; padding: .5rem; border-radius: 6px; }
+.cr-rating-pos { background: rgba(40,160,40,.12); color: #4d4; border: 1px solid #4d4; }
+.cr-rating-neg { background: rgba(200,60,60,.12); color: #e66; border: 1px solid #c44; }
+
+/* ── Leaderboard ── */
+.cr-leaderboard { max-width: 580px; margin: 1.5rem auto; padding: 0 1rem; }
+.cr-lb-ingame { margin-top: 0; padding: 0 1rem 1.5rem; }
+.cr-lb-title { font-size: 1rem; color: var(--accent); margin-bottom: .6rem; }
+.cr-lb-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.cr-lb-table th { text-align: left; padding: .4rem .5rem; border-bottom: 1px solid var(--border); color: var(--text-dim); font-weight: 600; }
+.cr-lb-table td { padding: .4rem .5rem; border-bottom: 1px solid rgba(255,255,255,.04); }
+.cr-lb-you td { color: var(--accent); font-weight: 600; }
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+    .cr-main { flex-direction: column; align-items: center; }
+    .cr-board { width: min(360px, 90vw); height: min(360px, 90vw); }
+    .cr-side { width: 100%; max-width: 420px; }
+}
+@media (max-width: 400px) {
+    .cr-board { width: 92vw; height: 92vw; }
+    .cr-hud { gap: .8rem; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   THE CRYPT — SINISTER DARK THEME
+   Applies only when body has .theme-crypt
+   ═══════════════════════════════════════════════════════ */
+
+body.theme-crypt {
+    --bg: #0e0b0d;
+    --bg-surface: #151115;
+    --bg-card: #1a141a;
+    --bg-hover: #231c24;
+    --border: #2e2530;
+    --text: #c8bfcf;
+    --text-muted: #736a7a;
+    --text-dim: #8f8598;
+    --accent: #9b5de5;
+    --green: #6b9f36;
+    --red: #c43838;
+    --yellow: #b8861f;
+    --gold: #b8861f;
+    --card-bg: #1a141a;
+    --board-light: #3d3444;
+    --board-dark: #231c28;
+    --board-selected: rgba(155, 93, 229, 0.35);
+    --board-hl-light: rgba(155, 93, 229, 0.4);
+    --board-hl-dark: rgba(120, 60, 180, 0.45);
+    --board-target-light: rgba(155, 93, 229, 0.3);
+    --board-target-dark: rgba(155, 93, 229, 0.3);
+    background: var(--bg);
+}
+
+/* Navbar dims in the crypt */
+body.theme-crypt .navbar {
+    background: #0a080b;
+    border-bottom-color: #1e1620;
+}
+body.theme-crypt .nav-brand {
+    opacity: .6;
+}
+
+/* Subtle ambient glow around the board */
+body.theme-crypt .cr-board-wrap {
+    position: relative;
+}
+body.theme-crypt .cr-board-wrap::before {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    border-radius: 12px;
+    background: radial-gradient(ellipse at center,
+        rgba(155, 93, 229, .08) 0%,
+        rgba(80, 20, 120, .04) 50%,
+        transparent 80%);
+    pointer-events: none;
+    z-index: 0;
+}
+body.theme-crypt .cr-board {
+    position: relative;
+    z-index: 1;
+    border: 2px solid #2e2530;
+    border-radius: 2px;
+    box-shadow: 0 0 30px rgba(80, 20, 120, .15), 0 0 60px rgba(0, 0, 0, .4);
+}
+
+/* Dark dungeon board squares */
+body.theme-crypt cg-board {
+    background: repeating-conic-gradient(#3d3444 0% 25%, #231c28 0% 50%) 0 / 25% 25%;
+}
+
+/* Last-move: eerie purple glow */
+body.theme-crypt cg-board square.last-move {
+    background-color: rgba(155, 93, 229, 0.25);
+}
+
+/* Selected square */
+body.theme-crypt cg-board square.selected {
+    background-color: rgba(155, 93, 229, 0.35);
+}
+
+/* Move destinations still use white outlines for clarity */
+body.theme-crypt cg-board square.move-dest {
+    box-shadow: inset 0 0 0 5px rgba(200, 180, 230, .7);
+}
+body.theme-crypt cg-board square.move-dest.oc {
+    box-shadow: inset 0 0 0 5px rgba(200, 180, 230, .7);
+}
+
+/* Check highlight: deeper red */
+body.theme-crypt cg-board square.check {
+    background: radial-gradient(ellipse at center,
+        rgba(200, 40, 40, 0.7) 0%,
+        rgba(150, 20, 20, 0.35) 40%,
+        transparent 75%);
+}
+
+/* Coordinates: ghostly */
+body.theme-crypt coords.ranks coord,
+body.theme-crypt coords.files coord {
+    color: rgba(155, 93, 229, 0.35);
+}
+
+/* Pieces: boost visibility on dark board */
+body.theme-crypt piece {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .5)) brightness(1.05);
+}
+
+/* HUD gets darker backdrop */
+body.theme-crypt .cr-hud {
+    background: rgba(10, 6, 12, .6);
+    border-bottom-color: #1e1620;
+}
+
+/* Side panels */
+body.theme-crypt .cr-panel {
+    background: #151015;
+    border: 1px solid #2a2030;
+}
+
+/* Enoch speech bubble: candle-lit */
+body.theme-crypt .cr-enoch-say {
+    background: rgba(80, 20, 120, .1);
+    border: 1px solid rgba(155, 93, 229, .15);
+    color: #a090b0;
+}
+body.theme-crypt .cr-enoch-flash {
+    background: rgba(155, 93, 229, .15);
+}
+
+/* Shop buttons */
+body.theme-crypt .cr-shop-btn {
+    background: rgba(155, 93, 229, .04);
+    border-color: #2a2030;
+}
+body.theme-crypt .cr-shop-btn:hover:not(:disabled) {
+    background: rgba(155, 93, 229, .1);
+    border-color: rgba(155, 93, 229, .3);
+}
+body.theme-crypt .cr-shop-cost {
+    color: var(--gold);
+}
+
+/* Inventory buttons */
+body.theme-crypt .cr-inv-btn {
+    background: rgba(155, 93, 229, .05);
+    border-color: #2a2030;
+}
+body.theme-crypt .cr-inv-btn:hover {
+    background: rgba(155, 93, 229, .12);
+}
+body.theme-crypt .cr-inv-btn.selected {
+    border-color: var(--accent);
+    background: rgba(155, 93, 229, .18);
+}
+
+/* Deploy/Abandon */
+body.theme-crypt .cr-deploy-btn {
+    background: rgba(155, 93, 229, .2);
+    border-color: var(--accent);
+    color: #d8c8f0;
+}
+body.theme-crypt .cr-deploy-btn:hover:not(:disabled) {
+    background: rgba(155, 93, 229, .35);
+}
+body.theme-crypt .cr-abandon-btn {
+    border-color: #3a2040;
+    color: #8a6898;
+}
+body.theme-crypt .cr-abandon-btn:hover {
+    background: rgba(200, 40, 40, .1);
+    border-color: #c44;
+    color: #e66;
+}
+
+/* Confirm bar */
+body.theme-crypt .cr-confirm-bar {
+    background: rgba(10, 6, 12, .5);
+    border: 1px solid #2a2030;
+}
+body.theme-crypt .cr-confirm-yes { background: #2d5e2d; }
+body.theme-crypt .cr-confirm-yes:hover { background: #3a7a3a; }
+body.theme-crypt .cr-confirm-no { background: #5e2d2d; }
+body.theme-crypt .cr-confirm-no:hover { background: #7a3a3a; }
+
+/* Compact ladder */
+body.theme-crypt .cr-ladder-compact {
+    background: rgba(10, 6, 12, .4);
+}
+body.theme-crypt .cr-lc-step {
+    background: rgba(155, 93, 229, .02);
+}
+body.theme-crypt .cr-lc-current {
+    background: rgba(155, 93, 229, .12) !important;
+    outline-color: var(--accent);
+}
+
+/* Milestone box */
+body.theme-crypt .cr-milestone-box {
+    background: rgba(155, 93, 229, .06);
+    border-color: rgba(155, 93, 229, .3);
+}
+body.theme-crypt .cr-ms-title {
+    color: var(--accent);
+}
+body.theme-crypt .cr-cashout-btn {
+    background: rgba(155, 93, 229, .12);
+    border-color: var(--accent);
+    color: #c8b0e8;
+}
+body.theme-crypt .cr-cashout-btn:hover {
+    background: rgba(155, 93, 229, .25);
+}
+
+/* Wave complete / game over titles */
+body.theme-crypt .cr-wave-done-title { color: var(--accent); }
+body.theme-crypt .cr-gameover-title { color: #a83838; }
+body.theme-crypt .cr-victory-title { color: var(--gold) !important; }
+
+/* New best badge */
+body.theme-crypt .cr-new-best {
+    background: rgba(184, 134, 31, .1);
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+/* Landing page */
+body.theme-crypt .cr-landing {
+    color: var(--text);
+}
+body.theme-crypt .cr-title {
+    color: var(--accent);
+}
+body.theme-crypt .cr-ladder-step {
+    background: rgba(155, 93, 229, .03);
+    border-left-color: rgba(155, 93, 229, .1);
+}
+body.theme-crypt .cr-step-milestone {
+    background: rgba(184, 134, 31, .06);
+    border-left-color: var(--gold);
+}
+body.theme-crypt .cr-step-boss {
+    background: rgba(200, 40, 40, .06);
+    border-left-color: #a83838;
+}
+body.theme-crypt .cr-step-boss .cr-step-wave { color: #c44; }
+body.theme-crypt .cr-step-boss .cr-step-label { color: #d88; }
+
+/* Entry info */
+body.theme-crypt .cr-entry-info {
+    background: rgba(10, 6, 12, .4);
+    border-color: #2a2030;
+}
+
+/* Start button */
+body.theme-crypt .cr-start-btn {
+    background: rgba(155, 93, 229, .2);
+    border: 1px solid var(--accent);
+    color: #d8c8f0;
+}
+body.theme-crypt .cr-start-btn:hover:not(:disabled) {
+    background: rgba(155, 93, 229, .35);
+}
+
+/* Leaderboard */
+body.theme-crypt .cr-lb-table th { border-bottom-color: #2a2030; }
+body.theme-crypt .cr-lb-table td { border-bottom-color: rgba(155, 93, 229, .06); }
+body.theme-crypt .cr-lb-you td { color: var(--accent); }
+
+/* Rating result */
+body.theme-crypt .cr-rating-pos { background: rgba(40, 120, 40, .1); border-color: #4a4; color: #6c6; }
+body.theme-crypt .cr-rating-neg { background: rgba(160, 40, 40, .1); border-color: #a44; color: #d66; }
+
+/* Flash container inside crypt */
+body.theme-crypt .flash-container .flash { background: #1a141a; border-color: #2a2030; }

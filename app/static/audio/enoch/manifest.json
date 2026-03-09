@@ -9658,5 +9658,1353 @@
   "reckoning/074": {
     "text": "Removed from the Reckoning. I will file their remains under 'miscellaneous.'",
     "file": "reckoning/074.mp3"
+  },
+  "crypt_wave_start/001": {
+    "text": "They're scratching at the grate again.",
+    "file": "crypt_wave_start/001.mp3"
+  },
+  "crypt_wave_start/002": {
+    "text": "Another column shuffles forward from the deep corridor.",
+    "file": "crypt_wave_start/002.mp3"
+  },
+  "crypt_wave_start/003": {
+    "text": "I can hear the wood groaning. They're coming.",
+    "file": "crypt_wave_start/003.mp3"
+  },
+  "crypt_wave_start/004": {
+    "text": "More of them. Always more of them.",
+    "file": "crypt_wave_start/004.mp3"
+  },
+  "crypt_wave_start/005": {
+    "text": "The sub-basement belches up another regiment.",
+    "file": "crypt_wave_start/005.mp3"
+  },
+  "crypt_wave_start/006": {
+    "text": "You feel that? The floor is vibrating. Brace yourself.",
+    "file": "crypt_wave_start/006.mp3"
+  },
+  "crypt_wave_start/007": {
+    "text": "I've opened the next gate. Good luck.",
+    "file": "crypt_wave_start/007.mp3"
+  },
+  "crypt_wave_start/008": {
+    "text": "The candles flicker. Something stirs below.",
+    "file": "crypt_wave_start/008.mp3"
+  },
+  "crypt_wave_start/009": {
+    "text": "Ah, fresh pieces for the grinder. Yours or theirs.",
+    "file": "crypt_wave_start/009.mp3"
+  },
+  "crypt_wave_start/010": {
+    "text": "Wave after wave. The basement never empties.",
+    "file": "crypt_wave_start/010.mp3"
+  },
+  "crypt_wave_start/011": {
+    "text": "I've pulled the lever. They'll be through shortly.",
+    "file": "crypt_wave_start/011.mp3"
+  },
+  "crypt_wave_start/012": {
+    "text": "The rats have scattered. That means they're close.",
+    "file": "crypt_wave_start/012.mp3"
+  },
+  "crypt_wave_start/013": {
+    "text": "Oh I've been waiting for this one. You haven't.",
+    "file": "crypt_wave_start/013.mp3"
+  },
+  "crypt_wave_start/014": {
+    "text": "Listen. Hear that? Footsteps on wet stone. Many footsteps.",
+    "file": "crypt_wave_start/014.mp3"
+  },
+  "crypt_wave_start/015": {
+    "text": "They don't stop. They never stop. Isn't that wonderful?",
+    "file": "crypt_wave_start/015.mp3"
+  },
+  "crypt_wave_start/016": {
+    "text": "I told them where your king was. Hope you don't mind.",
+    "file": "crypt_wave_start/016.mp3"
+  },
+  "crypt_wave_start/017": {
+    "text": "More more more more more. Ha. Here they come.",
+    "file": "crypt_wave_start/017.mp3"
+  },
+  "crypt_wave_start/018": {
+    "text": "This batch is angry. I may have provoked them.",
+    "file": "crypt_wave_start/018.mp3"
+  },
+  "crypt_wave_start/019": {
+    "text": "I found extras in the back room. Surprise.",
+    "file": "crypt_wave_start/019.mp3"
+  },
+  "crypt_wave_start/020": {
+    "text": "The grate is rattling. Stand back. Or don't. I don't care.",
+    "file": "crypt_wave_start/020.mp3"
+  },
+  "crypt_wave_start/021": {
+    "text": "Every time you survive I have to open another door. I'm running out of doors.",
+    "file": "crypt_wave_start/021.mp3"
+  },
+  "crypt_wave_start/022": {
+    "text": "Oh you're still here? Good. I have something nasty for you.",
+    "file": "crypt_wave_start/022.mp3"
+  },
+  "crypt_wave_start/023": {
+    "text": "They've been down there fermenting in the dark. They're ripe now.",
+    "file": "crypt_wave_start/023.mp3"
+  },
+  "crypt_wave_start/024": {
+    "text": "I can barely hold the gate. They're pushing. They want you.",
+    "file": "crypt_wave_start/024.mp3"
+  },
+  "crypt_wave_start/025": {
+    "text": "You should see your face right now. Actually, no. Keep playing.",
+    "file": "crypt_wave_start/025.mp3"
+  },
+  "crypt_wave_start/026": {
+    "text": "Another wave. The ink in my ledger is running. I'm using blood now.",
+    "file": "crypt_wave_start/026.mp3"
+  },
+  "crypt_wave_start/027": {
+    "text": "The spiders told me you'd survive this long. I bet against you.",
+    "file": "crypt_wave_start/027.mp3"
+  },
+  "crypt_wave_start/028": {
+    "text": "Here come the little ones. And the not-so-little ones behind them.",
+    "file": "crypt_wave_start/028.mp3"
+  },
+  "crypt_wave_start/029": {
+    "text": "The corridor is full. Wall to wall. Floor to ceiling. Pieces.",
+    "file": "crypt_wave_start/029.mp3"
+  },
+  "crypt_wave_start/030": {
+    "text": "They smell fear. Specifically yours.",
+    "file": "crypt_wave_start/030.mp3"
+  },
+  "crypt_pieces_entering/001": {
+    "text": "Watch them file in. Single file. Like prisoners.",
+    "file": "crypt_pieces_entering/001.mp3"
+  },
+  "crypt_pieces_entering/002": {
+    "text": "One by one they emerge from the dark.",
+    "file": "crypt_pieces_entering/002.mp3"
+  },
+  "crypt_pieces_entering/003": {
+    "text": "The pawns come first. They always come first.",
+    "file": "crypt_pieces_entering/003.mp3"
+  },
+  "crypt_pieces_entering/004": {
+    "text": "Hear the clatter? Those are hooves on stone.",
+    "file": "crypt_pieces_entering/004.mp3"
+  },
+  "crypt_pieces_entering/005": {
+    "text": "They're taking their positions. Slowly. Deliberately.",
+    "file": "crypt_pieces_entering/005.mp3"
+  },
+  "crypt_pieces_entering/006": {
+    "text": "Each one placed with care. I taught them that.",
+    "file": "crypt_pieces_entering/006.mp3"
+  },
+  "crypt_pieces_entering/007": {
+    "text": "Look at them march. Beautiful. Horrible. Both.",
+    "file": "crypt_pieces_entering/007.mp3"
+  },
+  "crypt_pieces_entering/008": {
+    "text": "They enter in formation. I trained them myself on Tuesday.",
+    "file": "crypt_pieces_entering/008.mp3"
+  },
+  "crypt_pieces_entering/009": {
+    "text": "Every single one of them wants to touch your king. Isn't that sweet?",
+    "file": "crypt_pieces_entering/009.mp3"
+  },
+  "crypt_pieces_entering/010": {
+    "text": "They're whispering to each other. I can't make out the words. Probably about you.",
+    "file": "crypt_pieces_entering/010.mp3"
+  },
+  "crypt_pieces_entering/011": {
+    "text": "This one looks eager. That one looks furious. This other one... I don't know what that expression is.",
+    "file": "crypt_pieces_entering/011.mp3"
+  },
+  "crypt_pieces_entering/012": {
+    "text": "Filing in like churchgoers. Except nobody here is going to be saved.",
+    "file": "crypt_pieces_entering/012.mp3"
+  },
+  "crypt_player_captures/001": {
+    "text": "One less. But there are always more.",
+    "file": "crypt_player_captures/001.mp3"
+  },
+  "crypt_player_captures/002": {
+    "text": "Efficient. I've noted it in the ledger.",
+    "file": "crypt_player_captures/002.mp3"
+  },
+  "crypt_player_captures/003": {
+    "text": "That one had a name. I'll cross it out.",
+    "file": "crypt_player_captures/003.mp3"
+  },
+  "crypt_player_captures/004": {
+    "text": "Good. The dust settles where it stood.",
+    "file": "crypt_player_captures/004.mp3"
+  },
+  "crypt_player_captures/005": {
+    "text": "Removed from the board. Removed from history.",
+    "file": "crypt_player_captures/005.mp3"
+  },
+  "crypt_player_captures/006": {
+    "text": "It crumbles. They all crumble eventually.",
+    "file": "crypt_player_captures/006.mp3"
+  },
+  "crypt_player_captures/007": {
+    "text": "A clean kill. The spiders approve.",
+    "file": "crypt_player_captures/007.mp3"
+  },
+  "crypt_player_captures/008": {
+    "text": "I heard the crack from down here.",
+    "file": "crypt_player_captures/008.mp3"
+  },
+  "crypt_player_captures/009": {
+    "text": "Another tally mark on the wet stone wall.",
+    "file": "crypt_player_captures/009.mp3"
+  },
+  "crypt_player_captures/010": {
+    "text": "The wood remembers where it fell.",
+    "file": "crypt_player_captures/010.mp3"
+  },
+  "crypt_player_captures/011": {
+    "text": "Ha! Splendid violence. Do it again.",
+    "file": "crypt_player_captures/011.mp3"
+  },
+  "crypt_player_captures/012": {
+    "text": "You crushed it like a grape. I felt the vibration.",
+    "file": "crypt_player_captures/012.mp3"
+  },
+  "crypt_player_captures/013": {
+    "text": "One down. I'm already building its replacement.",
+    "file": "crypt_player_captures/013.mp3"
+  },
+  "crypt_player_captures/014": {
+    "text": "Beautiful. Disgusting. I can't tell the difference anymore.",
+    "file": "crypt_player_captures/014.mp3"
+  },
+  "crypt_player_captures/015": {
+    "text": "It didn't even scream. They never scream. That's the worst part.",
+    "file": "crypt_player_captures/015.mp3"
+  },
+  "crypt_player_captures/016": {
+    "text": "You're destroying my collection and I'm somehow enjoying it.",
+    "file": "crypt_player_captures/016.mp3"
+  },
+  "crypt_player_captures/017": {
+    "text": "That piece owed me money. Thank you, actually.",
+    "file": "crypt_player_captures/017.mp3"
+  },
+  "crypt_player_captures/018": {
+    "text": "Squished. Like a beetle under a Bible.",
+    "file": "crypt_player_captures/018.mp3"
+  },
+  "crypt_player_captures/019": {
+    "text": "I'll mourn that one later. Right now I have paperwork.",
+    "file": "crypt_player_captures/019.mp3"
+  },
+  "crypt_player_captures/020": {
+    "text": "The other pieces saw that. They're recalculating.",
+    "file": "crypt_player_captures/020.mp3"
+  },
+  "crypt_player_captures/021": {
+    "text": "You fight like something that lives down here. I mean that as a compliment.",
+    "file": "crypt_player_captures/021.mp3"
+  },
+  "crypt_player_captures/022": {
+    "text": "Wonderful. Terrible. My favorite kind of move.",
+    "file": "crypt_player_captures/022.mp3"
+  },
+  "crypt_player_captures/023": {
+    "text": "That one was my second favorite. You'll pay for that. Eventually.",
+    "file": "crypt_player_captures/023.mp3"
+  },
+  "crypt_player_captures/024": {
+    "text": "I'm clapping. You can't hear it because my hands are covered in ink.",
+    "file": "crypt_player_captures/024.mp3"
+  },
+  "crypt_player_captures/025": {
+    "text": "The kill counter ticks upward. I love that sound.",
+    "file": "crypt_player_captures/025.mp3"
+  },
+  "crypt_enemy_captures/001": {
+    "text": "Your ranks thin. I can count them now.",
+    "file": "crypt_enemy_captures/001.mp3"
+  },
+  "crypt_enemy_captures/002": {
+    "text": "One of yours, claimed by the dark.",
+    "file": "crypt_enemy_captures/002.mp3"
+  },
+  "crypt_enemy_captures/003": {
+    "text": "That piece served you well. Past tense.",
+    "file": "crypt_enemy_captures/003.mp3"
+  },
+  "crypt_enemy_captures/004": {
+    "text": "The basement takes what it wants.",
+    "file": "crypt_enemy_captures/004.mp3"
+  },
+  "crypt_enemy_captures/005": {
+    "text": "You felt that loss, didn't you.",
+    "file": "crypt_enemy_captures/005.mp3"
+  },
+  "crypt_enemy_captures/006": {
+    "text": "Fewer pieces, fewer options. The math is cruel.",
+    "file": "crypt_enemy_captures/006.mp3"
+  },
+  "crypt_enemy_captures/007": {
+    "text": "Gone. I'll add it to my collection.",
+    "file": "crypt_enemy_captures/007.mp3"
+  },
+  "crypt_enemy_captures/008": {
+    "text": "The horde absorbs what it destroys.",
+    "file": "crypt_enemy_captures/008.mp3"
+  },
+  "crypt_enemy_captures/009": {
+    "text": "A casualty. How many more can you afford?",
+    "file": "crypt_enemy_captures/009.mp3"
+  },
+  "crypt_enemy_captures/010": {
+    "text": "The wood is still warm where it stood.",
+    "file": "crypt_enemy_captures/010.mp3"
+  },
+  "crypt_enemy_captures/011": {
+    "text": "Ha ha ha. Oh. Sorry. That was rude.",
+    "file": "crypt_enemy_captures/011.mp3"
+  },
+  "crypt_enemy_captures/012": {
+    "text": "I'll put that one in the jar with the others.",
+    "file": "crypt_enemy_captures/012.mp3"
+  },
+  "crypt_enemy_captures/013": {
+    "text": "Delicious. Wait, not delicious. What's the word? Devastating.",
+    "file": "crypt_enemy_captures/013.mp3"
+  },
+  "crypt_enemy_captures/014": {
+    "text": "Your piece just got swallowed whole. The board didn't even burp.",
+    "file": "crypt_enemy_captures/014.mp3"
+  },
+  "crypt_enemy_captures/015": {
+    "text": "Goodbye to that one. I never liked it anyway.",
+    "file": "crypt_enemy_captures/015.mp3"
+  },
+  "crypt_enemy_captures/016": {
+    "text": "That's one less mouth to feed. You should thank them.",
+    "file": "crypt_enemy_captures/016.mp3"
+  },
+  "crypt_enemy_captures/017": {
+    "text": "They're picking you apart like a roast chicken.",
+    "file": "crypt_enemy_captures/017.mp3"
+  },
+  "crypt_enemy_captures/018": {
+    "text": "The horde giveth nothing. The horde taketh away.",
+    "file": "crypt_enemy_captures/018.mp3"
+  },
+  "crypt_enemy_captures/019": {
+    "text": "Oh that was YOUR piece? I genuinely couldn't tell anymore.",
+    "file": "crypt_enemy_captures/019.mp3"
+  },
+  "crypt_enemy_captures/020": {
+    "text": "Falling apart. Slowly. Like wet paper.",
+    "file": "crypt_enemy_captures/020.mp3"
+  },
+  "crypt_enemy_captures/021": {
+    "text": "Another one for the sub-basement lost-and-found. Nobody ever claims them.",
+    "file": "crypt_enemy_captures/021.mp3"
+  },
+  "crypt_enemy_captures/022": {
+    "text": "The dark is hungry tonight. It just ate one of yours.",
+    "file": "crypt_enemy_captures/022.mp3"
+  },
+  "crypt_enemy_captures/023": {
+    "text": "I heard it snap from three floors down. Lovely acoustics.",
+    "file": "crypt_enemy_captures/023.mp3"
+  },
+  "crypt_enemy_captures/024": {
+    "text": "Gone gone gone. Like it was never there. Like YOU were never here.",
+    "file": "crypt_enemy_captures/024.mp3"
+  },
+  "crypt_enemy_captures/025": {
+    "text": "They're eating your army alive. Well, not alive. That's the problem.",
+    "file": "crypt_enemy_captures/025.mp3"
+  },
+  "crypt_player_checks/001": {
+    "text": "You've rattled their king. Bold.",
+    "file": "crypt_player_checks/001.mp3"
+  },
+  "crypt_player_checks/002": {
+    "text": "Check. The black king trembles.",
+    "file": "crypt_player_checks/002.mp3"
+  },
+  "crypt_player_checks/003": {
+    "text": "Pressure on the crown. Interesting.",
+    "file": "crypt_player_checks/003.mp3"
+  },
+  "crypt_player_checks/004": {
+    "text": "Their king retreats. For now.",
+    "file": "crypt_player_checks/004.mp3"
+  },
+  "crypt_player_checks/005": {
+    "text": "Ooh, you scared it. The king is hiding behind its own pawns.",
+    "file": "crypt_player_checks/005.mp3"
+  },
+  "crypt_player_checks/006": {
+    "text": "Check! The horde flinches. They don't like it when you do that.",
+    "file": "crypt_player_checks/006.mp3"
+  },
+  "crypt_player_checks/007": {
+    "text": "You poked the king. It noticed. It doesn't forget.",
+    "file": "crypt_player_checks/007.mp3"
+  },
+  "crypt_player_checks/008": {
+    "text": "Their king stumbles. I can hear the crown scraping the stone.",
+    "file": "crypt_player_checks/008.mp3"
+  },
+  "crypt_player_checks/009": {
+    "text": "Bold move. Stupid, maybe. But bold.",
+    "file": "crypt_player_checks/009.mp3"
+  },
+  "crypt_player_checks/010": {
+    "text": "The king runs. They all run eventually.",
+    "file": "crypt_player_checks/010.mp3"
+  },
+  "crypt_enemy_checks/001": {
+    "text": "Your king is threatened. Move quickly.",
+    "file": "crypt_enemy_checks/001.mp3"
+  },
+  "crypt_enemy_checks/002": {
+    "text": "Check. They found a gap in your wall.",
+    "file": "crypt_enemy_checks/002.mp3"
+  },
+  "crypt_enemy_checks/003": {
+    "text": "The horde sees your king. Protect it.",
+    "file": "crypt_enemy_checks/003.mp3"
+  },
+  "crypt_enemy_checks/004": {
+    "text": "Your king shivers. Do something.",
+    "file": "crypt_enemy_checks/004.mp3"
+  },
+  "crypt_enemy_checks/005": {
+    "text": "Check! Oh this is getting exciting. For me.",
+    "file": "crypt_enemy_checks/005.mp3"
+  },
+  "crypt_enemy_checks/006": {
+    "text": "They've spotted your king. It's cowering. I can see it from here.",
+    "file": "crypt_enemy_checks/006.mp3"
+  },
+  "crypt_enemy_checks/007": {
+    "text": "Your king is in the crosshairs. Dance, little monarch. Dance.",
+    "file": "crypt_enemy_checks/007.mp3"
+  },
+  "crypt_enemy_checks/008": {
+    "text": "Check. The walls are closing in. Can you feel them?",
+    "file": "crypt_enemy_checks/008.mp3"
+  },
+  "crypt_enemy_checks/009": {
+    "text": "They're closing in on your king like wolves on a lamb.",
+    "file": "crypt_enemy_checks/009.mp3"
+  },
+  "crypt_enemy_checks/010": {
+    "text": "Your king just whimpered. Kings shouldn't whimper.",
+    "file": "crypt_enemy_checks/010.mp3"
+  },
+  "crypt_wave_complete/001": {
+    "text": "The wave breaks. You survive. For now.",
+    "file": "crypt_wave_complete/001.mp3"
+  },
+  "crypt_wave_complete/002": {
+    "text": "Silence returns to the sub-basement. Briefly.",
+    "file": "crypt_wave_complete/002.mp3"
+  },
+  "crypt_wave_complete/003": {
+    "text": "They're all gone. Collect what you can before the next.",
+    "file": "crypt_wave_complete/003.mp3"
+  },
+  "crypt_wave_complete/004": {
+    "text": "You've cleared them. I'm almost impressed.",
+    "file": "crypt_wave_complete/004.mp3"
+  },
+  "crypt_wave_complete/005": {
+    "text": "The floor is littered with debris. Well done.",
+    "file": "crypt_wave_complete/005.mp3"
+  },
+  "crypt_wave_complete/006": {
+    "text": "A reprieve. Use it wisely.",
+    "file": "crypt_wave_complete/006.mp3"
+  },
+  "crypt_wave_complete/007": {
+    "text": "The corridor goes quiet. It won't last.",
+    "file": "crypt_wave_complete/007.mp3"
+  },
+  "crypt_wave_complete/008": {
+    "text": "Wave cleared. I'll prepare the next batch.",
+    "file": "crypt_wave_complete/008.mp3"
+  },
+  "crypt_wave_complete/009": {
+    "text": "You're still standing. Remarkable.",
+    "file": "crypt_wave_complete/009.mp3"
+  },
+  "crypt_wave_complete/010": {
+    "text": "The dust settles. Spend your gold. They'll be back.",
+    "file": "crypt_wave_complete/010.mp3"
+  },
+  "crypt_wave_complete/011": {
+    "text": "Fine. FINE. You win this round. I hate saying that.",
+    "file": "crypt_wave_complete/011.mp3"
+  },
+  "crypt_wave_complete/012": {
+    "text": "Unbelievable. I put real effort into that wave and you just... survived.",
+    "file": "crypt_wave_complete/012.mp3"
+  },
+  "crypt_wave_complete/013": {
+    "text": "The silence after a wave is the loudest sound in the crypt.",
+    "file": "crypt_wave_complete/013.mp3"
+  },
+  "crypt_wave_complete/014": {
+    "text": "You've earned a moment's rest. The next wave won't be so generous.",
+    "file": "crypt_wave_complete/014.mp3"
+  },
+  "crypt_wave_complete/015": {
+    "text": "I'm going to need bigger pieces.",
+    "file": "crypt_wave_complete/015.mp3"
+  },
+  "crypt_wave_complete/016": {
+    "text": "How? HOW? I had them positioned perfectly!",
+    "file": "crypt_wave_complete/016.mp3"
+  },
+  "crypt_wave_complete/017": {
+    "text": "The sub-basement is stunned. I am stunned. We are all stunned.",
+    "file": "crypt_wave_complete/017.mp3"
+  },
+  "crypt_wave_complete/018": {
+    "text": "Alright. I underestimated you. I won't make that mistake twice. Well, maybe twice.",
+    "file": "crypt_wave_complete/018.mp3"
+  },
+  "crypt_wave_complete/019": {
+    "text": "Go ahead. Buy your little toys. Rearrange your little army. I'll be here. Seething.",
+    "file": "crypt_wave_complete/019.mp3"
+  },
+  "crypt_wave_complete/020": {
+    "text": "You cleared it. The crypt groans in disappointment. So do I.",
+    "file": "crypt_wave_complete/020.mp3"
+  },
+  "crypt_wave_complete/021": {
+    "text": "Well played. I'll make the next wave personal.",
+    "file": "crypt_wave_complete/021.mp3"
+  },
+  "crypt_wave_complete/022": {
+    "text": "The pieces are swept away. The stone floor is stained. You proceed.",
+    "file": "crypt_wave_complete/022.mp3"
+  },
+  "crypt_wave_complete/023": {
+    "text": "Another wave shattered. Your name echoes through the tunnels and I hate it.",
+    "file": "crypt_wave_complete/023.mp3"
+  },
+  "crypt_wave_complete/024": {
+    "text": "Bravo. The rats are giving you a standing ovation. Disgusting creatures.",
+    "file": "crypt_wave_complete/024.mp3"
+  },
+  "crypt_wave_complete/025": {
+    "text": "You survived. The ledger notes it. The ledger is not happy.",
+    "file": "crypt_wave_complete/025.mp3"
+  },
+  "crypt_shopping/001": {
+    "text": "Choose your reinforcements carefully. Gold is finite.",
+    "file": "crypt_shopping/001.mp3"
+  },
+  "crypt_shopping/002": {
+    "text": "The shop is open. Everything costs something.",
+    "file": "crypt_shopping/002.mp3"
+  },
+  "crypt_shopping/003": {
+    "text": "Browse the armory. Such as it is.",
+    "file": "crypt_shopping/003.mp3"
+  },
+  "crypt_shopping/004": {
+    "text": "Need pieces? I have pieces. For a price.",
+    "file": "crypt_shopping/004.mp3"
+  },
+  "crypt_shopping/005": {
+    "text": "Spend wisely. The next wave won't wait forever.",
+    "file": "crypt_shopping/005.mp3"
+  },
+  "crypt_shopping/006": {
+    "text": "Welcome to Enoch's Armory. No refunds. No returns. No mercy.",
+    "file": "crypt_shopping/006.mp3"
+  },
+  "crypt_shopping/007": {
+    "text": "Gold for wood. Wood for blood. The economy of the crypt.",
+    "file": "crypt_shopping/007.mp3"
+  },
+  "crypt_shopping/008": {
+    "text": "Buy something or don't. The horde doesn't care about your budget.",
+    "file": "crypt_shopping/008.mp3"
+  },
+  "crypt_shopping/009": {
+    "text": "I found some extra pieces in a damp box. Slightly mouldy. Still lethal.",
+    "file": "crypt_shopping/009.mp3"
+  },
+  "crypt_shopping/010": {
+    "text": "The prices are non-negotiable. I set them. I am the economy.",
+    "file": "crypt_shopping/010.mp3"
+  },
+  "crypt_shopping/011": {
+    "text": "Shopping in the dark. My favorite retail experience.",
+    "file": "crypt_shopping/011.mp3"
+  },
+  "crypt_shopping/012": {
+    "text": "Spend it all. You can't take gold into a checkmate.",
+    "file": "crypt_shopping/012.mp3"
+  },
+  "crypt_game_over/001": {
+    "text": "Checkmate. The crypt reclaims you.",
+    "file": "crypt_game_over/001.mp3"
+  },
+  "crypt_game_over/002": {
+    "text": "It's over. Your king falls in the dark.",
+    "file": "crypt_game_over/002.mp3"
+  },
+  "crypt_game_over/003": {
+    "text": "The horde consumes. I'll record your final wave.",
+    "file": "crypt_game_over/003.mp3"
+  },
+  "crypt_game_over/004": {
+    "text": "Finished. The candles gutter. Another entry for the ledger.",
+    "file": "crypt_game_over/004.mp3"
+  },
+  "crypt_game_over/005": {
+    "text": "Your army is broken. The sub-basement wins. Again.",
+    "file": "crypt_game_over/005.mp3"
+  },
+  "crypt_game_over/006": {
+    "text": "Checkmate. I'll sweep the pieces into the drawer.",
+    "file": "crypt_game_over/006.mp3"
+  },
+  "crypt_game_over/007": {
+    "text": "That's the end. Better than most, if that helps.",
+    "file": "crypt_game_over/007.mp3"
+  },
+  "crypt_game_over/008": {
+    "text": "The crypt is patient. It always wins eventually.",
+    "file": "crypt_game_over/008.mp3"
+  },
+  "crypt_game_over/009": {
+    "text": "Ha HA. Finally. I was starting to think you'd never fall.",
+    "file": "crypt_game_over/009.mp3"
+  },
+  "crypt_game_over/010": {
+    "text": "Your king topples. The sound echoes for floors. Beautiful.",
+    "file": "crypt_game_over/010.mp3"
+  },
+  "crypt_game_over/011": {
+    "text": "Game over. The horde celebrates by standing very still. It's unsettling.",
+    "file": "crypt_game_over/011.mp3"
+  },
+  "crypt_game_over/012": {
+    "text": "And down you go. Like all the others. Into the ledger. Into the dark.",
+    "file": "crypt_game_over/012.mp3"
+  },
+  "crypt_game_over/013": {
+    "text": "Checkmate. I'm writing your name in the loss column with extra ink.",
+    "file": "crypt_game_over/013.mp3"
+  },
+  "crypt_game_over/014": {
+    "text": "Finished! The crypt wins. The crypt ALWAYS wins. Haven't you figured that out?",
+    "file": "crypt_game_over/014.mp3"
+  },
+  "crypt_game_over/015": {
+    "text": "The pieces are cold. The board is empty. Your pride is somewhere on the floor.",
+    "file": "crypt_game_over/015.mp3"
+  },
+  "crypt_game_over/016": {
+    "text": "I'll file your remains alphabetically. Any preference?",
+    "file": "crypt_game_over/016.mp3"
+  },
+  "crypt_game_over/017": {
+    "text": "Dead. Done. Documented. The three D's of the sub-basement.",
+    "file": "crypt_game_over/017.mp3"
+  },
+  "crypt_game_over/018": {
+    "text": "Your king just fell over like a drunk at a banquet. Pathetic. Magnificent.",
+    "file": "crypt_game_over/018.mp3"
+  },
+  "crypt_game_over/019": {
+    "text": "The crypt swallows another challenger whole. No chewing. Just gulp.",
+    "file": "crypt_game_over/019.mp3"
+  },
+  "crypt_game_over/020": {
+    "text": "That's a wrap. I'm blowing out your candle now. Don't take it personally.",
+    "file": "crypt_game_over/020.mp3"
+  },
+  "crypt_high_score/001": {
+    "text": "A new record. I'll etch it into the stone myself.",
+    "file": "crypt_high_score/001.mp3"
+  },
+  "crypt_high_score/002": {
+    "text": "Remarkable. Your name goes higher on the wall.",
+    "file": "crypt_high_score/002.mp3"
+  },
+  "crypt_high_score/003": {
+    "text": "A personal best. The spiders are clapping.",
+    "file": "crypt_high_score/003.mp3"
+  },
+  "crypt_high_score/004": {
+    "text": "New high score. I'll update the ledger with slightly less contempt.",
+    "file": "crypt_high_score/004.mp3"
+  },
+  "crypt_high_score/005": {
+    "text": "Impressive survival. The sub-basement acknowledges you.",
+    "file": "crypt_high_score/005.mp3"
+  },
+  "crypt_high_score/006": {
+    "text": "NEW RECORD! I'm carving it into the wall with my fingernail. It'll take a while.",
+    "file": "crypt_high_score/006.mp3"
+  },
+  "crypt_high_score/007": {
+    "text": "You've gone further than anyone. I don't know whether to applaud or call for reinforcements.",
+    "file": "crypt_high_score/007.mp3"
+  },
+  "crypt_high_score/008": {
+    "text": "The ledger is impressed. The ledger has never been impressed before.",
+    "file": "crypt_high_score/008.mp3"
+  },
+  "crypt_high_score/009": {
+    "text": "A new high score! The rats are composing a ballad in your honor. It's terrible.",
+    "file": "crypt_high_score/009.mp3"
+  },
+  "crypt_high_score/010": {
+    "text": "Record broken. The previous holder is down here somewhere. Weeping.",
+    "file": "crypt_high_score/010.mp3"
+  },
+  "crypt_battle_idle/001": {
+    "text": "The board creaks under the weight of battle.",
+    "file": "crypt_battle_idle/001.mp3"
+  },
+  "crypt_battle_idle/002": {
+    "text": "I'm watching from below. Every move.",
+    "file": "crypt_battle_idle/002.mp3"
+  },
+  "crypt_battle_idle/003": {
+    "text": "The damp is getting worse. Or maybe that's sweat.",
+    "file": "crypt_battle_idle/003.mp3"
+  },
+  "crypt_battle_idle/004": {
+    "text": "Tick tock. The horde doesn't rest.",
+    "file": "crypt_battle_idle/004.mp3"
+  },
+  "crypt_battle_idle/005": {
+    "text": "Think carefully. They outnumber you.",
+    "file": "crypt_battle_idle/005.mp3"
+  },
+  "crypt_battle_idle/006": {
+    "text": "I've seen better. I've also seen worse.",
+    "file": "crypt_battle_idle/006.mp3"
+  },
+  "crypt_battle_idle/007": {
+    "text": "The candle beside me flickers with each capture.",
+    "file": "crypt_battle_idle/007.mp3"
+  },
+  "crypt_battle_idle/008": {
+    "text": "I'm taking notes. Detailed notes. In very small handwriting.",
+    "file": "crypt_battle_idle/008.mp3"
+  },
+  "crypt_battle_idle/009": {
+    "text": "The stone is weeping moisture. Or tears. Hard to tell.",
+    "file": "crypt_battle_idle/009.mp3"
+  },
+  "crypt_battle_idle/010": {
+    "text": "Do you hear humming? The pieces are humming. They shouldn't do that.",
+    "file": "crypt_battle_idle/010.mp3"
+  },
+  "crypt_battle_idle/011": {
+    "text": "I just found another room full of pieces. I'm keeping it a secret. For now.",
+    "file": "crypt_battle_idle/011.mp3"
+  },
+  "crypt_battle_idle/012": {
+    "text": "Every move you make, the crypt learns. It remembers. It adapts. I may be lying.",
+    "file": "crypt_battle_idle/012.mp3"
+  },
+  "crypt_battle_idle/013": {
+    "text": "Your breathing is very loud. The pieces can hear it. Stop that.",
+    "file": "crypt_battle_idle/013.mp3"
+  },
+  "crypt_battle_idle/014": {
+    "text": "I'm eating a biscuit down here while you fight for your life. It's stale.",
+    "file": "crypt_battle_idle/014.mp3"
+  },
+  "crypt_battle_idle/015": {
+    "text": "The shadows are moving independently of the light source. Don't ask.",
+    "file": "crypt_battle_idle/015.mp3"
+  },
+  "crypt_battle_idle/016": {
+    "text": "My candle went out. I'm watching you play in the dark. I can see in the dark.",
+    "file": "crypt_battle_idle/016.mp3"
+  },
+  "crypt_battle_idle/017": {
+    "text": "Something is dripping on my ledger. I hope it's water.",
+    "file": "crypt_battle_idle/017.mp3"
+  },
+  "crypt_battle_idle/018": {
+    "text": "I named every piece on the board. I'm sad when any of them die. Especially yours.",
+    "file": "crypt_battle_idle/018.mp3"
+  },
+  "crypt_battle_idle/019": {
+    "text": "The tension is exquisite. Like a violin string about to snap. In my chest.",
+    "file": "crypt_battle_idle/019.mp3"
+  },
+  "crypt_battle_idle/020": {
+    "text": "You're sweating. I can see it from here. Three stories underground. That's how much you're sweating.",
+    "file": "crypt_battle_idle/020.mp3"
+  },
+  "crypt_battle_idle/021": {
+    "text": "I just coughed and seven spiders fell out of the ceiling. Unrelated to the game.",
+    "file": "crypt_battle_idle/021.mp3"
+  },
+  "crypt_battle_idle/022": {
+    "text": "You know what's under the sub-basement? Another sub-basement. Full of more pieces.",
+    "file": "crypt_battle_idle/022.mp3"
+  },
+  "crypt_battle_idle/023": {
+    "text": "If you listen very carefully, you can hear the pieces whispering about you.",
+    "file": "crypt_battle_idle/023.mp3"
+  },
+  "crypt_battle_idle/024": {
+    "text": "The board is a battlefield. The crypt is a graveyard. Same thing, really.",
+    "file": "crypt_battle_idle/024.mp3"
+  },
+  "crypt_battle_idle/025": {
+    "text": "Keep going. I have pages and pages of empty ledger just waiting for your mistakes.",
+    "file": "crypt_battle_idle/025.mp3"
+  },
+  "crypt_late_wave/001": {
+    "text": "You're deeper in the crypt than most ever get. The air tastes different here.",
+    "file": "crypt_late_wave/001.mp3"
+  },
+  "crypt_late_wave/002": {
+    "text": "The pieces are bigger now. Heavier. Angrier. This is my serious collection.",
+    "file": "crypt_late_wave/002.mp3"
+  },
+  "crypt_late_wave/003": {
+    "text": "I'm impressed you've lasted this long. Don't let it go to your head.",
+    "file": "crypt_late_wave/003.mp3"
+  },
+  "crypt_late_wave/004": {
+    "text": "The deep waves are different. The pieces down here have been waiting longer.",
+    "file": "crypt_late_wave/004.mp3"
+  },
+  "crypt_late_wave/005": {
+    "text": "You've entered the part of the crypt where I keep the nasty ones.",
+    "file": "crypt_late_wave/005.mp3"
+  },
+  "crypt_late_wave/006": {
+    "text": "This far down, the rules start to bend. Not break. Bend. Like wet wood.",
+    "file": "crypt_late_wave/006.mp3"
+  },
+  "crypt_late_wave/007": {
+    "text": "Most people are dead by now. You're not. I find that irritating and fascinating.",
+    "file": "crypt_late_wave/007.mp3"
+  },
+  "crypt_late_wave/008": {
+    "text": "Welcome to the deep crypt. Where the candles burn blue and the pieces have teeth.",
+    "file": "crypt_late_wave/008.mp3"
+  },
+  "crypt_late_wave/009": {
+    "text": "Every wave past five is personal. Every single one. I picked those pieces myself.",
+    "file": "crypt_late_wave/009.mp3"
+  },
+  "crypt_late_wave/010": {
+    "text": "The further you go, the more I respect you. The more I respect you, the harder I try to kill you.",
+    "file": "crypt_late_wave/010.mp3"
+  },
+  "crypt_first_wave/001": {
+    "text": "Welcome to the crypt. Your first guests are arriving. They're not friendly.",
+    "file": "crypt_first_wave/001.mp3"
+  },
+  "crypt_first_wave/002": {
+    "text": "Wave one. Nice and easy. I'm being gentle. Savor it.",
+    "file": "crypt_first_wave/002.mp3"
+  },
+  "crypt_first_wave/003": {
+    "text": "The first wave. Just pawns, mostly. Think of it as a warm-up for the horror to come.",
+    "file": "crypt_first_wave/003.mp3"
+  },
+  "crypt_first_wave/004": {
+    "text": "Oh, a new challenger descends into my crypt. Let's see how long you last.",
+    "file": "crypt_first_wave/004.mp3"
+  },
+  "crypt_first_wave/005": {
+    "text": "First wave. The appetizer. The main course is considerably less pleasant.",
+    "file": "crypt_first_wave/005.mp3"
+  },
+  "crypt_buy_p/001": {
+    "text": "A pawn. Cheap. Disposable. Like most things down here.",
+    "file": "crypt_buy_p/001.mp3"
+  },
+  "crypt_buy_p/002": {
+    "text": "Another body for the front line.",
+    "file": "crypt_buy_p/002.mp3"
+  },
+  "crypt_buy_p/003": {
+    "text": "Ah, a pawn. Cannon fodder with dreams.",
+    "file": "crypt_buy_p/003.mp3"
+  },
+  "crypt_buy_p/004": {
+    "text": "This one volunteered. It doesn't know what it volunteered for.",
+    "file": "crypt_buy_p/004.mp3"
+  },
+  "crypt_buy_p/005": {
+    "text": "A pawn. It'll die first. They always die first. That's their job.",
+    "file": "crypt_buy_p/005.mp3"
+  },
+  "crypt_buy_n/001": {
+    "text": "A knight. It'll hop over the carnage.",
+    "file": "crypt_buy_n/001.mp3"
+  },
+  "crypt_buy_n/002": {
+    "text": "The horse is nervous. They can smell the damp.",
+    "file": "crypt_buy_n/002.mp3"
+  },
+  "crypt_buy_n/003": {
+    "text": "A knight! It bounces around like it owns the place. It doesn't.",
+    "file": "crypt_buy_n/003.mp3"
+  },
+  "crypt_buy_n/004": {
+    "text": "This horse has seen things. Underground things. It has trust issues.",
+    "file": "crypt_buy_n/004.mp3"
+  },
+  "crypt_buy_n/005": {
+    "text": "An L-shaped menace. Perfect for the chaos down here.",
+    "file": "crypt_buy_n/005.mp3"
+  },
+  "crypt_buy_b/001": {
+    "text": "A bishop. Long diagonal reach. Very ecclesiastical.",
+    "file": "crypt_buy_b/001.mp3"
+  },
+  "crypt_buy_b/002": {
+    "text": "Careful with that one. Bishops hold grudges.",
+    "file": "crypt_buy_b/002.mp3"
+  },
+  "crypt_buy_b/003": {
+    "text": "A bishop. It slides through the dark like it was born in it.",
+    "file": "crypt_buy_b/003.mp3"
+  },
+  "crypt_buy_b/004": {
+    "text": "Diagonal death. The bishop sees everything and says nothing.",
+    "file": "crypt_buy_b/004.mp3"
+  },
+  "crypt_buy_b/005": {
+    "text": "Religious and violent. My favorite combination.",
+    "file": "crypt_buy_b/005.mp3"
+  },
+  "crypt_buy_r/001": {
+    "text": "A rook. Heavy. Reliable. Like a stone wall.",
+    "file": "crypt_buy_r/001.mp3"
+  },
+  "crypt_buy_r/002": {
+    "text": "That'll hold a rank. For a while, at least.",
+    "file": "crypt_buy_r/002.mp3"
+  },
+  "crypt_buy_r/003": {
+    "text": "A rook. It'll barrel through them like a cart through a market.",
+    "file": "crypt_buy_r/003.mp3"
+  },
+  "crypt_buy_r/004": {
+    "text": "Heavy stone. Heavy consequences. I approve.",
+    "file": "crypt_buy_r/004.mp3"
+  },
+  "crypt_buy_r/005": {
+    "text": "The rook. Straight lines, no mercy. Very efficient.",
+    "file": "crypt_buy_r/005.mp3"
+  },
+  "crypt_buy_q/001": {
+    "text": "A queen. The most dangerous thing on the board.",
+    "file": "crypt_buy_q/001.mp3"
+  },
+  "crypt_buy_q/002": {
+    "text": "Expensive, but worth every coin in the dark.",
+    "file": "crypt_buy_q/002.mp3"
+  },
+  "crypt_buy_q/003": {
+    "text": "A QUEEN! Oh, the horde won't like that one bit.",
+    "file": "crypt_buy_q/003.mp3"
+  },
+  "crypt_buy_q/004": {
+    "text": "You bought the big one. I'm genuinely nervous for my minions.",
+    "file": "crypt_buy_q/004.mp3"
+  },
+  "crypt_buy_q/005": {
+    "text": "The queen arrives. The board trembles. Even I flinch a little.",
+    "file": "crypt_buy_q/005.mp3"
+  },
+  "crypt_cashout/001": {
+    "text": "You take your winnings and crawl back up the stairs. Smart. Cowardly. But smart.",
+    "file": "crypt_cashout/001.mp3"
+  },
+  "crypt_cashout/002": {
+    "text": "Cashing out. The ledger notes your prudence. And your lack of spine.",
+    "file": "crypt_cashout/002.mp3"
+  },
+  "crypt_cashout/003": {
+    "text": "Fine. Leave. Take your points. The crypt will remember you chose safety over glory.",
+    "file": "crypt_cashout/003.mp3"
+  },
+  "crypt_cashout/004": {
+    "text": "You fold. The candles flicker as you retreat. I'll be here when you come back.",
+    "file": "crypt_cashout/004.mp3"
+  },
+  "crypt_cashout/005": {
+    "text": "Walking away with your pockets full and your pride intact. Disgusting.",
+    "file": "crypt_cashout/005.mp3"
+  },
+  "crypt_cashout/006": {
+    "text": "The smart money leaves. You're the smart money. How boring.",
+    "file": "crypt_cashout/006.mp3"
+  },
+  "crypt_cashout/007": {
+    "text": "Cash out accepted. Your points are restored. Your courage is not.",
+    "file": "crypt_cashout/007.mp3"
+  },
+  "crypt_cashout/008": {
+    "text": "You've chosen life over legend. Reasonable. Forgettable. But reasonable.",
+    "file": "crypt_cashout/008.mp3"
+  },
+  "crypt_boss_battle/001": {
+    "text": "This is MY army. Handpicked. Trained in the dark. They know every trick.",
+    "file": "crypt_boss_battle/001.mp3"
+  },
+  "crypt_boss_battle/002": {
+    "text": "You're fighting me now. Not the horde. ME. Every move is personal.",
+    "file": "crypt_boss_battle/002.mp3"
+  },
+  "crypt_boss_battle/003": {
+    "text": "I've been playing chess since before this building had a basement. And this basement is OLD.",
+    "file": "crypt_boss_battle/003.mp3"
+  },
+  "crypt_boss_battle/004": {
+    "text": "My pieces move with purpose. YOUR pieces move with desperation.",
+    "file": "crypt_boss_battle/004.mp3"
+  },
+  "crypt_boss_battle/005": {
+    "text": "You wanted the boss fight? You're GETTING the boss fight.",
+    "file": "crypt_boss_battle/005.mp3"
+  },
+  "crypt_boss_battle/006": {
+    "text": "I don't blunder. I don't hesitate. I don't forgive.",
+    "file": "crypt_boss_battle/006.mp3"
+  },
+  "crypt_boss_battle/007": {
+    "text": "Every piece on this board answers to me directly. We are one mind. One dark, terrible mind.",
+    "file": "crypt_boss_battle/007.mp3"
+  },
+  "crypt_boss_battle/008": {
+    "text": "The master plays. The crypt holds its breath.",
+    "file": "crypt_boss_battle/008.mp3"
+  },
+  "crypt_boss_battle/009": {
+    "text": "I've been watching you for nine waves. I know how you think. I know how you panic.",
+    "file": "crypt_boss_battle/009.mp3"
+  },
+  "crypt_boss_battle/010": {
+    "text": "This is the bottom. The absolute bottom. Below me there is nothing. Just rock. And regret.",
+    "file": "crypt_boss_battle/010.mp3"
+  },
+  "crypt_boss_victory/001": {
+    "text": "IMPOSSIBLE. You... you BEAT me? The crypt shudders. The walls crack. Fifty points. TAKE THEM.",
+    "file": "crypt_boss_victory/001.mp3"
+  },
+  "crypt_boss_victory/002": {
+    "text": "You... no. NO. You actually won. My ledger... I have to rewrite everything. FIFTY POINTS. You've earned them.",
+    "file": "crypt_boss_victory/002.mp3"
+  },
+  "crypt_boss_victory/003": {
+    "text": "THE CHAMPION RISES! You defeated Enoch himself! The sub-basement is in shock! FIFTY POINTS AND MY ETERNAL, BURNING GRUDGE!",
+    "file": "crypt_boss_victory/003.mp3"
+  },
+  "crypt_boss_victory/004": {
+    "text": "I... I lost. ME. The master of the crypt. Fifty points to you, champion. I'll need a moment.",
+    "file": "crypt_boss_victory/004.mp3"
+  },
+  "crypt_boss_victory/005": {
+    "text": "You cleared The Crypt. All ten waves. Including me. I'm going to go sit in the dark for a while. Take your fifty points.",
+    "file": "crypt_boss_victory/005.mp3"
+  },
+  "crypt_boss_defeat/001": {
+    "text": "You reached the boss and fell. Fifteen points saved by the safety net. Brave. Foolish. But brave.",
+    "file": "crypt_boss_defeat/001.mp3"
+  },
+  "crypt_boss_defeat/002": {
+    "text": "So close to glory. The boss crushed you. But your safety net catches fifteen points from the wreckage.",
+    "file": "crypt_boss_defeat/002.mp3"
+  },
+  "crypt_boss_defeat/003": {
+    "text": "You challenged the master and lost. Fifteen points remain. The rest belongs to the dark now.",
+    "file": "crypt_boss_defeat/003.mp3"
+  },
+  "crypt_boss_defeat/004": {
+    "text": "Wave ten claims another hero. But you walked further than most. Fifteen points, courtesy of your caution.",
+    "file": "crypt_boss_defeat/004.mp3"
+  },
+  "crypt_boss_defeat/005": {
+    "text": "Defeated at the final gate. The safety net saves fifteen. The crypt saves your pride. Actually, no. That's gone.",
+    "file": "crypt_boss_defeat/005.mp3"
+  },
+  "crypt_wave_1/001": {
+    "text": "Welcome to the crypt. Your first guests are arriving. They're not friendly.",
+    "file": "crypt_wave_1/001.mp3"
+  },
+  "crypt_wave_1/002": {
+    "text": "Wave one. Nice and easy. I'm being gentle. Savor it.",
+    "file": "crypt_wave_1/002.mp3"
+  },
+  "crypt_wave_1/003": {
+    "text": "The first wave. Just pawns, mostly. Think of it as a warm-up for the horror to come.",
+    "file": "crypt_wave_1/003.mp3"
+  },
+  "crypt_wave_1/004": {
+    "text": "Oh, a new challenger descends into my crypt. Let's see how long you last.",
+    "file": "crypt_wave_1/004.mp3"
+  },
+  "crypt_wave_1/005": {
+    "text": "First wave. The appetizer. The main course is considerably less pleasant.",
+    "file": "crypt_wave_1/005.mp3"
+  },
+  "crypt_wave_2/001": {
+    "text": "Wave two. The pawns brought a friend this time. One with hooves.",
+    "file": "crypt_wave_2/001.mp3"
+  },
+  "crypt_wave_2/002": {
+    "text": "Still breathing? Good. This wave has teeth.",
+    "file": "crypt_wave_2/002.mp3"
+  },
+  "crypt_wave_2/003": {
+    "text": "The second tremor. Slightly less gentle. Considerably less forgiving.",
+    "file": "crypt_wave_2/003.mp3"
+  },
+  "crypt_wave_2/004": {
+    "text": "They've regrouped. The ones from wave one told stories about you. Bad stories.",
+    "file": "crypt_wave_2/004.mp3"
+  },
+  "crypt_wave_2/005": {
+    "text": "Round two. I've added a knight to the mix. It was getting bored in the stable.",
+    "file": "crypt_wave_2/005.mp3"
+  },
+  "crypt_wave_3/001": {
+    "text": "Wave three. The first milestone. Survive this and you break even. How thrilling.",
+    "file": "crypt_wave_3/001.mp3"
+  },
+  "crypt_wave_3/002": {
+    "text": "Three waves deep. The crypt is testing whether you're worth its time.",
+    "file": "crypt_wave_3/002.mp3"
+  },
+  "crypt_wave_3/003": {
+    "text": "A bishop joins the choir. Diagonals of destruction. Isn't that poetic?",
+    "file": "crypt_wave_3/003.mp3"
+  },
+  "crypt_wave_3/004": {
+    "text": "This is where it gets real. Wave three. The break-even barrier.",
+    "file": "crypt_wave_3/004.mp3"
+  },
+  "crypt_wave_3/005": {
+    "text": "The pawns are thicker, a bishop lurks. Wave three separates the tourists from the tenants.",
+    "file": "crypt_wave_3/005.mp3"
+  },
+  "crypt_wave_4/001": {
+    "text": "Wave four. Past the safety net. Now you're gambling with the dark.",
+    "file": "crypt_wave_4/001.mp3"
+  },
+  "crypt_wave_4/002": {
+    "text": "They're getting organized. I'm getting excited. Neither is good for you.",
+    "file": "crypt_wave_4/002.mp3"
+  },
+  "crypt_wave_4/003": {
+    "text": "Four waves in. The crypt acknowledges you. That's not a compliment.",
+    "file": "crypt_wave_4/003.mp3"
+  },
+  "crypt_wave_4/004": {
+    "text": "The pieces are heavier now. You can hear them thud against the stone.",
+    "file": "crypt_wave_4/004.mp3"
+  },
+  "crypt_wave_4/005": {
+    "text": "Wave four. No more training wheels. Just wheels that roll over you.",
+    "file": "crypt_wave_4/005.mp3"
+  },
+  "crypt_wave_5/001": {
+    "text": "Wave five. Halfway through the gauntlet. The board is getting crowded.",
+    "file": "crypt_wave_5/001.mp3"
+  },
+  "crypt_wave_5/002": {
+    "text": "Five. They've sent the bishops in pairs now. Symmetrical devastation.",
+    "file": "crypt_wave_5/002.mp3"
+  },
+  "crypt_wave_5/003": {
+    "text": "Halfway. The air is thinner down here. Or maybe that's panic.",
+    "file": "crypt_wave_5/003.mp3"
+  },
+  "crypt_wave_5/004": {
+    "text": "Wave five. I'm running out of small pieces. Time for the medium ones.",
+    "file": "crypt_wave_5/004.mp3"
+  },
+  "crypt_wave_5/005": {
+    "text": "You've entered the middle depths. The pieces here don't play nice.",
+    "file": "crypt_wave_5/005.mp3"
+  },
+  "crypt_wave_6/001": {
+    "text": "Wave six. Second milestone. Cash out now or push deeper into my domain.",
+    "file": "crypt_wave_6/001.mp3"
+  },
+  "crypt_wave_6/002": {
+    "text": "A rook joins the fray. The heavy artillery has arrived.",
+    "file": "crypt_wave_6/002.mp3"
+  },
+  "crypt_wave_6/003": {
+    "text": "Six waves survived. The ledger is reluctantly impressed. Cash out or bleed.",
+    "file": "crypt_wave_6/003.mp3"
+  },
+  "crypt_wave_6/004": {
+    "text": "The rook comes through the gate sideways. It barely fits. Wave six begins.",
+    "file": "crypt_wave_6/004.mp3"
+  },
+  "crypt_wave_6/005": {
+    "text": "Second safety net. You could leave with your dignity. Or stay and lose it spectacularly.",
+    "file": "crypt_wave_6/005.mp3"
+  },
+  "crypt_wave_7/001": {
+    "text": "Wave seven. Deep crypt territory. The candles burn blue down here.",
+    "file": "crypt_wave_7/001.mp3"
+  },
+  "crypt_wave_7/002": {
+    "text": "Seven. More rooks. More knights. More everything. Less hope.",
+    "file": "crypt_wave_7/002.mp3"
+  },
+  "crypt_wave_7/003": {
+    "text": "You're in the deep now. Wave seven. The pieces here have been waiting decades.",
+    "file": "crypt_wave_7/003.mp3"
+  },
+  "crypt_wave_7/004": {
+    "text": "The air smells like iron and old chess sets. Wave seven. Buckle up.",
+    "file": "crypt_wave_7/004.mp3"
+  },
+  "crypt_wave_7/005": {
+    "text": "Seven waves. Most players are dust by now. You're not dust yet.",
+    "file": "crypt_wave_7/005.mp3"
+  },
+  "crypt_wave_8/001": {
+    "text": "Wave eight. A queen enters the field. MY queen. I'm very proud of her.",
+    "file": "crypt_wave_8/001.mp3"
+  },
+  "crypt_wave_8/002": {
+    "text": "Eight. The queen has arrived. She's not here to negotiate.",
+    "file": "crypt_wave_8/002.mp3"
+  },
+  "crypt_wave_8/003": {
+    "text": "The crypt's champion piece takes the field. Wave eight. Don't blink.",
+    "file": "crypt_wave_8/003.mp3"
+  },
+  "crypt_wave_8/004": {
+    "text": "A queen. On the board. Against you. Wave eight is personal.",
+    "file": "crypt_wave_8/004.mp3"
+  },
+  "crypt_wave_8/005": {
+    "text": "Eight waves deep and now a queen appears. The board just got significantly more hostile.",
+    "file": "crypt_wave_8/005.mp3"
+  },
+  "crypt_wave_9/001": {
+    "text": "Wave nine. Last chance to cash out. Last chance to leave with your skin.",
+    "file": "crypt_wave_9/001.mp3"
+  },
+  "crypt_wave_9/002": {
+    "text": "NINE. The final safety net. After this... it's just you and me.",
+    "file": "crypt_wave_9/002.mp3"
+  },
+  "crypt_wave_9/003": {
+    "text": "Wave nine. Two queens now. I'm not even pretending to be fair anymore.",
+    "file": "crypt_wave_9/003.mp3"
+  },
+  "crypt_wave_9/004": {
+    "text": "This is it. Wave nine. The threshold. Cash out or face the master.",
+    "file": "crypt_wave_9/004.mp3"
+  },
+  "crypt_wave_9/005": {
+    "text": "Nine waves. The crypt respects you. I almost do. Almost. Cash out or descend.",
+    "file": "crypt_wave_9/005.mp3"
+  },
+  "crypt_wave_10/001": {
+    "text": "WAVE TEN. You face ME now. Enoch himself. No more minions. This is PERSONAL.",
+    "file": "crypt_wave_10/001.mp3"
+  },
+  "crypt_wave_10/002": {
+    "text": "The final wave. I'm putting down my ledger and picking up my pieces. You wanted the boss? HERE I AM.",
+    "file": "crypt_wave_10/002.mp3"
+  },
+  "crypt_wave_10/003": {
+    "text": "Ten. The end of the line. The bottom of the basement. It's just us now. My full strength. Your trembling hands.",
+    "file": "crypt_wave_10/003.mp3"
+  },
+  "crypt_wave_10/004": {
+    "text": "You actually made it to ten. Nobody makes it to ten. I'm coming for your king MYSELF.",
+    "file": "crypt_wave_10/004.mp3"
+  },
+  "crypt_wave_10/005": {
+    "text": "THE BOSS WAVE. My personal army. My best pieces. My full, unrestrained fury. Let's dance.",
+    "file": "crypt_wave_10/005.mp3"
+  },
+  "crypt_milestone_3/001": {
+    "text": "Milestone one. You've earned your entry fee back. Walk away whole, or push your luck.",
+    "file": "crypt_milestone_3/001.mp3"
+  },
+  "crypt_milestone_3/002": {
+    "text": "Break even. The smart ones leave now. The interesting ones stay.",
+    "file": "crypt_milestone_3/002.mp3"
+  },
+  "crypt_milestone_3/003": {
+    "text": "Three waves cleared. Your five points are safe. But the depths call to you, don't they?",
+    "file": "crypt_milestone_3/003.mp3"
+  },
+  "crypt_milestone_3/004": {
+    "text": "Safety net activated. You can leave with nothing lost. Or stay and risk everything for more.",
+    "file": "crypt_milestone_3/004.mp3"
+  },
+  "crypt_milestone_3/005": {
+    "text": "Congratulations. You've reached zero. The most boring number. Push further.",
+    "file": "crypt_milestone_3/005.mp3"
+  },
+  "crypt_milestone_6/001": {
+    "text": "Milestone two. Ten points if you cash out. Five guaranteed if you fall. Choose wisely.",
+    "file": "crypt_milestone_6/001.mp3"
+  },
+  "crypt_milestone_6/002": {
+    "text": "Six waves deep. Real money on the table now. The crypt offers you an exit. Will you take it?",
+    "file": "crypt_milestone_6/002.mp3"
+  },
+  "crypt_milestone_6/003": {
+    "text": "Second safety net. You could walk away a winner. Or you could chase glory into the deep dark.",
+    "file": "crypt_milestone_6/003.mp3"
+  },
+  "crypt_milestone_6/004": {
+    "text": "Ten points, waiting for you. All you have to do is stop. Can you stop?",
+    "file": "crypt_milestone_6/004.mp3"
+  },
+  "crypt_milestone_6/005": {
+    "text": "The crypt extends its hand. Take the points and leave. Or slap the hand away and descend.",
+    "file": "crypt_milestone_6/005.mp3"
+  },
+  "crypt_milestone_9/001": {
+    "text": "FINAL MILESTONE. Twenty-five points if you cash out. Fifteen locked in. One wave left. The boss wave.",
+    "file": "crypt_milestone_9/001.mp3"
+  },
+  "crypt_milestone_9/002": {
+    "text": "Nine cleared. The crypt offers you twenty-five points to leave. Or you can face me. For fifty.",
+    "file": "crypt_milestone_9/002.mp3"
+  },
+  "crypt_milestone_9/003": {
+    "text": "Last exit before the bottom. Twenty-five guaranteed right now. Or risk it all against the master.",
+    "file": "crypt_milestone_9/003.mp3"
+  },
+  "crypt_milestone_9/004": {
+    "text": "The ledger is open. I'm holding the quill. Cash out for twenty-five... or let me write your obituary for fifty.",
+    "file": "crypt_milestone_9/004.mp3"
+  },
+  "crypt_milestone_9/005": {
+    "text": "This is the crossroads. The final fork. Take your winnings or meet me at the bottom for double.",
+    "file": "crypt_milestone_9/005.mp3"
   }
 }

@@ -175,6 +175,19 @@
         {% endif %}
     </div>
 
+    {# ── The Crypt (wave defence) ── #}
+    <div class="sp-section">
+        <h3 class="sp-section-title">The Crypt</h3>
+        <a href="{{ url_for('crypt.crypt_home') }}" class="sp-reckoning-card">
+            <span class="sp-reckoning-icon">&#9760;</span>
+            <div class="sp-reckoning-info">
+                <span class="sp-reckoning-name">The Crypt</span>
+                <span class="sp-reckoning-sub">Wave defence &middot; "They scratch at the grate. Always."</span>
+            </div>
+            <span class="sp-reckoning-badge">Enter</span>
+        </a>
+    </div>
+
     {# ── Other matches this week ── #}
     {% if other_games %}
     <div class="sp-section">
@@ -261,6 +274,44 @@
 </div>
 {% endif %}
 
+{# ── The Crypt Announcement ── #}
+<div class="wr-overlay" id="cryptAnnounceOverlay" style="display:none">
+    <div class="wr-modal">
+        <div class="wr-header">
+            <img src="{{ url_for('static', filename='img/enoch.png') }}" class="wr-enoch-avatar" alt="Enoch">
+            <h2 class="wr-title">The Crypt</h2>
+            <span class="wr-subtitle">A New Descent</span>
+        </div>
+        <div class="wr-body">
+            <p class="wr-enoch-text" style="white-space:pre-line">"I have been busy.
+
+Below the sub-basement, past the wet corridor where the rats refuse to go, I have unsealed a door that has not been opened in a very long time.
+
+Behind it: The Crypt.
+
+Ten waves. Ten. Each one worse than the last. My personal collection — pawns, knights, bishops, rooks, and worse — will crawl up through the grates to destroy you. You will start with a king, a queen, and three trembling pawns.
+
+It costs five rating points to enter. Five points pressed into the dark like a coin into a dead man's palm.
+
+Survive three waves and you break even. Survive six and real money starts to accumulate. Survive nine and you may cash out with twenty-five points. Or... you face ME. Wave ten. The boss wave. Beat me — and I will give you FIFTY rating points from my own bleeding ledger.
+
+At each milestone, you choose: take what you've earned and crawl back up the stairs... or push deeper.
+
+Three attempts per day. The crypt opens at midnight and closes at midnight.
+
+I keep the ledger. I keep the score. I keep everything.
+
+Come down. If you dare."</p>
+            <p class="wr-description" style="margin-top:1rem; font-style:normal; opacity:.85">
+                <strong>The Crypt</strong> — 10-wave solo gauntlet. Costs 5 rating points to enter.
+                Cash out at milestones (waves 3, 6, 9) or risk it all against Enoch at wave 10 for +50 points.
+                3 runs per day. Safety nets lock in your gains at each milestone.
+            </p>
+        </div>
+        <button class="btn wr-dismiss" id="cryptAnnounceDismiss">Descend</button>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -289,21 +340,41 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mc) tickCountdown(mc.dataset.deadline, document.getElementById('matchTimer'));
     if (dc) tickCountdown(dc.dataset.deadline, document.getElementById('decreeTimer'));
 
+    var crOverlay = document.getElementById('cryptAnnounceOverlay');
+    var crKey = 'cryptAnnounceSeen_v2';
+    var crNeedShow = crOverlay && !localStorage.getItem(crKey);
+
+    function showCryptAnnounce() {
+        if (!crNeedShow) return;
+        crOverlay.style.display = 'flex';
+        var crDismiss = document.getElementById('cryptAnnounceDismiss');
+        if (crDismiss) {
+            crDismiss.addEventListener('click', function() {
+                localStorage.setItem(crKey, '1');
+                crOverlay.style.display = 'none';
+            });
+        }
+    }
+
     var wrOverlay = document.getElementById('weeklyRuleOverlay');
     var wrDismiss = document.getElementById('weeklyRuleDismiss');
     if (wrOverlay) {
         var wrKey = 'weeklyRuleSeen_{{ weekly_rule.title|default("") }}';
         if (localStorage.getItem(wrKey)) {
             wrOverlay.style.display = 'none';
+            showCryptAnnounce();
         } else {
             wrOverlay.style.display = 'flex';
+            if (wrDismiss) {
+                wrDismiss.addEventListener('click', function() {
+                    localStorage.setItem(wrKey, '1');
+                    wrOverlay.style.display = 'none';
+                    showCryptAnnounce();
+                });
+            }
         }
-        if (wrDismiss) {
-            wrDismiss.addEventListener('click', function() {
-                localStorage.setItem(wrKey, '1');
-                wrOverlay.style.display = 'none';
-            });
-        }
+    } else {
+        showCryptAnnounce();
     }
 
     var btnChallenge = document.getElementById('btnChallengeEnoch');

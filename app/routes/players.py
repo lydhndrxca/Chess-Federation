@@ -6,7 +6,7 @@ from flask import (Blueprint, render_template, request, redirect, url_for,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
-from app.models import Commendation, EnochWager, Game, PlayerCollectible, User, db
+from app.models import Commendation, CryptGame, EnochWager, Game, PlayerCollectible, User, db
 from app.services.collectibles_catalog import CATALOG, CATALOG_BY_ID, COLLECTIONS
 from app.services.rating import get_progression
 
@@ -53,6 +53,15 @@ def player_profile(username):
 
     progression = get_progression(player.rating)
 
+    crypt_completed = CryptGame.query.filter_by(user_id=player.id)\
+        .filter(CryptGame.completed_at.isnot(None)).all()
+    crypt_best_wave = max((c.wave for c in crypt_completed), default=0)
+    crypt_best_score = max((c.score for c in crypt_completed), default=0)
+    crypt_total_kills = sum(c.kills for c in crypt_completed)
+    crypt_runs = len(crypt_completed)
+    crypt_rating_net = sum(c.rating_result for c in crypt_completed
+                          if c.rating_result is not None)
+
     return render_template(
         'profile.html', player=player,
         all_games=all_games, fed_games=fed_games,
@@ -60,6 +69,9 @@ def player_profile(username):
         commendations=commendations, condemnations=condemnations,
         drawer=drawer, collections=COLLECTIONS, catalog=CATALOG,
         wager_history=wager_history, progression=progression,
+        crypt_best_wave=crypt_best_wave, crypt_best_score=crypt_best_score,
+        crypt_total_kills=crypt_total_kills, crypt_runs=crypt_runs,
+        crypt_rating_net=crypt_rating_net,
     )
 
 

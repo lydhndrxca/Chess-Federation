@@ -2344,14 +2344,14 @@ CHAT_LURKING = [
 # PvP only. Replaces normal knight commentary when the rule is active.
 # ──────────────────────────────────────────────────────────────
 CUSTOM_KNIGHT_RULE = [
-    "The knights ride longer this week. Three and two. The old step is forbidden.",
+    "The knights ride longer this week. Three forward, two to the side. The old step is gone.",
     "An extended gallop across the board. The horses have been fed well.",
     "Three squares forward, two to the side. The geometry of this week's decree.",
     "The knight leaps far. Farther than it should. The decree allows it.",
     "A longer stride from the cavalry. The board feels smaller now.",
     "The extended knight lands with authority. The position trembles.",
     "That knight covers ground like a horse that has tasted open field.",
-    "Three and two. The knights have forgotten their old L-shape entirely.",
+    "Three and two. The old two-and-one gathers dust in the sub-basement.",
     "A wide arc from the steed. The decree reshapes the battlefield.",
     "The knight stretches its legs. The enemy must recalculate everything.",
     "An ambitious leap. The extended knight knows no modesty this week.",
@@ -2365,7 +2365,7 @@ CUSTOM_KNIGHT_RULE = [
     "That knight moved like something unshackled. The decree is generous to the horses.",
     "A leap of unusual proportion. The decree has made the knights bold.",
     "The extended knight finds a square that should have been safe. Nothing is safe this week.",
-    "The old L-shape gathers dust. The knights ride three and two now.",
+    "The old L-shape, stretched. One extra square on each leg. Simple. Devastating.",
     "I watch the knight soar across the board. The decree has given it wings.",
     "The knight lands on a square the opponent forgot to guard. The new geometry is cruel.",
     "Every knight move this week rewrites the tactical vocabulary. Three and two. Remember it.",

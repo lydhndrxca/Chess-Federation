@@ -97,21 +97,53 @@
     </div>
     {% endif %}
 
-    {# ── Decree strip ── #}
-    {% if schedule and schedule.power_holder %}
-    <a href="{{ url_for('decree.decree_page') }}" class="sp-decree">
-        <div class="sp-decree-icon">👑</div>
-        <div class="sp-decree-body">
-            <span class="sp-decree-holder">{{ schedule.power_holder.username }}'s Decree</span>
-            {% if schedule.rule_declaration %}
-            <span class="sp-decree-text">{{ schedule.rule_declaration|truncate(80) }}</span>
-            {% else %}
-            <span class="sp-decree-text text-muted">No decree issued yet</span>
+    {# ── Other matches this week ── #}
+    {% if other_games %}
+    <div class="sp-section">
+        <h3 class="sp-section-title">Other Contests</h3>
+        {% for g in other_games %}
+        <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="sp-other-row">
+            <span>{{ g.white.username }} vs {{ g.black.username }}</span>
+            {% if g.custom_rule_name %}
+            <span class="badge badge-rule">{{ g.custom_rule_name }}</span>
             {% endif %}
-        </div>
-        <svg class="sp-decree-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-    </a>
+            {% if g.status == 'completed' %}
+            <span class="badge badge-completed">{{ g.result }}</span>
+            {% elif g.status == 'active' %}
+            <span class="badge badge-active">In progress</span>
+            {% elif g.status == 'pending' %}
+            <span class="badge badge-pending">Unbegun</span>
+            {% elif g.status == 'forfeited' %}
+            <span class="badge badge-forfeited">Forfeit</span>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
     {% endif %}
+
+    {# ── Compact Chat ── #}
+    <div class="sp-section sp-chat-section">
+        <div class="sp-chat-header">
+            <h3 class="sp-section-title">Federation Hall</h3>
+            <a href="{{ url_for('hall.federation_hall') }}" class="sp-chat-expand">Open Full Chat</a>
+        </div>
+        <div class="sp-chat-messages" id="spChatMessages">
+            {% for msg in recent_chat %}
+            <div class="sp-chat-msg {{ 'sp-chat-bot' if msg.is_bot else '' }}" data-msg-id="{{ msg.id }}">
+                {% if msg.is_bot %}
+                <span class="sp-chat-name sp-chat-name-bot">Enoch</span>
+                {% else %}
+                <span class="sp-chat-name">{{ msg.user.username }}</span>
+                {% endif %}
+                <span class="sp-chat-text">{{ msg.content|truncate(200) }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="sp-chat-input-bar">
+            <input type="text" id="spChatInput" class="sp-chat-input" placeholder="Say something..." maxlength="1000" autocomplete="off">
+            <button id="spChatSendBtn" class="btn btn-sm btn-primary">Send</button>
+        </div>
+    </div>
 
     {# ── Practice Opponents (Enoch) ── #}
     <div class="sp-section sp-practice">
@@ -188,28 +220,20 @@
         </a>
     </div>
 
-    {# ── Other matches this week ── #}
-    {% if other_games %}
-    <div class="sp-section">
-        <h3 class="sp-section-title">Other Contests</h3>
-        {% for g in other_games %}
-        <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="sp-other-row">
-            <span>{{ g.white.username }} vs {{ g.black.username }}</span>
-            {% if g.custom_rule_name %}
-            <span class="badge badge-rule">{{ g.custom_rule_name }}</span>
+    {# ── Decree strip ── #}
+    {% if schedule and schedule.power_holder %}
+    <a href="{{ url_for('decree.decree_page') }}" class="sp-decree">
+        <div class="sp-decree-icon">👑</div>
+        <div class="sp-decree-body">
+            <span class="sp-decree-holder">{{ schedule.power_holder.username }}'s Decree</span>
+            {% if schedule.rule_declaration %}
+            <span class="sp-decree-text">{{ schedule.rule_declaration|truncate(80) }}</span>
+            {% else %}
+            <span class="sp-decree-text text-muted">No decree issued yet</span>
             {% endif %}
-            {% if g.status == 'completed' %}
-            <span class="badge badge-completed">{{ g.result }}</span>
-            {% elif g.status == 'active' %}
-            <span class="badge badge-active">In progress</span>
-            {% elif g.status == 'pending' %}
-            <span class="badge badge-pending">Unbegun</span>
-            {% elif g.status == 'forfeited' %}
-            <span class="badge badge-forfeited">Forfeit</span>
-            {% endif %}
-        </a>
-        {% endfor %}
-    </div>
+        </div>
+        <svg class="sp-decree-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </a>
     {% endif %}
 
     {# ── Standings ── #}
@@ -453,6 +477,78 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    /* ── Compact chat on standings ── */
+    var spChatBox = document.getElementById('spChatMessages');
+    var spChatInput = document.getElementById('spChatInput');
+    var spChatSend = document.getElementById('spChatSendBtn');
+    var spChatLastId = 0;
+
+    if (spChatBox) {
+        var msgs = spChatBox.querySelectorAll('.sp-chat-msg');
+        if (msgs.length) spChatLastId = parseInt(msgs[msgs.length - 1].dataset.msgId) || 0;
+        spChatBox.scrollTop = spChatBox.scrollHeight;
+    }
+
+    function spAppendMsg(m) {
+        if (!spChatBox) return;
+        var div = document.createElement('div');
+        div.className = 'sp-chat-msg' + (m.is_bot ? ' sp-chat-bot' : '');
+        div.dataset.msgId = m.id;
+        var name = document.createElement('span');
+        name.className = 'sp-chat-name' + (m.is_bot ? ' sp-chat-name-bot' : '');
+        name.textContent = m.is_bot ? 'Enoch' : m.username;
+        var text = document.createElement('span');
+        text.className = 'sp-chat-text';
+        text.textContent = m.content.length > 200 ? m.content.substring(0, 200) + '...' : m.content;
+        div.appendChild(name);
+        div.appendChild(text);
+        spChatBox.appendChild(div);
+        spChatBox.scrollTop = spChatBox.scrollHeight;
+    }
+
+    function spPollChat() {
+        fetch('/hall/poll?after=' + spChatLastId)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var msgs = data.messages || [];
+                if (!msgs.length) return;
+                msgs.forEach(function(m) {
+                    if (m.id > spChatLastId) {
+                        spChatLastId = m.id;
+                        spAppendMsg(m);
+                    }
+                });
+            }).catch(function() {});
+    }
+    setInterval(spPollChat, 8000);
+
+    function spSendChat() {
+        if (!spChatInput) return;
+        var text = spChatInput.value.trim();
+        if (!text) return;
+        spChatInput.value = '';
+        fetch('/hall/send', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content: text}),
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.message && d.message.id > spChatLastId) {
+                spChatLastId = d.message.id;
+                spAppendMsg(d.message);
+            }
+            if (d.enoch_reply && d.enoch_reply.id > spChatLastId) {
+                spChatLastId = d.enoch_reply.id;
+                spAppendMsg(d.enoch_reply);
+            }
+        }).catch(function() {});
+    }
+    if (spChatSend) spChatSend.addEventListener('click', spSendChat);
+    if (spChatInput) spChatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); spSendChat(); }
+    });
 
     /* ── Background audio preloader ── */
     if (window.EnochCache) {

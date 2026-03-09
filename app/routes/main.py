@@ -2,7 +2,7 @@ from flask import Blueprint, redirect, render_template, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_, and_
 
-from app.models import Game, User, WeeklySchedule, db
+from app.models import Game, User, WeeklySchedule, ChatMessage, db
 from app.services.matchmaking import (
     check_forfeits, generate_weekly_pairings, get_current_season,
     get_current_week, get_week_deadline, get_decree_deadline,
@@ -149,6 +149,11 @@ def standings():
     except ImportError:
         pass
 
+    recent_chat = ChatMessage.query.order_by(
+        ChatMessage.timestamp.desc()
+    ).limit(15).all()
+    recent_chat.reverse()
+
     return render_template(
         'standings.html',
         week=week,
@@ -165,6 +170,7 @@ def standings():
         enoch_mood=enoch_mood,
         weekly_rule=weekly_rule,
         active_reckoning=active_reckoning,
+        recent_chat=recent_chat,
     )
 
 

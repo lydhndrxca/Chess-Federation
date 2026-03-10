@@ -180,8 +180,9 @@ def standings():
         pass
 
     try:
-        from app.services.enoch_chat import ensure_casual_announcement
+        from app.services.enoch_chat import ensure_casual_announcement, ensure_crypt_revenge_announcement
         ensure_casual_announcement()
+        ensure_crypt_revenge_announcement()
     except (ImportError, Exception):
         pass
 

@@ -123,6 +123,7 @@ def build_line_list():
 
 
 def main():
+    force = "--force" in sys.argv
     manifest = load_manifest()
     lines = build_line_list()
 
@@ -133,6 +134,8 @@ def main():
 
     print(f"Total crypt lines: {total}")
     print(f"Manifest has {len(manifest)} existing entries")
+    if force:
+        print("FORCE mode: regenerating all lines")
     print()
 
     for cat, idx, text in lines:
@@ -140,7 +143,7 @@ def main():
         file_rel = f"{cat}/{idx:03d}.mp3"
         file_abs = os.path.join(AUDIO_ROOT, file_rel)
 
-        if key in manifest and os.path.exists(file_abs):
+        if not force and key in manifest and manifest[key].get("text") == text and os.path.exists(file_abs):
             skipped += 1
             continue
 

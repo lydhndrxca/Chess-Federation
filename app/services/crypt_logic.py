@@ -123,11 +123,11 @@ def generate_wave(wave_number):
     w = min(wave_number, MAX_WAVES)
 
     #               wave: 0  1  2  3  4  5  6  7  8  9  10
-    n_pawns   = [0, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8][w]
-    n_knights = [0, 0, 1, 1, 2, 2, 2, 2, 2, 2, 2][w]
-    n_bishops = [0, 0, 0, 1, 1, 2, 2, 2, 2, 2, 2][w]
-    n_rooks   = [0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2][w]
-    n_queens  = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2][w]
+    n_pawns   = [0, 4, 5, 6, 6, 7, 8, 8, 8, 8, 8][w]
+    n_knights = [0, 0, 1, 2, 2, 3, 3, 3, 3, 3, 3][w]
+    n_bishops = [0, 0, 1, 1, 2, 2, 3, 3, 3, 3, 3][w]
+    n_rooks   = [0, 0, 0, 0, 1, 1, 1, 2, 3, 3, 3][w]
+    n_queens  = [0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 3][w]
 
     pieces = [('k', 'e8')]
 
@@ -226,16 +226,16 @@ def get_legal_moves_list(board):
 # ── AI difficulty per wave (tuned for 10-wave run) ──────────────
 
 _WAVE_PARAMS = {
-    1:  {'depth': 1, 'noise': 150, 'blunder_chance': 0.30, 'top_n': 6, 'time_limit': 0.5},
-    2:  {'depth': 2, 'noise': 120, 'blunder_chance': 0.20, 'top_n': 5, 'time_limit': 0.6},
-    3:  {'depth': 2, 'noise': 80,  'blunder_chance': 0.12, 'top_n': 4, 'time_limit': 0.8},
-    4:  {'depth': 3, 'noise': 60,  'blunder_chance': 0.08, 'top_n': 3, 'time_limit': 1.0},
-    5:  {'depth': 3, 'noise': 40,  'blunder_chance': 0.05, 'top_n': 3, 'time_limit': 1.0},
-    6:  {'depth': 3, 'noise': 25,  'blunder_chance': 0.03, 'top_n': 2, 'time_limit': 1.2},
-    7:  {'depth': 4, 'noise': 15,  'blunder_chance': 0.02, 'top_n': 2, 'time_limit': 1.5},
-    8:  {'depth': 4, 'noise': 10,  'blunder_chance': 0.01, 'top_n': 2, 'time_limit': 1.5},
-    9:  {'depth': 5, 'noise': 5,   'blunder_chance': 0.00, 'top_n': 2, 'time_limit': 2.0},
-    10: {'depth': 5, 'noise': 0,   'blunder_chance': 0.00, 'top_n': 1, 'time_limit': 2.5},
+    1:  {'depth': 2, 'noise': 100, 'blunder_chance': 0.18, 'top_n': 4, 'time_limit': 0.6},
+    2:  {'depth': 2, 'noise': 80,  'blunder_chance': 0.12, 'top_n': 4, 'time_limit': 0.8},
+    3:  {'depth': 3, 'noise': 50,  'blunder_chance': 0.08, 'top_n': 3, 'time_limit': 1.0},
+    4:  {'depth': 3, 'noise': 35,  'blunder_chance': 0.05, 'top_n': 3, 'time_limit': 1.0},
+    5:  {'depth': 4, 'noise': 25,  'blunder_chance': 0.03, 'top_n': 2, 'time_limit': 1.2},
+    6:  {'depth': 4, 'noise': 15,  'blunder_chance': 0.02, 'top_n': 2, 'time_limit': 1.5},
+    7:  {'depth': 4, 'noise': 10,  'blunder_chance': 0.01, 'top_n': 2, 'time_limit': 1.5},
+    8:  {'depth': 5, 'noise': 5,   'blunder_chance': 0.00, 'top_n': 2, 'time_limit': 2.0},
+    9:  {'depth': 5, 'noise': 0,   'blunder_chance': 0.00, 'top_n': 1, 'time_limit': 2.5},
+    10: {'depth': 5, 'noise': 0,   'blunder_chance': 0.00, 'top_n': 1, 'time_limit': 3.0},
 }
 
 

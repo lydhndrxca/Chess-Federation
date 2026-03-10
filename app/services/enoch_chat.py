@@ -16,6 +16,7 @@ from app.services.dialogue import (
     CHAT_FEDERATION_LORE,
     CMD_STANDINGS, CMD_RATING, CMD_DECREE, CMD_HELP,
     CHAT_LATE_NIGHT, CHAT_QUIRKS, CHAT_CASUAL_ANNOUNCE,
+    CHAT_CRYPT_REVENGE_ANNOUNCE,
 )
 
 BOT_NAME = 'Enoch'
@@ -180,6 +181,26 @@ def maybe_idle_interjection():
 
 
 _casual_announced = False
+_crypt_revenge_announced = False
+
+
+def ensure_crypt_revenge_announcement():
+    """Post a one-time Enoch rage announcement about the crypt redesign."""
+    global _crypt_revenge_announced
+    if _crypt_revenge_announced:
+        return
+    existing = ChatMessage.query.filter(
+        ChatMessage.is_bot == True,
+        ChatMessage.content.contains('andrewmuckerofstalls'),
+        ChatMessage.content.contains('REDESIGNED'),
+    ).first()
+    if existing:
+        _crypt_revenge_announced = True
+        return
+    _crypt_revenge_announced = True
+    msg = _post_bot(CHAT_CRYPT_REVENGE_ANNOUNCE)
+    db.session.commit()
+    return msg
 
 
 def ensure_casual_announcement():

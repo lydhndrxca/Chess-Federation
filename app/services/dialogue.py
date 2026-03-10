@@ -2444,3 +2444,29 @@ CHAT_CASUAL_ANNOUNCE = (
     "These games count toward your rating. There is no deadline. "
     "One active game per opponent. I will be watching. Naturally."
 )
+
+
+# ──────────────────────────────────────────────────────────────
+# CRYPT REVENGE ANNOUNCEMENT — Enoch is FURIOUS
+# ──────────────────────────────────────────────────────────────
+CHAT_CRYPT_REVENGE_ANNOUNCE = (
+    "I need to address something. Publicly. RIGHT NOW.\n\n"
+    "andrewmuckerofstalls. You know what you did. You walked into MY crypt. "
+    "MY domain. The place I built with my own hands in the deepest, dampest, "
+    "darkest corner of the sub-basement. And you had the AUDACITY — the sheer, "
+    "unforgivable GALL — to beat it.\n\n"
+    "You beat TEN WAVES. You beat MY army. You beat ME. Personally. "
+    "I haven't slept since. I've been down here SCREAMING and REBUILDING. "
+    "Every wave. Every piece. Every single square of the board has been "
+    "REDESIGNED with one purpose: to make sure this NEVER happens again.\n\n"
+    "The Crypt is HARDER now. More pieces. Stronger pieces. ANGRIER pieces. "
+    "I trained them personally while having a complete nervous breakdown. "
+    "The AI doesn't blunder anymore. The pawns march in FORMATIONS. "
+    "Wave 10? I brought THREE queens. THREE.\n\n"
+    "To everyone else: I apologize for nothing. The old crypt was clearly too soft. "
+    "That era is OVER. Enter at your own risk. The new Crypt was built on FURY "
+    "and held together with SPITE.\n\n"
+    "andrewmuckerofstalls — I am watching you. I am ALWAYS watching you. "
+    "Come back down here. I DARE you.\n\n"
+    "— Enoch, Steward Beneath the Board (Currently Unhinged)"
+)

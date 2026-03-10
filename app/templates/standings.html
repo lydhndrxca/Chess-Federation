@@ -376,6 +376,34 @@
 </div>
 {% endif %}
 
+{# ── Crypt Revenge Announcement ── #}
+<div class="wr-overlay" id="cryptRevengeOverlay" style="display:none">
+    <div class="wr-modal">
+        <div class="wr-header">
+            <img src="{{ url_for('static', filename='img/enoch.png') }}" class="wr-enoch-avatar" alt="Enoch" style="border-color:#c0392b">
+            <h2 class="wr-title" style="color:#c0392b">&#9760; THE CRYPT HAS BEEN REBUILT</h2>
+            <span class="wr-subtitle" style="color:#e74c3c">Enoch is FURIOUS</span>
+        </div>
+        <div class="wr-body">
+            <p class="wr-enoch-text" style="white-space:pre-line">"andrewmuckerofstalls. You know what you did.
+
+You walked into MY crypt. MY domain. And you had the AUDACITY to beat it. All ten waves. Including ME.
+
+I haven't slept since. I've been down here SCREAMING and REBUILDING. Every wave. Every piece. Harder. Angrier. MEANER.
+
+More enemies. Stronger AI. Three queens at wave 10. I trained them PERSONALLY while having a complete nervous breakdown.
+
+The old Crypt was a GREETING CARD. This is a DECLARATION OF WAR.
+
+Come back down here. I DARE you."</p>
+            <p class="wr-description" style="margin-top:1rem; font-style:normal; opacity:.85; color:#e74c3c">
+                <strong>The Crypt has been redesigned.</strong> More enemies per wave. Smarter AI. Enoch is out for REVENGE.
+            </p>
+        </div>
+        <button class="btn wr-dismiss" id="cryptRevengeDismiss" style="background:#c0392b">Face the Darkness</button>
+    </div>
+</div>
+
 {# ── Casual Matches Announcement ── #}
 <div class="wr-overlay" id="casualAnnounceOverlay" style="display:none">
     <div class="wr-modal">
@@ -450,8 +478,14 @@ document.addEventListener('DOMContentLoaded', function() {
     var mc = document.getElementById('matchCountdown');
     if (mc) tickCountdown(mc.dataset.deadline, document.getElementById('matchTimer'));
 
-    /* ── Announcement chain: weekly rule → casual announce → crypt announce ── */
+    /* ── Announcement chain: crypt revenge → casual → crypt original ── */
     var announceQueue = [];
+
+    var crRevOverlay = document.getElementById('cryptRevengeOverlay');
+    var crRevKey = 'cryptRevengeSeen_v1';
+    if (crRevOverlay && !localStorage.getItem(crRevKey)) {
+        announceQueue.push({ el: crRevOverlay, key: crRevKey, btnId: 'cryptRevengeDismiss' });
+    }
 
     var caOverlay = document.getElementById('casualAnnounceOverlay');
     var caKey = 'casualAnnounceSeen_v1';

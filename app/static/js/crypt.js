@@ -97,6 +97,69 @@ function playSound(san, over) {
     if (s) { try { s.currentTime = 0; } catch(e){} s.play().catch(()=>{}); }
 }
 
+/* ── Crypt Ambient Music ─────────────────────────────── */
+
+const cryptAmbient = {
+    normal: null,
+    boss: null,
+    ghostHowl: null,
+    current: null,
+    _howlTimer: null,
+};
+
+function initAmbientAudio() {
+    const base = (window.STATIC_BASE || '/static/') + 'audio/crypt/';
+    cryptAmbient.normal = new Audio(base + 'ambient_loop.mp3');
+    cryptAmbient.normal.loop = true;
+    cryptAmbient.normal.volume = 0.25;
+    cryptAmbient.normal.preload = 'auto';
+
+    cryptAmbient.boss = new Audio(base + 'boss_ambient.mp3');
+    cryptAmbient.boss.loop = true;
+    cryptAmbient.boss.volume = 0.3;
+    cryptAmbient.boss.preload = 'auto';
+
+    cryptAmbient.ghostHowl = new Audio(base + 'ghost_howl.mp3');
+    cryptAmbient.ghostHowl.loop = false;
+    cryptAmbient.ghostHowl.volume = 0.15;
+    cryptAmbient.ghostHowl.preload = 'auto';
+}
+initAmbientAudio();
+
+function startAmbient(isBoss) {
+    stopAmbient();
+    const track = isBoss ? cryptAmbient.boss : cryptAmbient.normal;
+    track.currentTime = 0;
+    cryptAmbient.current = track;
+    if (!enochMuted) {
+        track.play().catch(() => {});
+    }
+    scheduleGhostHowl();
+}
+
+function stopAmbient() {
+    if (cryptAmbient.current) {
+        try { cryptAmbient.current.pause(); cryptAmbient.current.currentTime = 0; } catch(e) {}
+        cryptAmbient.current = null;
+    }
+    if (cryptAmbient._howlTimer) {
+        clearTimeout(cryptAmbient._howlTimer);
+        cryptAmbient._howlTimer = null;
+    }
+}
+
+function scheduleGhostHowl() {
+    const delay = 15000 + Math.random() * 30000;
+    cryptAmbient._howlTimer = setTimeout(() => {
+        if (!enochMuted && cryptAmbient.current && !cryptAmbient.current.paused) {
+            const howl = cryptAmbient.ghostHowl;
+            howl.currentTime = 0;
+            howl.play().catch(() => {});
+        }
+        if (cryptAmbient.current) scheduleGhostHowl();
+    }, delay);
+}
+
 /* ── Enoch Voice ──────────────────────────────────────── */
 
 let audioTextToUrl = null;
@@ -499,6 +562,7 @@ async function animateWaveEntry(data) {
 
 function enableBattle() {
     phase = 'battle';
+    startAmbient(wave >= MAX_WAVES);
 
     ground.set({
         movable: {
@@ -610,6 +674,7 @@ function sendMove(uci) {
 
 function showWaveComplete(d) {
     phase = 'wave_done';
+    stopAmbient();
     showPanel('wave');
     updateLadder(d.next_wave);
 
@@ -698,6 +763,7 @@ $btnNextWave.addEventListener('click', () => {
 
 function showGameOver(d) {
     phase = 'gameover';
+    stopAmbient();
     showPanel('gameover');
 
     if (d.victory) {
@@ -762,9 +828,15 @@ if ($muteBtn) {
     $muteBtn.addEventListener('click', () => {
         enochMuted = !enochMuted;
         $muteBtn.innerHTML = enochMuted ? '&#128263;' : '&#128264;';
-        $muteBtn.title = enochMuted ? 'Unmute Enoch' : 'Mute Enoch';
-        if (enochMuted && currentEnochAudio) {
-            try { currentEnochAudio.pause(); } catch(e){}
+        $muteBtn.title = enochMuted ? 'Unmute' : 'Mute';
+        if (enochMuted) {
+            if (currentEnochAudio) try { currentEnochAudio.pause(); } catch(e){}
+            if (cryptAmbient.current) try { cryptAmbient.current.pause(); } catch(e){}
+            if (cryptAmbient.ghostHowl) try { cryptAmbient.ghostHowl.pause(); } catch(e){}
+        } else {
+            if (cryptAmbient.current && phase === 'battle') {
+                cryptAmbient.current.play().catch(() => {});
+            }
         }
     });
 }

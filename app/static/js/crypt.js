@@ -22,6 +22,30 @@ let kills = cfg.kills;
 let wave = cfg.wave;
 let currentLegalMoves = cfg.legalMoves || [];
 let pendingMove = null;
+let preMovefen = null;
+let _audioUnlocked = false;
+
+function unlockCryptAudio() {
+    if (_audioUnlocked) return;
+    _audioUnlocked = true;
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === 'suspended') ctx.resume();
+        const buf = ctx.createBuffer(1, 1, 22050);
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        src.connect(ctx.destination);
+        src.start(0);
+    } catch(e) {}
+    if (cryptAmbient._a && !cryptAmbient._a.paused) return;
+    if (cryptAmbient._a && !enochMuted) {
+        cryptAmbient._a.play().catch(() => {});
+    }
+}
+
+document.addEventListener('click', unlockCryptAudio, { once: true });
+document.addEventListener('touchstart', unlockCryptAudio, { once: true });
+document.addEventListener('keydown', unlockCryptAudio, { once: true });
 
 /* ── Piece helpers ────────────────────────────────────── */
 
@@ -97,62 +121,121 @@ function playSound(san, over) {
     if (s) { try { s.currentTime = 0; } catch(e){} s.play().catch(()=>{}); }
 }
 
-/* ── Crypt Ambient Music ─────────────────────────────── */
+/* ── Crypt Ambient Music (crossfade looper) ──────────── */
+
+const XFADE = 2.0;
 
 const cryptAmbient = {
-    normal: null,
-    boss: null,
+    normalSrc: null,
+    bossSrc: null,
     ghostHowl: null,
-    current: null,
+    activeKey: null,
+    playing: false,
+    _a: null,
+    _b: null,
+    _raf: null,
     _howlTimer: null,
 };
 
+function _makeAudio(src, vol) {
+    const a = new Audio(src);
+    a.preload = 'auto';
+    a.volume = vol;
+    return a;
+}
+
 function initAmbientAudio() {
     const base = (window.STATIC_BASE || '/static/') + 'audio/crypt/';
-    cryptAmbient.normal = new Audio(base + 'ambient_loop.mp3');
-    cryptAmbient.normal.loop = true;
-    cryptAmbient.normal.volume = 0.25;
-    cryptAmbient.normal.preload = 'auto';
-
-    cryptAmbient.boss = new Audio(base + 'boss_ambient.mp3');
-    cryptAmbient.boss.loop = true;
-    cryptAmbient.boss.volume = 0.3;
-    cryptAmbient.boss.preload = 'auto';
+    cryptAmbient.normalSrc = base + 'ambient_loop.mp3';
+    cryptAmbient.bossSrc   = base + 'boss_ambient.mp3';
 
     cryptAmbient.ghostHowl = new Audio(base + 'ghost_howl.mp3');
-    cryptAmbient.ghostHowl.loop = false;
-    cryptAmbient.ghostHowl.volume = 0.15;
     cryptAmbient.ghostHowl.preload = 'auto';
+    cryptAmbient.ghostHowl.volume = 0.15;
 }
 initAmbientAudio();
 
+function _ambientVol(key) { return key === 'boss' ? 0.3 : 0.25; }
+
+function _tickCrossfade() {
+    const a = cryptAmbient._a;
+    if (!a || a.paused || !a.duration) {
+        cryptAmbient._raf = requestAnimationFrame(_tickCrossfade);
+        return;
+    }
+    const remaining = a.duration - a.currentTime;
+    if (remaining <= XFADE && remaining > 0) {
+        if (!cryptAmbient._b) {
+            const key = cryptAmbient.activeKey;
+            const src = key === 'boss' ? cryptAmbient.bossSrc : cryptAmbient.normalSrc;
+            const vol = _ambientVol(key);
+            const b = _makeAudio(src, 0);
+            b.currentTime = 0;
+            b.play().catch(() => {});
+            cryptAmbient._b = b;
+        }
+        const t = 1 - (remaining / XFADE);
+        const vol = _ambientVol(cryptAmbient.activeKey);
+        a.volume = vol * (1 - t);
+        cryptAmbient._b.volume = vol * t;
+    }
+    if (a.ended || a.currentTime >= a.duration - 0.05) {
+        a.pause();
+        if (cryptAmbient._b) {
+            cryptAmbient._b.volume = _ambientVol(cryptAmbient.activeKey);
+            cryptAmbient._a = cryptAmbient._b;
+            cryptAmbient._b = null;
+        }
+    }
+    cryptAmbient._raf = requestAnimationFrame(_tickCrossfade);
+}
+
 function startAmbient(isBoss) {
     stopAmbient();
-    const track = isBoss ? cryptAmbient.boss : cryptAmbient.normal;
-    track.currentTime = 0;
-    cryptAmbient.current = track;
+    const key = isBoss ? 'boss' : 'normal';
+    const src = isBoss ? cryptAmbient.bossSrc : cryptAmbient.normalSrc;
+    const vol = _ambientVol(key);
+
+    cryptAmbient.activeKey = key;
+    cryptAmbient.playing = true;
+    cryptAmbient._a = _makeAudio(src, vol);
+    cryptAmbient._a.currentTime = 0;
     if (!enochMuted) {
-        track.play().catch(() => {});
+        cryptAmbient._a.play().catch(() => {});
     }
+    cryptAmbient._raf = requestAnimationFrame(_tickCrossfade);
     scheduleGhostHowl();
     scheduleLightning();
 }
 
 function resumeAmbient(isBoss) {
-    const wantedTrack = isBoss ? cryptAmbient.boss : cryptAmbient.normal;
-    if (cryptAmbient.current === wantedTrack && !cryptAmbient.current.paused) return;
-    if (cryptAmbient.current === wantedTrack && cryptAmbient.current.paused && !enochMuted) {
-        cryptAmbient.current.play().catch(() => {});
+    const key = isBoss ? 'boss' : 'normal';
+    if (cryptAmbient.activeKey === key && cryptAmbient.playing && cryptAmbient._a && !cryptAmbient._a.paused) return;
+    if (cryptAmbient.activeKey === key && cryptAmbient._a && cryptAmbient._a.paused && !enochMuted) {
+        cryptAmbient._a.play().catch(() => {});
+        cryptAmbient.playing = true;
+        if (!cryptAmbient._raf) cryptAmbient._raf = requestAnimationFrame(_tickCrossfade);
         return;
     }
     startAmbient(isBoss);
 }
 
+function _pauseAmbientAudio() {
+    if (cryptAmbient._a) try { cryptAmbient._a.pause(); } catch(e) {}
+    if (cryptAmbient._b) try { cryptAmbient._b.pause(); } catch(e) {}
+}
+
+function _resumeAmbientAudio() {
+    if (cryptAmbient._a) cryptAmbient._a.play().catch(() => {});
+}
+
 function stopAmbient() {
-    if (cryptAmbient.current) {
-        try { cryptAmbient.current.pause(); cryptAmbient.current.currentTime = 0; } catch(e) {}
-        cryptAmbient.current = null;
-    }
+    _pauseAmbientAudio();
+    if (cryptAmbient._a) { cryptAmbient._a.src = ''; cryptAmbient._a = null; }
+    if (cryptAmbient._b) { cryptAmbient._b.src = ''; cryptAmbient._b = null; }
+    if (cryptAmbient._raf) { cancelAnimationFrame(cryptAmbient._raf); cryptAmbient._raf = null; }
+    cryptAmbient.activeKey = null;
+    cryptAmbient.playing = false;
     if (cryptAmbient._howlTimer) {
         clearTimeout(cryptAmbient._howlTimer);
         cryptAmbient._howlTimer = null;
@@ -163,12 +246,12 @@ function stopAmbient() {
 function scheduleGhostHowl() {
     const delay = 15000 + Math.random() * 30000;
     cryptAmbient._howlTimer = setTimeout(() => {
-        if (!enochMuted && cryptAmbient.current && !cryptAmbient.current.paused) {
+        if (!enochMuted && cryptAmbient.playing && cryptAmbient._a && !cryptAmbient._a.paused) {
             const howl = cryptAmbient.ghostHowl;
             howl.currentTime = 0;
             howl.play().catch(() => {});
         }
-        if (cryptAmbient.current) scheduleGhostHowl();
+        if (cryptAmbient.playing) scheduleGhostHowl();
     }, delay);
 }
 
@@ -212,10 +295,10 @@ function triggerLightning() {
 function scheduleLightning() {
     const delay = 25000 + Math.random() * 50000;
     _lightningTimer = setTimeout(() => {
-        if (cryptAmbient.current && !cryptAmbient.current.paused) {
+        if (cryptAmbient.playing && cryptAmbient._a && !cryptAmbient._a.paused) {
             triggerLightning();
         }
-        if (cryptAmbient.current) scheduleLightning();
+        if (cryptAmbient.playing) scheduleLightning();
     }, delay);
 }
 
@@ -553,6 +636,7 @@ function rebuildAvailable() {
 /* ── Deploy ───────────────────────────────────────────── */
 
 $btnDeploy.addEventListener('click', () => {
+    unlockCryptAudio();
     if (phase !== 'placement') return;
     if (!Object.values(placedPieces).includes('K')) return;
     $btnDeploy.disabled = true;
@@ -653,6 +737,8 @@ function onPlayerMove(orig, dest) {
     const match = currentLegalMoves.find(m => m.from === orig && m.to === dest);
     if (!match) return;
 
+    preMovefen = ground.getFen();
+
     const isPromo = match.promotion && match.promotion !== '';
     let uci = orig + dest;
     if (isPromo) uci += 'q';
@@ -679,6 +765,9 @@ $confirmNo.addEventListener('click', () => {
     pendingMove = null;
     $confirmBar.style.display = 'none';
     ground.set({
+        fen: preMovefen || cfg.fen,
+        turnColor: 'white',
+        lastMove: undefined,
         movable: {
             free: false,
             color: 'white',
@@ -689,6 +778,7 @@ $confirmNo.addEventListener('click', () => {
         selectable: { enabled: true },
         events: { move: onPlayerMove },
     });
+    preMovefen = null;
 });
 
 function sendMove(uci) {
@@ -902,12 +992,12 @@ if ($muteBtn) {
         $muteBtn.title = enochMuted ? 'Unmute' : 'Mute';
         if (enochMuted) {
             if (currentEnochAudio) try { currentEnochAudio.pause(); } catch(e){}
-            if (cryptAmbient.current) try { cryptAmbient.current.pause(); } catch(e){}
+            _pauseAmbientAudio();
             if (cryptAmbient.ghostHowl) try { cryptAmbient.ghostHowl.pause(); } catch(e){}
             thunderSounds.forEach(s => { try { s.pause(); } catch(e){} });
         } else {
-            if (cryptAmbient.current && phase === 'battle') {
-                cryptAmbient.current.play().catch(() => {});
+            if (cryptAmbient.playing && phase === 'battle') {
+                _resumeAmbientAudio();
             }
         }
     });

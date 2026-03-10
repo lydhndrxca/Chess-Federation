@@ -126,6 +126,17 @@
         <div id="chessBoard"></div>
     </div>
 
+    {# ── Move confirm / cancel bar (right below board for mobile) ── #}
+    <div class="gv-confirm-bar" id="moveConfirmBar">
+        <button class="gv-confirm-btn gv-confirm-no" id="moveConfirmNo" title="Cancel">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <span class="gv-confirm-label">Confirm move?</span>
+        <button class="gv-confirm-btn gv-confirm-yes" id="moveConfirmYes" title="Confirm">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </button>
+    </div>
+
     {# ── Player bar (bottom) ── #}
     {% set bottom_player = me if is_participant else game.black %}
     {% set bottom_is_white = (bottom_player.id == game.white_id) %}
@@ -176,17 +187,6 @@
         <span class="gv-seq-name">{{ seq_match.name }}</span>
         <span class="gv-seq-creator">by {{ seq_match.creator }}</span>
         {% endif %}
-    </div>
-
-    {# ── Move confirm / cancel bar ── #}
-    <div class="gv-confirm-bar" id="moveConfirmBar">
-        <span class="gv-confirm-label">Confirm move?</span>
-        <button class="gv-confirm-btn gv-confirm-no" id="moveConfirmNo" title="Cancel">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-        <button class="gv-confirm-btn gv-confirm-yes" id="moveConfirmYes" title="Confirm">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        </button>
     </div>
 
     {# ── Status / result bar ── #}

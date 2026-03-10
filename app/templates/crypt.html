@@ -130,6 +130,13 @@ if (btn) btn.addEventListener('click', function() {
             <div class="cr-inv-grid" id="invGrid"></div>
         </div>
 
+        {# ── Move confirm bar (directly below board for visibility) ── #}
+        <div class="cr-confirm-bar" id="crConfirmBar" style="display:none">
+            <button class="cr-confirm-no" id="crConfirmNo" title="Cancel">&#10005;</button>
+            <span class="cr-confirm-label">Confirm?</span>
+            <button class="cr-confirm-yes" id="crConfirmYes" title="Confirm">&#10003;</button>
+        </div>
+
         {# ── Action buttons under board ── #}
         <div class="cr-board-actions" id="boardActions">
             <button class="btn cr-armory-btn" id="btnArmory">Armory</button>
@@ -167,10 +174,6 @@ if (btn) btn.addEventListener('click', function() {
             <div class="cr-battle-info">
                 <p>Eliminate all enemy pieces to clear the wave.</p>
                 <p>If your King falls, it's over.</p>
-            </div>
-            <div class="cr-confirm-bar" id="crConfirmBar" style="display:none">
-                <button class="cr-confirm-no" id="crConfirmNo" title="Cancel">&#10005;</button>
-                <button class="cr-confirm-yes" id="crConfirmYes" title="Confirm">&#10003;</button>
             </div>
         </div>
 

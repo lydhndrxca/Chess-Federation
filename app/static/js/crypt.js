@@ -135,6 +135,17 @@ function startAmbient(isBoss) {
         track.play().catch(() => {});
     }
     scheduleGhostHowl();
+    scheduleLightning();
+}
+
+function resumeAmbient(isBoss) {
+    const wantedTrack = isBoss ? cryptAmbient.boss : cryptAmbient.normal;
+    if (cryptAmbient.current === wantedTrack && !cryptAmbient.current.paused) return;
+    if (cryptAmbient.current === wantedTrack && cryptAmbient.current.paused && !enochMuted) {
+        cryptAmbient.current.play().catch(() => {});
+        return;
+    }
+    startAmbient(isBoss);
 }
 
 function stopAmbient() {
@@ -146,6 +157,7 @@ function stopAmbient() {
         clearTimeout(cryptAmbient._howlTimer);
         cryptAmbient._howlTimer = null;
     }
+    stopLightning();
 }
 
 function scheduleGhostHowl() {
@@ -158,6 +170,60 @@ function scheduleGhostHowl() {
         }
         if (cryptAmbient.current) scheduleGhostHowl();
     }, delay);
+}
+
+/* ── Lightning & Thunder ──────────────────────────────── */
+
+const thunderSounds = [];
+let _lightningTimer = null;
+const _lightningOverlay = document.createElement('div');
+_lightningOverlay.className = 'cr-lightning-overlay';
+document.body.appendChild(_lightningOverlay);
+
+function initThunderAudio() {
+    const base = (window.STATIC_BASE || '/static/') + 'audio/crypt/';
+    const files = ['thunder_close.mp3', 'thunder_distant.mp3', 'thunder_sharp.mp3'];
+    files.forEach(f => {
+        const a = new Audio(base + f);
+        a.preload = 'auto';
+        a.volume = 0.2;
+        thunderSounds.push(a);
+    });
+}
+initThunderAudio();
+
+function triggerLightning() {
+    const flashClass = ['flash-1', 'flash-2', 'flash-3'][Math.floor(Math.random() * 3)];
+    _lightningOverlay.classList.remove('flash-1', 'flash-2', 'flash-3');
+    void _lightningOverlay.offsetWidth;
+    _lightningOverlay.classList.add(flashClass);
+
+    if (!enochMuted && thunderSounds.length) {
+        const snd = thunderSounds[Math.floor(Math.random() * thunderSounds.length)];
+        const delay = 200 + Math.random() * 800;
+        setTimeout(() => {
+            snd.currentTime = 0;
+            snd.volume = 0.12 + Math.random() * 0.15;
+            snd.play().catch(() => {});
+        }, delay);
+    }
+}
+
+function scheduleLightning() {
+    const delay = 25000 + Math.random() * 50000;
+    _lightningTimer = setTimeout(() => {
+        if (cryptAmbient.current && !cryptAmbient.current.paused) {
+            triggerLightning();
+        }
+        if (cryptAmbient.current) scheduleLightning();
+    }, delay);
+}
+
+function stopLightning() {
+    if (_lightningTimer) {
+        clearTimeout(_lightningTimer);
+        _lightningTimer = null;
+    }
 }
 
 /* ── Enoch Voice ──────────────────────────────────────── */
@@ -273,6 +339,11 @@ function showPanel(name) {
     if ($boardActions) $boardActions.style.display = isPlacement ? 'flex' : 'none';
 
     if ($ladderCompact) $ladderCompact.style.display = (name === 'wave') ? '' : 'none';
+
+    if (name !== 'battle') {
+        $confirmBar.style.display = 'none';
+        pendingMove = null;
+    }
 }
 
 /* ── Init board ───────────────────────────────────────── */
@@ -562,7 +633,7 @@ async function animateWaveEntry(data) {
 
 function enableBattle() {
     phase = 'battle';
-    startAmbient(wave >= MAX_WAVES);
+    resumeAmbient(wave >= MAX_WAVES);
 
     ground.set({
         movable: {
@@ -833,6 +904,7 @@ if ($muteBtn) {
             if (currentEnochAudio) try { currentEnochAudio.pause(); } catch(e){}
             if (cryptAmbient.current) try { cryptAmbient.current.pause(); } catch(e){}
             if (cryptAmbient.ghostHowl) try { cryptAmbient.ghostHowl.pause(); } catch(e){}
+            thunderSounds.forEach(s => { try { s.pause(); } catch(e){} });
         } else {
             if (cryptAmbient.current && phase === 'battle') {
                 cryptAmbient.current.play().catch(() => {});

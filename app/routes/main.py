@@ -73,6 +73,8 @@ def standings():
     def _build_game_card(g):
         my_color = 'white' if current_user.id == g.white_id else 'black'
         opponent = g.black if my_color == 'white' else g.white
+        if not opponent:
+            return None
         is_my_turn = (g.status in ('pending', 'active') and g.current_turn == my_color)
         h2h = _head_to_head(current_user.id, opponent.id)
         return {
@@ -87,7 +89,9 @@ def standings():
     for g in weekly_games:
         if current_user.id not in (g.white_id, g.black_id):
             continue
-        my_games.append(_build_game_card(g))
+        card = _build_game_card(g)
+        if card:
+            my_games.append(card)
 
     turn_order = {True: 0, False: 1}
     status_order = {'pending': 0, 'active': 1, 'completed': 2, 'forfeited': 3}
@@ -103,7 +107,7 @@ def standings():
         Game.status.in_(['pending', 'active', 'completed']),
     ).order_by(Game.id.desc()).limit(20).all()
 
-    my_casual_games = [_build_game_card(g) for g in casual_games_q]
+    my_casual_games = [c for c in (_build_game_card(g) for g in casual_games_q) if c]
     my_casual_games.sort(key=lambda x: (
         turn_order.get(x['is_my_turn'], 1),
         status_order.get(x['game'].status, 9),
@@ -301,6 +305,8 @@ def _archive_month(year, month):
 
     for g in games:
         if g.status not in ('completed', 'forfeited'):
+            continue
+        if g.white_id not in stats or g.black_id not in stats:
             continue
         if g.result == '1-0':
             stats[g.white_id]['wins'] += 1

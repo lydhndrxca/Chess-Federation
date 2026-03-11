@@ -109,14 +109,16 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { overlay.remove(); modal.remove(); }, 400);
         }
 
-        document.getElementById('notifYes').addEventListener('click', () => {
+        const notifYesBtn = document.getElementById('notifYes');
+        const notifNoBtn = document.getElementById('notifNo');
+        if (notifYesBtn) notifYesBtn.addEventListener('click', () => {
             Notification.requestPermission().then(perm => {
                 localStorage.setItem(NOTIF_PREF_KEY, perm);
                 localStorage.setItem(NOTIF_PROMPTED_KEY, '1');
                 dismiss();
             });
         });
-        document.getElementById('notifNo').addEventListener('click', () => {
+        if (notifNoBtn) notifNoBtn.addEventListener('click', () => {
             localStorage.setItem(NOTIF_PREF_KEY, 'dismissed');
             localStorage.setItem(NOTIF_PROMPTED_KEY, '1');
             dismiss();

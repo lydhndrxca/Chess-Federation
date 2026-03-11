@@ -41,6 +41,10 @@ def _migrate_db(app):
         cur.execute('ALTER TABLE user ADD COLUMN enoch_wager_draws INTEGER DEFAULT 0')
     if 'last_seen' not in user_cols:
         cur.execute('ALTER TABLE user ADD COLUMN last_seen DATETIME')
+    if 'is_active_player' not in user_cols:
+        cur.execute('ALTER TABLE user ADD COLUMN is_active_player BOOLEAN DEFAULT 1')
+    if 'created_at' not in user_cols:
+        cur.execute('ALTER TABLE user ADD COLUMN created_at DATETIME')
 
     game_cols = {row[1] for row in cur.execute('PRAGMA table_info(game)').fetchall()}
     if 'power_holder_id' not in game_cols:

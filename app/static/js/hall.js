@@ -274,11 +274,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let longPressTimer = null;
 
     function showCtxMenu(row, x, y) {
+        if (!ctxMenu) return;
         ctxMsgRow = row;
         ctxMsgId = parseInt(row.dataset.msgId);
         const isOwn = !parseInt(row.dataset.isBot) && parseInt(row.dataset.userId) === myId;
-        ctxEdit.style.display = isOwn ? '' : 'none';
-        ctxDelete.style.display = isOwn ? '' : 'none';
+        if (ctxEdit) ctxEdit.style.display = isOwn ? '' : 'none';
+        if (ctxDelete) ctxDelete.style.display = isOwn ? '' : 'none';
         ctxMenu.style.display = '';
         const vw = window.innerWidth, vh = window.innerHeight;
         let left = Math.min(x, vw - 240), top = Math.min(y, vh - 160);
@@ -289,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function hideCtxMenu() {
-        ctxMenu.style.display = 'none';
+        if (ctxMenu) ctxMenu.style.display = 'none';
         ctxMsgId = null;
         ctxMsgRow = null;
     }
@@ -331,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.addEventListener('click', (e) => {
-        if (ctxMenu.style.display !== 'none' && !ctxMenu.contains(e.target)) hideCtxMenu();
+        if (ctxMenu && ctxMenu.style.display !== 'none' && !ctxMenu.contains(e.target)) hideCtxMenu();
     });
 
     /* ── Context menu actions ── */
@@ -351,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    ctxReply.addEventListener('click', () => {
+    if (ctxReply) ctxReply.addEventListener('click', () => {
         if (!ctxMsgRow) return;
         const isBot = ctxMsgRow.dataset.isBot === '1';
         const name = isBot ? 'Enoch' : (ctxMsgRow.querySelector('.msg-text')?.closest('.msg-group')?.querySelector('.msg-author')?.textContent || myName);
@@ -359,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hideCtxMenu();
     });
 
-    ctxEdit.addEventListener('click', () => {
+    if (ctxEdit) ctxEdit.addEventListener('click', () => {
         if (!ctxMsgRow) return;
         const bubble = ctxMsgRow.querySelector('.msg-bubble');
         const textEl = ctxMsgRow.querySelector('.msg-text');
@@ -400,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hideCtxMenu();
     });
 
-    ctxDelete.addEventListener('click', () => {
+    if (ctxDelete) ctxDelete.addEventListener('click', () => {
         if (!ctxMsgId) return;
         const id = ctxMsgId;
         const row = ctxMsgRow;

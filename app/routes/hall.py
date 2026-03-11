@@ -66,11 +66,16 @@ def send_message():
     if not content or len(content) > 2000:
         return jsonify({'error': 'Invalid message'}), 400
 
+    try:
+        reply_id_int = int(reply_to_id) if reply_to_id else None
+    except (ValueError, TypeError):
+        reply_id_int = None
+
     msg = ChatMessage(
         user_id=current_user.id,
         content=content,
         is_bot=False,
-        reply_to_id=int(reply_to_id) if reply_to_id else None,
+        reply_to_id=reply_id_int,
     )
     db.session.add(msg)
     db.session.flush()
@@ -125,13 +130,17 @@ def upload_chat_image():
 
     content = request.form.get('content', '').strip() or '[image]'
     reply_to_id = request.form.get('reply_to_id')
+    try:
+        reply_id_int = int(reply_to_id) if reply_to_id else None
+    except (ValueError, TypeError):
+        reply_id_int = None
 
     msg = ChatMessage(
         user_id=current_user.id,
         content=content,
         is_bot=False,
         image_filename=fname,
-        reply_to_id=int(reply_to_id) if reply_to_id else None,
+        reply_to_id=reply_id_int,
     )
     db.session.add(msg)
     db.session.commit()

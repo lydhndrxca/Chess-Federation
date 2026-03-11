@@ -582,7 +582,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var wrOverlay = document.getElementById('weeklyRuleOverlay');
     var wrDismiss = document.getElementById('weeklyRuleDismiss');
     if (wrOverlay) {
-        var wrKey = 'weeklyRuleSeen_{{ weekly_rule.title|default("") }}';
+        var wrKey = 'weeklyRuleSeen_{{ (weekly_rule.title if weekly_rule else '')|default("") }}';
         if (localStorage.getItem(wrKey)) {
             wrOverlay.style.display = 'none';
             showNextAnnounce();

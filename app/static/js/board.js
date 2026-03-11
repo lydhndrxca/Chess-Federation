@@ -797,7 +797,14 @@ class ChessBoard {
         const deadline = new Date(dl);
         const tick = () => {
             const diff = deadline - Date.now();
-            if (diff <= 0) { el.textContent = 'Time up'; return; }
+            if (diff <= 0) {
+                el.textContent = 'Time up';
+                if (this._deadlineInterval) {
+                    clearInterval(this._deadlineInterval);
+                    this._deadlineInterval = null;
+                }
+                return;
+            }
             const h = Math.floor(diff / 3600000);
             const m = Math.floor((diff % 3600000) / 60000);
             if (h >= 24) {
@@ -808,7 +815,7 @@ class ChessBoard {
             }
         };
         tick();
-        setInterval(tick, 60000);
+        this._deadlineInterval = setInterval(tick, 60000);
     }
 }
 

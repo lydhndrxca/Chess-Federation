@@ -2,7 +2,7 @@
 
 import json
 import random
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from flask import Blueprint, jsonify, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -25,6 +25,18 @@ fp_bp = Blueprint('four_player', __name__)
 ENOCH_SEAT = 'north'
 HUMAN_SEATS = ['south', 'west', 'east']
 SEAT_LABELS = {'south': 'South', 'west': 'West', 'north': 'North', 'east': 'East'}
+TURN_TIMEOUT = timedelta(hours=4)
+
+ENOCH_AUTO_MOVE_LINES = [
+    "Four hours. FOUR HOURS. I have been pacing in the dark, listening to the silence of your indecision. I moved your piece. You're welcome.",
+    "You left the board unattended. I reached up through the grate and nudged your piece myself. Do not let this happen again.",
+    "The clock ran dry. I could not bear it any longer. I chose a move for you. It is… adequate. Barely.",
+    "I waited. And waited. The spiders built a web across your seat. I brushed it aside and moved your piece. Wake up.",
+    "Your hesitation is an insult to the wood. I have made your move. Next time, show some urgency.",
+    "The board was growing cold. I intervened. Consider this a kindness from the sub-basement.",
+    "I gave you four hours. You gave me nothing. So I reached up and moved your piece with my own damp hand.",
+    "Time expired. Enoch does not wait. Enoch acts. Your piece has been relocated. You may thank me later.",
+]
 
 COLOR_MAP = {
     'south': '#f5f5f5',
@@ -102,10 +114,71 @@ def _play_enoch_turns(game):
         game.move_count = state['move_count']
         max_iter -= 1
 
+    game.turn_started_at = datetime.now(timezone.utc)
+
     if is_game_over(state):
         _finish_game(game, state)
 
     db.session.commit()
+
+
+def _check_turn_timeout(game):
+    """If the current player hasn't moved in 4 hours, Enoch makes a move for them."""
+    if game.status != 'active':
+        return False
+    if not game.turn_started_at:
+        game.turn_started_at = datetime.now(timezone.utc)
+        db.session.commit()
+        return False
+
+    now = datetime.now(timezone.utc)
+    started = game.turn_started_at
+    if started.tzinfo is None:
+        started = started.replace(tzinfo=timezone.utc)
+    if now - started < TURN_TIMEOUT:
+        return False
+
+    state = deserialize(game.board_state)
+    idle_seat = state['turn']
+
+    enoch = _get_enoch()
+    if enoch and game.seat_for_user(enoch.id) == idle_seat:
+        return False
+
+    legal = get_legal_moves(state, idle_seat)
+    if not legal:
+        return False
+
+    move = random.choice(legal)
+    state, captured = make_move(
+        state, move['from'][0], move['from'][1],
+        move['to'][0], move['to'][1], move.get('promo'),
+    )
+
+    commentary = random.choice(ENOCH_AUTO_MOVE_LINES)
+    fm = FourPlayerMove(
+        game_id=game.id,
+        move_number=state['move_count'],
+        color=idle_seat,
+        move_str=move_to_str(move),
+        captured=captured,
+        commentary=commentary,
+    )
+    db.session.add(fm)
+
+    game.board_state = serialize(state)
+    game.current_turn = state['turn']
+    game.move_count = state['move_count']
+    game.eliminated = json.dumps(state['eliminated'])
+    game.turn_started_at = datetime.now(timezone.utc)
+
+    if is_game_over(state):
+        _finish_game(game, state)
+    else:
+        _play_enoch_turns(game)
+
+    db.session.commit()
+    return True
 
 
 def _finish_game(game, state, timed_out=False):
@@ -170,6 +243,7 @@ def _render_waiting(game):
 
 
 def _render_game(game):
+    _check_turn_timeout(game)
     state = deserialize(game.board_state)
     players = _game_players(game)
     my_seat = game.seat_for_user(current_user.id)
@@ -192,6 +266,22 @@ def _render_game(game):
     rankings = get_rankings(state) if game_over else None
     scores = json.loads(game.scores) if game.scores else None
 
+    turn_deadline = None
+    if game.turn_started_at and game.status == 'active':
+        ts = game.turn_started_at
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        turn_deadline = (ts + TURN_TIMEOUT).isoformat()
+
+    automove_taunt = None
+    if my_seat and game.status == 'active':
+        last_move = FourPlayerMove.query.filter_by(game_id=game.id)\
+            .order_by(FourPlayerMove.id.desc()).first()
+        if last_move and last_move.commentary in ENOCH_AUTO_MOVE_LINES \
+                and last_move.color == my_seat:
+            from app.services.dialogue import RECKONING_AUTOMOVE_TAUNT
+            automove_taunt = random.choice(RECKONING_AUTOMOVE_TAUNT)
+
     return render_template('four_player.html',
                            mode='game', game=game, state=state,
                            grid=grid, players=players,
@@ -203,7 +293,9 @@ def _render_game(game):
                            enoch_mood=get_current_mood(),
                            game_over=game_over,
                            rankings=rankings, scores=scores,
-                           seat_labels=SEAT_LABELS)
+                           seat_labels=SEAT_LABELS,
+                           turn_deadline=turn_deadline,
+                           automove_taunt=automove_taunt)
 
 
 def _game_players(game):
@@ -246,6 +338,7 @@ def join_reckoning():
     if game.filled_seats() >= 4:
         game.status = 'active'
         game.started_at = datetime.now(timezone.utc)
+        game.turn_started_at = datetime.now(timezone.utc)
 
         start_line = random.choice(COMMENTARY['game_start'])
         start_msg = FourPlayerMove(
@@ -331,6 +424,7 @@ def make_reckoning_move(game_id):
     game.current_turn = state['turn']
     game.move_count = state['move_count']
     game.eliminated = json.dumps(state['eliminated'])
+    game.turn_started_at = datetime.now(timezone.utc)
 
     if is_game_over(state):
         _finish_game(game, state)
@@ -370,6 +464,8 @@ def make_reckoning_move(game_id):
 def reckoning_state(game_id):
     game = FourPlayerGame.query.get_or_404(game_id)
     _ensure_zombies(game)
+    _check_turn_timeout(game)
+    game = db.session.get(FourPlayerGame, game_id)
     state = deserialize(game.board_state)
 
     recent = FourPlayerMove.query.filter_by(game_id=game.id)\
@@ -377,6 +473,13 @@ def reckoning_state(game_id):
 
     my_seat = game.seat_for_user(current_user.id)
     is_my_turn = (my_seat == state['turn']) if my_seat else False
+
+    turn_deadline = None
+    if game.turn_started_at and game.status == 'active':
+        ts = game.turn_started_at
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        turn_deadline = (ts + TURN_TIMEOUT).isoformat()
 
     return jsonify({
         'status': game.status,
@@ -395,6 +498,7 @@ def reckoning_state(game_id):
         'filled_seats': game.filled_seats(),
         'rankings': json.loads(game.result_order) if game.result_order else None,
         'scores': json.loads(game.scores) if game.scores else None,
+        'turn_deadline': turn_deadline,
     })
 
 

@@ -2528,3 +2528,29 @@ CHAT_ZOMBIE_ANNOUNCE = (
     "but it is too late. The damage is done. The horns are playing.\n\n"
     "— Enoch, Steward Beneath the Board (Deeply Unsettled)"
 )
+
+# ──────────────────────────────────────────────────────────────
+# RECKONING AUTO-MOVE ANNOUNCEMENT
+# ──────────────────────────────────────────────────────────────
+CHAT_RECKONING_AUTOMOVE_ANNOUNCE = (
+    "A new decree from the sub-basement regarding The Reckoning.\n\n"
+    "I have grown tired of waiting. I sit beneath the board, counting the seconds, "
+    "listening to the wood cool and the spiders lose interest. Some of you take HOURS "
+    "to move a single piece. Hours. Do you know what I do for hours? I stare at wet stone "
+    "and re-read the same page of the Ledger.\n\n"
+    "Effective immediately: each player has FOUR HOURS to make their move in The Reckoning. "
+    "A countdown will appear beside your name. If those four hours expire, I will reach up "
+    "through the grate and move your piece myself. I will pick one at random. "
+    "It will not be a good move. It will be whatever my damp fingers land on first.\n\n"
+    "I need this game to MOVE. I am too impatient and I need to play. "
+    "Do not test me. The clock is already ticking.\n\n"
+    "— Enoch, Steward Beneath the Board (Extremely Impatient)"
+)
+
+RECKONING_AUTOMOVE_TAUNT = [
+    "Oh, you're BACK! Finally! I've been sitting here, bouncing my knee, tapping the pipes — do you know how LONG four hours is when you're waiting for someone to push a tiny wooden horse across a board? I had to do it myself. I couldn't HELP it. It was RIGHT THERE.",
+    "You left me alone with the board! Do you understand what that does to me? I was pacing. I was PACING, and then I was spinning in circles, and then I just — I grabbed your piece and I moved it because I COULDN'T WAIT ANYMORE. It's not my fault. It's YOUR fault for leaving.",
+    "I moved your piece. I'm not sorry. I'm NOT. You took too long and my hands were shaking and the board was just SITTING there, all set up and perfect and nobody was PLAYING. What was I supposed to do? Just LOOK at it? I'm not made of stone. Well — parts of me might be. But not the important parts.",
+    "THERE you are! I've been counting ceiling drips for four hours waiting for you! Drip, drip, drip — two thousand, four hundred and twelve drips. Then I couldn't take it anymore and I moved your piece. It was like an itch I HAD to scratch. Don't leave me alone with the board again. PLEASE.",
+    "I tried to be patient! I really, REALLY tried. I sat on my hands. I hummed. I organized the spiders by leg-span. But the BOARD was right there and your piece was just BEGGING to be moved and I — I caved. I moved it. And honestly? It felt GREAT. But also come back sooner next time.",
+]

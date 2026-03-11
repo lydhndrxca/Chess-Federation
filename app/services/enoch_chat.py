@@ -17,6 +17,7 @@ from app.services.dialogue import (
     CMD_STANDINGS, CMD_RATING, CMD_DECREE, CMD_HELP,
     CHAT_LATE_NIGHT, CHAT_QUIRKS, CHAT_THESES, CHAT_CASUAL_ANNOUNCE,
     CHAT_CRYPT_REVENGE_ANNOUNCE, CHAT_ZOMBIE_ANNOUNCE,
+    CHAT_RECKONING_AUTOMOVE_ANNOUNCE,
 )
 
 BOT_NAME = 'Enoch'
@@ -237,6 +238,26 @@ def ensure_zombie_announcement():
         return
     _zombie_announced = True
     msg = _post_bot(CHAT_ZOMBIE_ANNOUNCE)
+    db.session.commit()
+    return msg
+
+
+_automove_announced = False
+
+def ensure_reckoning_automove_announcement():
+    """Post a one-time Enoch announcement about the 4-hour auto-move rule."""
+    global _automove_announced
+    if _automove_announced:
+        return
+    existing = ChatMessage.query.filter(
+        ChatMessage.is_bot == True,
+        ChatMessage.content.contains('FOUR HOURS'),
+    ).first()
+    if existing:
+        _automove_announced = True
+        return
+    _automove_announced = True
+    msg = _post_bot(CHAT_RECKONING_AUTOMOVE_ANNOUNCE)
     db.session.commit()
     return msg
 

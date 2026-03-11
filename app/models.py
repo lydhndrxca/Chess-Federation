@@ -230,6 +230,7 @@ class FourPlayerGame(db.Model):
     season = db.Column(db.Integer, default=1)
     move_count = db.Column(db.Integer, default=0)
     current_turn = db.Column(db.String(10), default='south')
+    turn_started_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     started_at = db.Column(db.DateTime)
     completed_at = db.Column(db.DateTime)

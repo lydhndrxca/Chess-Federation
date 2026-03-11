@@ -64,7 +64,8 @@
      data-my-seat="{{ my_seat or '' }}"
      data-current-turn="{{ state.turn }}"
      data-status="{{ game.status }}"
-     data-legal='{{ legal_moves|safe }}'>
+     data-legal='{{ legal_moves|safe }}'
+     data-turn-deadline="{{ turn_deadline or '' }}">
 
     <div class="rk-header-bar">
         <h2 class="rk-header">
@@ -105,6 +106,7 @@
             {% endif %}
             {% if state.turn == seat and game.status == 'active' %}
             <span class="rk-turn-indicator">&#9654;</span>
+            <span class="rk-turn-timer" id="rkTimer-{{ seat }}"></span>
             {% endif %}
         </div>
         {% endfor %}
@@ -198,6 +200,7 @@ window.RK_AUDIO_CONFIG = {
     manifestVersion: "{{ manifest_version }}",
     staticBase: "{{ url_for('static', filename='') }}",
 };
+window.RK_AUTOMOVE_TAUNT = {{ automove_taunt | tojson if automove_taunt else 'null' }};
 </script>
 {% endif %}
 <script src="{{ url_for('static', filename='js/four_player.js') }}"></script>

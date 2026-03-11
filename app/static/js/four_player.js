@@ -34,7 +34,7 @@
             .then(function (manifest) {
                 rkAudioMap = {};
                 for (var key in manifest) {
-                    if (key.indexOf('reckoning/') === 0) {
+                    if (key.indexOf('reckoning') === 0) {
                         rkAudioMap[manifest[key].text] = base + manifest[key].file;
                     }
                 }
@@ -147,7 +147,14 @@
         return;
     }
 
-    rkLoadManifest();
+    rkLoadManifest().then(function () {
+        if (window.RK_AUTOMOVE_TAUNT) {
+            setTimeout(function () {
+                rkShowCommentary(window.RK_AUTOMOVE_TAUNT);
+                window.RK_AUTOMOVE_TAUNT = null;
+            }, 800);
+        }
+    });
 
     var gameId = container.dataset.gameId;
     var mySeat = container.dataset.mySeat || null;
@@ -168,6 +175,49 @@
         south: '#f5f5f5', west: '#4a9eff',
         north: '#f0c040', east: '#ff5252',
     };
+
+    /* ── Turn timer ─────────────────────────────────────────────── */
+    var turnDeadline = container.dataset.turnDeadline || null;
+    var timerInterval = null;
+
+    function startTurnTimer() {
+        stopTurnTimer();
+        if (!turnDeadline || gameStatus !== 'active') return;
+        var dl = new Date(turnDeadline).getTime();
+        if (isNaN(dl)) return;
+        tickTimer(dl);
+        timerInterval = setInterval(function () { tickTimer(dl); }, 1000);
+    }
+
+    function stopTurnTimer() {
+        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        ['south', 'west', 'north', 'east'].forEach(function (s) {
+            var el = document.getElementById('rkTimer-' + s);
+            if (el) el.textContent = '';
+        });
+    }
+
+    function tickTimer(dl) {
+        var now = Date.now();
+        var diff = dl - now;
+        ['south', 'west', 'north', 'east'].forEach(function (s) {
+            var el = document.getElementById('rkTimer-' + s);
+            if (!el) return;
+            if (s !== currentTurn) { el.textContent = ''; return; }
+            if (diff <= 0) {
+                el.textContent = 'Enoch intervenes\u2026';
+                el.classList.add('rk-timer-expired');
+                return;
+            }
+            el.classList.remove('rk-timer-expired');
+            var h = Math.floor(diff / 3600000);
+            var m = Math.floor((diff % 3600000) / 60000);
+            var sec = Math.floor((diff % 60000) / 1000);
+            el.textContent = h + ':' + (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+        });
+    }
+
+    startTurnTimer();
 
     /* ── Selection & move highlights ────────────────────────────── */
 
@@ -319,7 +369,26 @@
             el.classList.toggle('rk-player-eliminated', st.eliminated.indexOf(seat) >= 0);
 
             var indicator = el.querySelector('.rk-turn-indicator');
-            if (indicator) indicator.style.display = st.turn === seat ? '' : 'none';
+            if (st.turn === seat && gameStatus === 'active') {
+                if (!indicator) {
+                    indicator = document.createElement('span');
+                    indicator.className = 'rk-turn-indicator';
+                    indicator.innerHTML = '&#9654;';
+                    el.appendChild(indicator);
+                }
+                indicator.style.display = '';
+                var timerEl = document.getElementById('rkTimer-' + seat);
+                if (!timerEl) {
+                    timerEl = document.createElement('span');
+                    timerEl.className = 'rk-turn-timer';
+                    timerEl.id = 'rkTimer-' + seat;
+                    el.appendChild(timerEl);
+                }
+            } else {
+                if (indicator) indicator.style.display = 'none';
+                var oldTimer = document.getElementById('rkTimer-' + seat);
+                if (oldTimer) oldTimer.textContent = '';
+            }
         });
     }
 
@@ -344,6 +413,11 @@
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (data.status === 'active' && data.state) {
+                    if (data.turn_deadline) {
+                        turnDeadline = data.turn_deadline;
+                        currentTurn = data.current_turn;
+                        startTurnTimer();
+                    }
                     if (data.move_count !== lastMoveCount) {
                         lastMoveCount = data.move_count;
                         applyState(data.state);

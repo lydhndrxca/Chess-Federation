@@ -156,6 +156,10 @@ def _migrate_db(app):
             FOREIGN KEY(east_id) REFERENCES user(id)
         )''')
 
+    fp_cols = {row[1] for row in cur.execute('PRAGMA table_info(four_player_game)').fetchall()}
+    if 'turn_started_at' not in fp_cols:
+        cur.execute('ALTER TABLE four_player_game ADD COLUMN turn_started_at DATETIME')
+
     if 'four_player_move' not in tables:
         cur.execute('''CREATE TABLE four_player_move (
             id INTEGER PRIMARY KEY,

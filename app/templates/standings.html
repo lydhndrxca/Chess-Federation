@@ -458,6 +458,30 @@ I did not authorize this. The practice room door is welded shut but it is too la
     </div>
 </div>
 
+{# ── Reckoning Auto-Move Announcement ── #}
+<div class="wr-overlay" id="autoMoveAnnounceOverlay" style="display:none">
+    <div class="wr-modal">
+        <div class="wr-header">
+            <img src="{{ url_for('static', filename='img/enoch.png') }}" class="wr-enoch-avatar" alt="Enoch">
+            <h2 class="wr-title">The Reckoning</h2>
+            <span class="wr-subtitle">New Rule: The Clock</span>
+        </div>
+        <div class="wr-body">
+            <p class="wr-enoch-text" style="white-space:pre-line">"I have grown tired of waiting. Some of you take HOURS to move a single piece. Do you know what I do for hours? I stare at wet stone and re-read the same page of the Ledger.
+
+Effective immediately: each player has FOUR HOURS to make their move in The Reckoning. If those four hours expire, I will reach up through the grate and move your piece myself. I will pick one at random. It will not be a good move.
+
+I need this game to MOVE. The clock is already ticking."</p>
+            <p class="wr-description" style="margin-top:1rem; font-style:normal; opacity:.85">
+                <strong>4-Hour Turn Timer</strong> — In The Reckoning, each player now has 4 hours to make a move.
+                A countdown appears next to the active player's name. If time runs out,
+                Enoch makes a random legal move on your behalf.
+            </p>
+        </div>
+        <button class="btn wr-dismiss" id="autoMoveAnnounceDismiss" style="background:#c9a84c;color:#000">Understood. I'll be faster.</button>
+    </div>
+</div>
+
 {# ── The Crypt Announcement ── #}
 <div class="wr-overlay" id="cryptAnnounceOverlay" style="display:none">
     <div class="wr-modal">
@@ -527,6 +551,12 @@ document.addEventListener('DOMContentLoaded', function() {
     var zKey = 'zombieAnnounceSeen_v1';
     if (zOverlay && !localStorage.getItem(zKey)) {
         announceQueue.push({ el: zOverlay, key: zKey, btnId: 'zombieAnnounceDismiss' });
+    }
+
+    var amOverlay = document.getElementById('autoMoveAnnounceOverlay');
+    var amKey = 'autoMoveAnnounceSeen_v1';
+    if (amOverlay && !localStorage.getItem(amKey)) {
+        announceQueue.push({ el: amOverlay, key: amKey, btnId: 'autoMoveAnnounceDismiss' });
     }
 
     var crOverlay = document.getElementById('cryptAnnounceOverlay');

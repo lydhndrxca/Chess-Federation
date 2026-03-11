@@ -4021,6 +4021,12 @@ a:hover { text-decoration: underline; }
 .rk-player-mat { margin-left: auto; font-weight: 600; color: var(--text-muted); font-size: 0.75rem; }
 .rk-player-out { margin-left: auto; font-weight: 700; color: #d45555; font-size: 0.7rem; text-transform: uppercase; }
 .rk-turn-indicator { margin-left: 0.15rem; color: #c9a84c; font-size: 0.65rem; }
+.rk-turn-timer {
+    margin-left: 0.25rem; font-size: 0.7rem; font-weight: 600;
+    font-family: 'Courier New', monospace; color: #c9a84c;
+}
+.rk-turn-timer.rk-timer-expired { color: #ff5252; animation: rk-timer-pulse 0.8s ease-in-out infinite; }
+@keyframes rk-timer-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 .rk-empty { color: var(--text-dim); }
 .avatar-xs { width: 22px; height: 22px; border-radius: 50%; }
 

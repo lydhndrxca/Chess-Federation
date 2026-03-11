@@ -187,10 +187,13 @@ def standings():
     except (ImportError, Exception):
         pass
 
-    recent_chat = ChatMessage.query.order_by(
+    from app.routes.hall import _serialize_msg
+    recent_chat_raw = ChatMessage.query.order_by(
         ChatMessage.timestamp.desc()
     ).limit(15).all()
-    recent_chat.reverse()
+    recent_chat_raw.reverse()
+    recent_chat = recent_chat_raw
+    recent_chat_json = [_serialize_msg(m) for m in recent_chat_raw]
 
     return render_template(
         'standings.html',
@@ -212,6 +215,7 @@ def standings():
         weekly_rule=weekly_rule,
         active_reckoning=active_reckoning,
         recent_chat=recent_chat,
+        recent_chat_json=recent_chat_json,
     )
 
 

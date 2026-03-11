@@ -13,6 +13,7 @@ from app.services.four_player_engine import (
     get_legal_moves, make_move, is_game_over, get_rankings,
     compute_scores, board_to_grid, move_to_str, parse_move_str,
     get_material, get_piece_count, COLORS, piece_color, piece_type,
+    ZOMBIE_STARTS, _key,
 )
 from app.services.four_player_ai import (
     pick_reckoning_move, COMMENTARY,
@@ -40,9 +41,27 @@ def _get_enoch():
 
 def _active_reckoning():
     """Return the current open (waiting or active) Reckoning, if any."""
-    return FourPlayerGame.query.filter(
+    game = FourPlayerGame.query.filter(
         FourPlayerGame.status.in_(['waiting', 'active'])
     ).order_by(FourPlayerGame.created_at.desc()).first()
+    if game:
+        _ensure_zombies(game)
+    return game
+
+
+def _ensure_zombies(game):
+    """Inject zombie pawns into a game created before zombie support was added."""
+    state = deserialize(game.board_state)
+    board = state['board']
+    has_zombies = any(v.startswith('z') for v in board.values())
+    if has_zombies:
+        return
+    for r, c in ZOMBIE_STARTS:
+        k = _key(r, c)
+        if k not in board:
+            board[k] = 'zP'
+    game.board_state = serialize(state)
+    db.session.commit()
 
 
 def _play_enoch_turns(game):
@@ -130,6 +149,7 @@ def reckoning_lobby():
 @login_required
 def view_reckoning(game_id):
     game = FourPlayerGame.query.get_or_404(game_id)
+    _ensure_zombies(game)
     if game.status == 'waiting':
         return _render_waiting(game)
     return _render_game(game)
@@ -349,6 +369,7 @@ def make_reckoning_move(game_id):
 @login_required
 def reckoning_state(game_id):
     game = FourPlayerGame.query.get_or_404(game_id)
+    _ensure_zombies(game)
     state = deserialize(game.board_state)
 
     recent = FourPlayerMove.query.filter_by(game_id=game.id)\

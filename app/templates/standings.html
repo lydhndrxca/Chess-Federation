@@ -193,33 +193,44 @@
             <h3 class="sp-section-title">Federation Hall</h3>
             <a href="{{ url_for('hall.federation_hall') }}" class="sp-chat-expand">Open Full Chat &rarr;</a>
         </div>
-        <div class="sp-chat-messages" id="spChatMessages">
-            {% for msg in recent_chat %}
-            {% set is_own = (not msg.is_bot and msg.user_id == current_user.id) %}
-            <div class="sp-chat-row {{ 'sp-chat-row-own' if is_own else ('sp-chat-row-bot' if msg.is_bot else '') }}" data-msg-id="{{ msg.id }}">
-                {% if not is_own %}
-                <div class="sp-chat-av">
-                    {% if msg.is_bot %}
-                    <img src="{{ url_for('static', filename='img/enoch.png') }}" class="sp-chat-av-img" alt="">
-                    {% else %}
-                    <span class="sp-chat-av-letter">{{ msg.user.username[0]|upper }}</span>
-                    {% endif %}
-                </div>
-                {% endif %}
-                <div class="sp-chat-pill {{ 'sp-chat-pill-own' if is_own else ('sp-chat-pill-bot' if msg.is_bot else 'sp-chat-pill-other') }}">
-                    {% if not is_own %}
-                    <span class="sp-chat-pill-name {{ 'sp-chat-pill-name-bot' if msg.is_bot else '' }}">{{ 'Enoch' if msg.is_bot else msg.user.username }}</span>
-                    {% endif %}
-                    <span class="sp-chat-pill-text">{{ msg.content|truncate(200) }}</span>
-                </div>
+        <div class="sp-chat-messages" id="spChatMessages"></div>
+
+        {# reply banner #}
+        <div class="chat-reply-banner" id="spReplyBanner" style="display:none">
+            <div class="reply-banner-info">
+                <span class="reply-banner-label">Replying to</span>
+                <span class="reply-banner-name" id="spReplyName"></span>
+                <span class="reply-banner-preview" id="spReplyPreview"></span>
             </div>
-            {% endfor %}
+            <button class="reply-banner-close" id="spReplyClose">&times;</button>
         </div>
+
         <div class="sp-chat-composer">
+            <label class="chat-img-btn" title="Send image">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <input type="file" id="spImageInput" accept="image/*" style="display:none">
+            </label>
             <input type="text" id="spChatInput" class="sp-chat-composer-input" placeholder="Type a message..." maxlength="1000" autocomplete="off">
             <button id="spChatSendBtn" class="sp-chat-send-btn" type="button" aria-label="Send">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
+        </div>
+
+        {# context menu #}
+        <div class="msg-context-menu" id="spCtxMenu" style="display:none">
+            <div class="msg-ctx-reactions">
+                <button class="msg-ctx-emoji" data-emoji="❤️">❤️</button>
+                <button class="msg-ctx-emoji" data-emoji="😂">😂</button>
+                <button class="msg-ctx-emoji" data-emoji="😮">😮</button>
+                <button class="msg-ctx-emoji" data-emoji="😢">😢</button>
+                <button class="msg-ctx-emoji" data-emoji="😡">😡</button>
+                <button class="msg-ctx-emoji" data-emoji="👍">👍</button>
+            </div>
+            <div class="msg-ctx-actions">
+                <button class="msg-ctx-btn" id="spCtxReply">Reply</button>
+                <button class="msg-ctx-btn" id="spCtxEdit" style="display:none">Edit</button>
+                <button class="msg-ctx-btn" id="spCtxDelete" style="display:none">Delete</button>
+            </div>
         </div>
     </div>
 
@@ -714,111 +725,369 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    /* ── Compact chat on standings ── */
-    var spChatBox = document.getElementById('spChatMessages');
-    var spChatInput = document.getElementById('spChatInput');
-    var spChatSend = document.getElementById('spChatSendBtn');
-    var spChatLastId = 0;
-    var spMyId = {{ current_user.id }};
+    /* ── Compact chat on standings (full features) ── */
+    (function() {
+        var box = document.getElementById('spChatMessages');
+        var input = document.getElementById('spChatInput');
+        var sendBtn = document.getElementById('spChatSendBtn');
+        var imgInput = document.getElementById('spImageInput');
+        var replyBanner = document.getElementById('spReplyBanner');
+        var replyName = document.getElementById('spReplyName');
+        var replyPreview = document.getElementById('spReplyPreview');
+        var replyClose = document.getElementById('spReplyClose');
+        var ctxMenu = document.getElementById('spCtxMenu');
+        var ctxReply = document.getElementById('spCtxReply');
+        var ctxEdit = document.getElementById('spCtxEdit');
+        var ctxDelete = document.getElementById('spCtxDelete');
+        if (!box || !input) return;
 
-    if (spChatBox) {
-        var rows = spChatBox.querySelectorAll('.sp-chat-row');
-        if (rows.length) spChatLastId = parseInt(rows[rows.length - 1].dataset.msgId) || 0;
-        spChatBox.scrollTop = spChatBox.scrollHeight;
-    }
+        var myId = {{ current_user.id }};
+        var myName = {{ current_user.username|tojson }};
+        var enochImg = "{{ url_for('static', filename='img/enoch.png') }}";
+        var uploadBase = "{{ url_for('static', filename='uploads/chat/') }}";
+        var lastId = 0;
+        var replyToId = null;
+        var ctxMsgId = null, ctxRow = null;
+        var longPressTimer = null;
 
-    function spEscape(s) {
-        var d = document.createElement('div'); d.textContent = s; return d.innerHTML;
-    }
+        var lastUserId = null, lastIsBot = false;
+        var curGroup = null, curStack = null;
 
-    function spAppendMsg(m) {
-        if (!spChatBox) return;
-        var isOwn = !m.is_bot && m.user_id === spMyId;
+        function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
-        var row = document.createElement('div');
-        row.className = 'sp-chat-row' + (isOwn ? ' sp-chat-row-own' : (m.is_bot ? ' sp-chat-row-bot' : ''));
-        row.dataset.msgId = m.id;
+        function isNear() { return box.scrollHeight - box.scrollTop - box.clientHeight < 80; }
+        function scrollBot(sm) {
+            if (sm) box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+            else box.scrollTop = box.scrollHeight;
+        }
 
-        if (!isOwn) {
-            var av = document.createElement('div');
-            av.className = 'sp-chat-av';
-            if (m.is_bot) {
-                av.innerHTML = '<img src="{{ url_for("static", filename="img/enoch.png") }}" class="sp-chat-av-img" alt="">';
-            } else {
-                var letter = document.createElement('span');
-                letter.className = 'sp-chat-av-letter';
-                letter.textContent = (m.username || '?')[0].toUpperCase();
-                av.appendChild(letter);
+        function avatarHtml(m) {
+            if (m.is_bot) return '<img src="' + enochImg + '" class="avatar avatar-sm avatar-enoch" alt="">';
+            return '<span class="avatar avatar-sm avatar-placeholder">' + (m.username || '?')[0].toUpperCase() + '</span>';
+        }
+
+        function reactionsHtml(reactions, msgId) {
+            if (!reactions || !Object.keys(reactions).length) return '';
+            var html = '<div class="msg-reactions">';
+            for (var emoji in reactions) {
+                var users = reactions[emoji];
+                var isMine = users.some(function(u) { return u.user_id === myId; });
+                var names = users.map(function(u) { return u.username || '?'; }).join(', ');
+                html += '<button class="msg-reaction-pill' + (isMine ? ' msg-reaction-mine' : '') + '" data-emoji="' + esc(emoji) + '" data-msg-id="' + msgId + '" title="' + esc(names) + '">' + emoji + '<span class="msg-reaction-count">' + (users.length > 1 ? users.length : '') + '</span></button>';
             }
-            row.appendChild(av);
+            html += '</div>';
+            return html;
         }
 
-        var pill = document.createElement('div');
-        pill.className = 'sp-chat-pill ' + (isOwn ? 'sp-chat-pill-own' : (m.is_bot ? 'sp-chat-pill-bot' : 'sp-chat-pill-other'));
-
-        if (!isOwn) {
-            var nameSpan = document.createElement('span');
-            nameSpan.className = 'sp-chat-pill-name' + (m.is_bot ? ' sp-chat-pill-name-bot' : '');
-            nameSpan.textContent = m.is_bot ? 'Enoch' : (m.username || '');
-            pill.appendChild(nameSpan);
+        function isSameSender(m) {
+            if (m.is_bot) return lastIsBot;
+            return !lastIsBot && lastUserId === (m.user_id || null);
         }
 
-        var textSpan = document.createElement('span');
-        textSpan.className = 'sp-chat-pill-text';
-        var txt = m.content || '';
-        textSpan.textContent = txt.length > 200 ? txt.substring(0, 200) + '...' : txt;
-        pill.appendChild(textSpan);
+        function appendMsg(m) {
+            var isOwn = !m.is_bot && (m.user_id === myId || m.username === myName);
+            var same = isSameSender(m);
+            var atBot = isNear();
 
-        row.appendChild(pill);
-        spChatBox.appendChild(row);
-        spChatBox.scrollTop = spChatBox.scrollHeight;
-    }
+            if (!same || !curGroup) {
+                var group = document.createElement('div');
+                group.className = 'msg-group ' + (isOwn ? 'msg-group-own' : (m.is_bot ? 'msg-group-bot' : 'msg-group-other'));
+                if (!isOwn) {
+                    var av = document.createElement('div');
+                    av.className = 'msg-avatar';
+                    av.innerHTML = avatarHtml(m);
+                    group.appendChild(av);
+                }
+                var stack = document.createElement('div');
+                stack.className = 'msg-stack';
+                if (!isOwn) {
+                    var author = document.createElement('span');
+                    author.className = 'msg-author' + (m.is_bot ? ' msg-author-bot' : '');
+                    author.textContent = m.is_bot ? 'Enoch' : (m.username || '');
+                    stack.appendChild(author);
+                }
+                group.appendChild(stack);
+                box.appendChild(group);
+                curGroup = group;
+                curStack = stack;
+            }
 
-    function spPollChat() {
-        fetch('/hall/poll?after=' + spChatLastId)
+            var row = document.createElement('div');
+            row.className = 'msg-row' + (isOwn ? ' msg-row-own' : '');
+            row.dataset.msgId = m.id;
+            row.dataset.userId = m.is_bot ? '' : (m.user_id || '');
+            row.dataset.isBot = m.is_bot ? '1' : '0';
+            row.dataset.content = m.content || '';
+
+            var replyHtml = '';
+            if (m.reply_to) {
+                replyHtml = '<div class="msg-reply-preview" data-reply-id="' + m.reply_to.id + '"><span class="msg-reply-author">' + esc(m.reply_to.username || 'Enoch') + '</span><span class="msg-reply-text">' + esc(m.reply_to.content) + '</span></div>';
+            }
+            var isLong = (m.content || '').length > 200;
+            var imgHtml = '';
+            if (m.image) imgHtml = '<img src="' + uploadBase + m.image + '" class="msg-image" alt="image" loading="lazy">';
+            var bubbleClass = isOwn ? 'msg-bubble-own' : (m.is_bot ? 'msg-bubble-bot' : 'msg-bubble-other');
+            var editedTag = m.edited ? '<span class="msg-edited">(edited)</span>' : '';
+
+            row.innerHTML = replyHtml + '<div class="msg-bubble ' + bubbleClass + '">' + imgHtml + '<p class="msg-text' + (isLong ? ' msg-text-long' : '') + '">' + esc(m.content) + '</p>' + (isLong ? '<button class="msg-expand-btn" type="button">Show more</button>' : '') + editedTag + '</div>' + reactionsHtml(m.reactions, m.id) + '<span class="msg-time">' + (m.timestamp || '') + '</span>';
+
+            curStack.appendChild(row);
+            lastUserId = m.is_bot ? null : (m.user_id || null);
+            lastIsBot = !!m.is_bot;
+            if (m.id > lastId) { lastId = m.id; markSeen(m.id); }
+            if (atBot) scrollBot(true);
+        }
+
+        function markSeen(id) {
+            var prev = parseInt(localStorage.getItem('chatLastSeen') || '0', 10);
+            if (id > prev) localStorage.setItem('chatLastSeen', String(id));
+            var badge = document.getElementById('chatBadge');
+            if (badge) badge.classList.remove('active');
+        }
+
+        /* load initial messages from server-rendered JSON */
+        var initMsgs = {{ recent_chat_json|tojson }};
+        initMsgs.forEach(function(m) { appendMsg(m); });
+        scrollBot(false);
+        if (lastId) markSeen(lastId);
+
+        /* ── Polling ── */
+        function poll() {
+            fetch('/hall/poll?after=' + lastId)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var msgs = data.messages || [];
+                    msgs.forEach(function(m) {
+                        if (m.id > lastId && !box.querySelector('[data-msg-id="' + m.id + '"]')) {
+                            appendMsg(m);
+                        }
+                    });
+                }).catch(function() {});
+        }
+        setInterval(poll, 8000);
+
+        /* ── Reply ── */
+        function setReplyTo(id, name, preview) {
+            replyToId = id;
+            if (replyBanner) { replyBanner.style.display = 'flex'; replyName.textContent = name; replyPreview.textContent = preview.slice(0, 80); }
+            input.focus();
+        }
+        function clearReply() {
+            replyToId = null;
+            if (replyBanner) replyBanner.style.display = 'none';
+        }
+        if (replyClose) replyClose.addEventListener('click', clearReply);
+
+        /* ── Send ── */
+        function sendChat() {
+            var text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            var body = { content: text };
+            if (replyToId) { body.reply_to_id = replyToId; clearReply(); }
+            fetch('/hall/send', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            })
             .then(function(r) { return r.json(); })
-            .then(function(data) {
-                var msgs = data.messages || [];
-                if (!msgs.length) return;
-                msgs.forEach(function(m) {
-                    if (m.id > spChatLastId) {
-                        spChatLastId = m.id;
-                        spAppendMsg(m);
-                    }
-                });
+            .then(function(d) {
+                if (d.message) {
+                    d.message.user_id = myId;
+                    if (d.message.id > lastId && !box.querySelector('[data-msg-id="' + d.message.id + '"]')) appendMsg(d.message);
+                }
+                if (d.enoch_reply && d.enoch_reply.id > lastId) appendMsg(d.enoch_reply);
             }).catch(function() {});
-    }
-    setInterval(spPollChat, 8000);
+        }
+        sendBtn.addEventListener('click', sendChat);
+        input.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } });
 
-    function spSendChat() {
-        if (!spChatInput) return;
-        var text = spChatInput.value.trim();
-        if (!text) return;
-        spChatInput.value = '';
-        fetch('/hall/send', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({content: text}),
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(d) {
-            if (d.message) {
-                d.message.user_id = spMyId;
-                if (d.message.id > spChatLastId) {
-                    spChatLastId = d.message.id;
-                    spAppendMsg(d.message);
+        /* ── Image upload ── */
+        if (imgInput) {
+            imgInput.addEventListener('change', function() {
+                var file = imgInput.files[0];
+                if (!file) return;
+                var fd = new FormData();
+                fd.append('image', file);
+                fd.append('content', input.value.trim() || '[image]');
+                if (replyToId) { fd.append('reply_to_id', replyToId); clearReply(); }
+                imgInput.value = '';
+                fetch('/hall/upload-image', { method: 'POST', body: fd })
+                    .then(function(r) { return r.json(); })
+                    .then(function(d) { if (d.success) { input.value = ''; appendMsg(Object.assign(d.message, {user_id: myId})); } })
+                    .catch(function() {});
+            });
+        }
+        input.addEventListener('paste', function(e) {
+            var items = e.clipboardData && e.clipboardData.items;
+            if (!items) return;
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image/') === 0) {
+                    e.preventDefault();
+                    var file = items[i].getAsFile();
+                    var fd = new FormData();
+                    fd.append('image', file, 'pasted.png');
+                    fd.append('content', input.value.trim() || '[image]');
+                    if (replyToId) { fd.append('reply_to_id', replyToId); clearReply(); }
+                    fetch('/hall/upload-image', { method: 'POST', body: fd })
+                        .then(function(r) { return r.json(); })
+                        .then(function(d) { if (d.success) { input.value = ''; appendMsg(Object.assign(d.message, {user_id: myId})); } })
+                        .catch(function() {});
+                    break;
                 }
             }
-            if (d.enoch_reply && d.enoch_reply.id > spChatLastId) {
-                spChatLastId = d.enoch_reply.id;
-                spAppendMsg(d.enoch_reply);
+        });
+
+        /* ── Context menu ── */
+        function showCtx(row, x, y) {
+            ctxRow = row;
+            ctxMsgId = parseInt(row.dataset.msgId);
+            var isOwn = row.dataset.isBot !== '1' && parseInt(row.dataset.userId) === myId;
+            ctxEdit.style.display = isOwn ? '' : 'none';
+            ctxDelete.style.display = isOwn ? '' : 'none';
+            ctxMenu.style.display = '';
+            var vw = window.innerWidth, vh = window.innerHeight;
+            var left = Math.min(x, vw - 240), top = Math.min(y, vh - 160);
+            if (left < 8) left = 8; if (top < 8) top = 8;
+            ctxMenu.style.left = left + 'px'; ctxMenu.style.top = top + 'px';
+        }
+        function hideCtx() { ctxMenu.style.display = 'none'; ctxMsgId = null; ctxRow = null; }
+
+        box.addEventListener('pointerdown', function(e) {
+            var row = e.target.closest('.msg-row');
+            if (!row || e.target.closest('.msg-reaction-pill') || e.target.closest('.msg-expand-btn') || e.target.closest('.msg-reply-preview')) return;
+            longPressTimer = setTimeout(function() { longPressTimer = null; showCtx(row, e.clientX, e.clientY); }, 500);
+        });
+        box.addEventListener('pointerup', function() { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
+        box.addEventListener('pointermove', function() { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
+        box.addEventListener('pointercancel', function() { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
+        box.addEventListener('contextmenu', function(e) {
+            var row = e.target.closest('.msg-row');
+            if (row) { e.preventDefault(); showCtx(row, e.clientX, e.clientY); }
+        });
+        document.addEventListener('click', function(e) {
+            if (ctxMenu.style.display !== 'none' && !ctxMenu.contains(e.target)) hideCtx();
+        });
+
+        /* ── Emoji reactions from context menu ── */
+        ctxMenu.querySelectorAll('.msg-ctx-emoji').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                if (!ctxMsgId) return;
+                sendReaction(ctxMsgId, btn.dataset.emoji);
+                hideCtx();
+            });
+        });
+
+        ctxReply.addEventListener('click', function() {
+            if (!ctxRow) return;
+            var isBot = ctxRow.dataset.isBot === '1';
+            var group = ctxRow.closest('.msg-group');
+            var authorEl = group ? group.querySelector('.msg-author') : null;
+            var name = isBot ? 'Enoch' : (authorEl ? authorEl.textContent : myName);
+            setReplyTo(ctxMsgId, name, ctxRow.dataset.content || '');
+            hideCtx();
+        });
+
+        ctxEdit.addEventListener('click', function() {
+            if (!ctxRow) return;
+            var bubble = ctxRow.querySelector('.msg-bubble');
+            var textEl = ctxRow.querySelector('.msg-text');
+            if (!bubble || !textEl) { hideCtx(); return; }
+            var oldText = ctxRow.dataset.content || textEl.textContent;
+            var editInput = document.createElement('input');
+            editInput.type = 'text';
+            editInput.className = 'msg-edit-input';
+            editInput.value = oldText;
+            editInput.maxLength = 2000;
+            textEl.style.display = 'none';
+            bubble.insertBefore(editInput, textEl);
+            editInput.focus();
+            var id = ctxMsgId;
+            var theRow = ctxRow;
+
+            function finishEdit() {
+                var newText = editInput.value.trim();
+                editInput.remove();
+                textEl.style.display = '';
+                if (newText && newText !== oldText) {
+                    fetch('/hall/edit', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({message_id: id, content: newText}) })
+                        .then(function(r) { return r.json(); })
+                        .then(function(d) {
+                            if (d.success) {
+                                textEl.textContent = newText;
+                                theRow.dataset.content = newText;
+                                if (!bubble.querySelector('.msg-edited')) {
+                                    var ed = document.createElement('span');
+                                    ed.className = 'msg-edited';
+                                    ed.textContent = '(edited)';
+                                    bubble.appendChild(ed);
+                                }
+                            }
+                        });
+                }
             }
-        }).catch(function() {});
-    }
-    if (spChatSend) spChatSend.addEventListener('click', spSendChat);
-    if (spChatInput) spChatInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') { e.preventDefault(); spSendChat(); }
-    });
+            editInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') finishEdit(); if (e.key === 'Escape') { editInput.remove(); textEl.style.display = ''; } });
+            editInput.addEventListener('blur', finishEdit);
+            hideCtx();
+        });
+
+        ctxDelete.addEventListener('click', function() {
+            if (!ctxMsgId) return;
+            var id = ctxMsgId, row = ctxRow;
+            hideCtx();
+            if (!confirm('Delete this message?')) return;
+            fetch('/hall/delete', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({message_id: id}) })
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.success && row) { row.style.opacity = '0'; setTimeout(function() { row.remove(); }, 300); }
+                });
+        });
+
+        /* ── Inline reaction click / expand / reply-preview click ── */
+        box.addEventListener('click', function(e) {
+            var pill = e.target.closest('.msg-reaction-pill');
+            if (pill) { sendReaction(parseInt(pill.dataset.msgId), pill.dataset.emoji); return; }
+            var expBtn = e.target.closest('.msg-expand-btn');
+            if (expBtn) {
+                var text = expBtn.previousElementSibling;
+                if (text) text.classList.toggle('msg-text-long');
+                expBtn.textContent = text && text.classList.contains('msg-text-long') ? 'Show more' : 'Show less';
+                return;
+            }
+            var rp = e.target.closest('.msg-reply-preview');
+            if (rp) {
+                var target = box.querySelector('[data-msg-id="' + rp.dataset.replyId + '"]');
+                if (target) { target.scrollIntoView({behavior: 'smooth', block: 'center'}); target.classList.add('msg-row-highlight'); setTimeout(function() { target.classList.remove('msg-row-highlight'); }, 1500); }
+            }
+        });
+
+        function sendReaction(msgId, emoji) {
+            fetch('/hall/react', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({message_id: msgId, emoji: emoji}) })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var row = box.querySelector('[data-msg-id="' + msgId + '"]');
+                    if (!row) return;
+                    var container = row.querySelector('.msg-reactions');
+                    if (data.action === 'added') {
+                        if (!container) { container = document.createElement('div'); container.className = 'msg-reactions'; var timeEl = row.querySelector('.msg-time'); row.insertBefore(container, timeEl); }
+                        var p = container.querySelector('[data-emoji="' + emoji + '"]');
+                        if (!p) {
+                            p = document.createElement('button');
+                            p.className = 'msg-reaction-pill msg-reaction-mine';
+                            p.dataset.emoji = emoji;
+                            p.dataset.msgId = msgId;
+                            p.innerHTML = emoji + '<span class="msg-reaction-count"></span>';
+                            container.appendChild(p);
+                        } else { p.classList.add('msg-reaction-mine'); }
+                    } else if (data.action === 'removed') {
+                        if (container) {
+                            var p2 = container.querySelector('[data-emoji="' + emoji + '"]');
+                            if (p2) p2.classList.remove('msg-reaction-mine');
+                        }
+                    }
+                }).catch(function() {});
+        }
+    })();
 
     /* ── Background audio preloader ── */
     if (window.EnochCache) {

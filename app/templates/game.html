@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% from "macros.html" import avatar %}
 {% block title %}Game #{{ game.id }} — Chess Federation{% endblock %}
-{% if weekly_rule %}{% block body_class %}theme-decree{% endblock %}{% endif %}
 
 {% block head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.1.0/assets/chessground.base.css">

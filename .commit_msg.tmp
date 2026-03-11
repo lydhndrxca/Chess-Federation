@@ -1,0 +1,5 @@
+fix: remove rainbow decree board theme, restore standard green/cream board
+
+- Remove the iridescent/rainbow decree CSS theme from style.css (73 lines)
+- Remove the theme-decree body class from game.html
+- All boards now use the standard chess.com-style green/cream colors

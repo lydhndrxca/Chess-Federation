@@ -63,6 +63,12 @@ UNICODE_PIECES = {
     'B': '\u265D', 'N': '\u265E', 'P': '\u265F',
 }
 
+ZOMBIE_STARTS = [
+    (6, 6), (6, 7), (6, 8),
+    (7, 6), (7, 7), (7, 8),
+    (8, 6), (8, 7), (8, 8),
+]
+
 
 def _key(r, c):
     return f'{r},{c}'
@@ -98,6 +104,9 @@ def initial_state():
     for r in range(3, 11):
         board[_key(r, 12)] = 'eP'
 
+    for r, c in ZOMBIE_STARTS:
+        board[_key(r, c)] = 'zP'
+
     return {
         'board': board,
         'turn': 'south',
@@ -117,7 +126,7 @@ def deserialize(raw):
 # ── Piece helpers ───────────────────────────────────────────────
 
 def piece_color(code):
-    return {'s': 'south', 'w': 'west', 'n': 'north', 'e': 'east'}[code[0]]
+    return {'s': 'south', 'w': 'west', 'n': 'north', 'e': 'east', 'z': 'zombie'}[code[0]]
 
 
 def piece_type(code):
@@ -258,8 +267,70 @@ def make_move(state, fr, fc, tr, tc, promo=None):
     for elim in newly_eliminated:
         new_state['eliminated'].append(elim)
 
+    _move_zombies(new_state)
+
+    newly_z = _check_eliminations(new_state)
+    for elim in newly_z:
+        if elim not in new_state['eliminated']:
+            new_state['eliminated'].append(elim)
+
     new_state['turn'] = _next_turn(new_state)
     return new_state, captured
+
+
+def _move_zombies(state):
+    """Move each zombie pawn 1 square toward the nearest non-zombie piece."""
+    import random
+    board = state['board']
+    zombie_keys = [k for k, v in board.items() if v == 'zP']
+    random.shuffle(zombie_keys)
+
+    target_positions = []
+    for k, v in board.items():
+        if v[0] != 'z':
+            target_positions.append(_parse_key(k))
+    if not target_positions:
+        return
+
+    for zk in zombie_keys:
+        zr, zc = _parse_key(zk)
+        best_sq = None
+        best_dist = float('inf')
+        candidates = []
+        for dr in [-1, 0, 1]:
+            for dc in [-1, 0, 1]:
+                if dr == 0 and dc == 0:
+                    continue
+                nr, nc = zr + dr, zc + dc
+                nk = _key(nr, nc)
+                if not _in_bounds(nr, nc):
+                    continue
+                if nk in board and board[nk][0] == 'z':
+                    continue
+                candidates.append((nr, nc, nk))
+
+        if not candidates:
+            continue
+
+        nearest_r, nearest_c = target_positions[0]
+        best_t_dist = abs(zr - nearest_r) + abs(zc - nearest_c)
+        for tr, tc in target_positions:
+            d = abs(zr - tr) + abs(zc - tc)
+            if d < best_t_dist:
+                best_t_dist = d
+                nearest_r, nearest_c = tr, tc
+
+        for nr, nc, nk in candidates:
+            d = abs(nr - nearest_r) + abs(nc - nearest_c)
+            if d < best_dist:
+                best_dist = d
+                best_sq = (nr, nc, nk)
+
+        if best_sq:
+            nr, nc, nk = best_sq
+            captured_by_zombie = board.get(nk)
+            del board[zk]
+            board[nk] = 'zP'
 
 
 def _check_eliminations(state):

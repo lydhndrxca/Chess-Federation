@@ -135,8 +135,27 @@ class ChatMessage(db.Model):
     is_bot = db.Column(db.Boolean, default=False)
     bot_name = db.Column(db.String(80))
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    reply_to_id = db.Column(db.Integer, db.ForeignKey('chat_message.id'), nullable=True)
+    image_filename = db.Column(db.String(200), nullable=True)
+    edited = db.Column(db.Boolean, default=False)
 
     user = db.relationship('User', foreign_keys=[user_id])
+    reply_to = db.relationship('ChatMessage', remote_side=[id], uselist=False)
+
+
+class ChatReaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey('chat_message.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    emoji = db.Column(db.String(10), nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    message = db.relationship('ChatMessage', backref='reactions')
+    user = db.relationship('User', foreign_keys=[user_id])
+
+    __table_args__ = (
+        db.UniqueConstraint('message_id', 'user_id', 'emoji', name='uq_reaction'),
+    )
 
 
 class PowerRotationOrder(db.Model):
@@ -268,6 +287,8 @@ class CryptGame(db.Model):
     rating_entry = db.Column(db.Integer, default=5)
     rating_result = db.Column(db.Integer)
     cashed_out = db.Column(db.Boolean, default=False)
+    cascade_tick = db.Column(db.Integer, default=0)
+    cascade_max_ticks = db.Column(db.Integer, default=0)
     started_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     completed_at = db.Column(db.DateTime)
 

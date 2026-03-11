@@ -177,6 +177,31 @@ if (btn) btn.addEventListener('click', function() {
             </div>
         </div>
 
+        {# ── Cascade Instruction Overlay ── #}
+        <div class="cr-cascade-intro" id="cascadeIntro" style="display:none">
+            <div class="cr-cascade-intro-inner">
+                <h3 class="cr-cascade-title">&#9888; CASCADE WAVE &#9888;</h3>
+                <p>Enoch is sending a relentless wave of pieces cascading toward you!</p>
+                <ul>
+                    <li>Enemy pieces move automatically every few seconds</li>
+                    <li>New enemies spawn behind the wave</li>
+                    <li>Move your pieces freely &mdash; no waiting for turns</li>
+                    <li>Survive the onslaught to advance!</li>
+                </ul>
+                <p class="cr-cascade-bonus" id="cascadeBonusMsg"></p>
+                <button class="btn btn-primary" id="btnStartCascade">Brace Yourself</button>
+            </div>
+        </div>
+
+        {# ── Cascade HUD (progress bar) ── #}
+        <div class="cr-cascade-hud" id="cascadeHud" style="display:none">
+            <div class="cr-cascade-label">CASCADE WAVE</div>
+            <div class="cr-cascade-bar-wrap">
+                <div class="cr-cascade-bar" id="cascadeBar"></div>
+            </div>
+            <div class="cr-cascade-tick-count" id="cascadeTickCount">0 / 0</div>
+        </div>
+
         {# ── Wave Complete / Milestone Overlay ── #}
         <div class="cr-panel cr-panel-wave-done" id="panelWaveDone" style="display:none">
             <h3 class="cr-wave-done-title" id="waveDoneTitle">Wave Cleared!</h3>
@@ -256,13 +281,20 @@ if (btn) btn.addEventListener('click', function() {
         kills: {{ game.kills }},
         inventory: {{ game.inventory | safe }},
         fen: {{ (game.fen_current or '') | tojson }},
-        legalMoves: {% if game.phase == 'battle' and game.fen_current %}{{ legal_moves | default([]) | tojson }}{% else %}[]{% endif %},
+        legalMoves: {% if game.phase in ('battle', 'cascade') and game.fen_current %}{{ legal_moves | default([]) | tojson }}{% else %}[]{% endif %},
         maxWaves: {{ max_waves }},
         bossReward: {{ boss_reward }},
         ladder: {{ ladder | tojson }},
         audioManifestUrl: "{{ url_for('static', filename='audio/enoch/manifest.json') }}",
         audioBaseUrl: "{{ audio_cdn_base }}enoch/",
         manifestVersion: "{{ manifest_version }}",
+        {% if cascade_conf %}
+        cascadeConf: {
+            interval: {{ cascade_conf.interval_ms }},
+            maxTicks: {{ cascade_conf.ticks }},
+            tick: {{ game.cascade_tick or 0 }},
+        },
+        {% endif %}
     };
 </script>
 {% endautoescape %}

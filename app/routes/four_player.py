@@ -30,6 +30,7 @@ COLOR_MAP = {
     'west': '#4a9eff',
     'north': '#f0c040',
     'east': '#ff5252',
+    'zombie': '#4aff4a',
 }
 
 

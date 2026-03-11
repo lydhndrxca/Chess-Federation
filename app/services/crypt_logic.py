@@ -3,6 +3,7 @@
 Player (White) faces 10 escalating waves of Enoch's minions (Black).
 Entry costs 5 rating points.  Cash-out checkpoints at waves 3, 6, 9.
 Wave 10 is the Enoch Boss fight.
+Every 3rd wave (3, 6, 9) is a CASCADE wave — real-time auto-moving enemies.
 """
 
 import json
@@ -17,6 +18,7 @@ MAX_WAVES = 10
 ENTRY_COST = 5
 DAILY_LIMIT = 3
 CST_OFFSET = timedelta(hours=-6)
+CASCADE_WAVES = {3, 6, 9}
 
 # ── Milestones / Tiers ─────────────────────────────────────────
 # After clearing these waves, the player may cash out.
@@ -239,6 +241,37 @@ _WAVE_PARAMS = {
 }
 
 
+def _king_hunt_bonus(board, move, engine_color):
+    """Add a bonus for moves that get closer to the opponent's king or give check."""
+    opp_color = not engine_color
+    opp_king_sq = board.king(opp_color)
+    if opp_king_sq is None:
+        return 0
+
+    bonus = 0
+    kr, kf = chess.square_rank(opp_king_sq), chess.square_file(opp_king_sq)
+
+    piece = board.piece_at(move.from_square)
+    if piece and piece.piece_type != chess.KING:
+        old_dist = abs(chess.square_rank(move.from_square) - kr) + abs(chess.square_file(move.from_square) - kf)
+        new_dist = abs(chess.square_rank(move.to_square) - kr) + abs(chess.square_file(move.to_square) - kf)
+        bonus += (old_dist - new_dist) * 8
+
+    board.push(move)
+    if board.is_check():
+        bonus += 60
+    if board.is_checkmate():
+        bonus += 5000
+    board.pop()
+
+    if board.is_capture(move):
+        victim = board.piece_at(move.to_square)
+        if victim and victim.piece_type in (chess.QUEEN, chess.ROOK):
+            bonus += 25
+
+    return bonus
+
+
 def pick_horde_move(fen, wave):
     from app.services.enoch_ai import _find_best_moves
 
@@ -259,8 +292,11 @@ def pick_horde_move(fen, wave):
                               params['time_limit'])
 
     for i in range(len(scored)):
+        base_score = scored[i][0]
+        move = scored[i][1]
+        hunt = _king_hunt_bonus(board, move, engine_color)
         noise = random.gauss(0, params['noise'])
-        scored[i] = (scored[i][0] + noise, scored[i][1])
+        scored[i] = (base_score + hunt + noise, move)
     scored.sort(key=lambda x: -x[0])
 
     top_n = min(params['top_n'], len(scored))
@@ -269,3 +305,142 @@ def pick_horde_move(fen, wave):
         [s[1] for s in scored[:top_n]], weights=weights, k=1
     )[0]
     return chosen
+
+
+# ── Cascade Wave System ─────────────────────────────────────────
+
+def is_cascade_wave(wave_number):
+    return wave_number in CASCADE_WAVES
+
+
+CASCADE_CONFIGS = {
+    3:  {'ticks': 20, 'interval_ms': 1500, 'spawn_interval': 4,
+         'initial_pieces': [('p', 5), ('n', 1)],
+         'spawn_pool': ['p', 'p', 'p', 'n'],
+         'bonus_pieces': ['Q', 'N', 'B']},
+    6:  {'ticks': 30, 'interval_ms': 1300, 'spawn_interval': 3,
+         'initial_pieces': [('p', 6), ('n', 2), ('b', 1)],
+         'spawn_pool': ['p', 'p', 'p', 'n', 'b'],
+         'bonus_pieces': ['Q', 'N', 'B']},
+    9:  {'ticks': 40, 'interval_ms': 1100, 'spawn_interval': 3,
+         'initial_pieces': [('p', 7), ('n', 2), ('b', 2), ('r', 1)],
+         'spawn_pool': ['p', 'p', 'n', 'b', 'r'],
+         'bonus_pieces': ['Q', 'N', 'B']},
+}
+
+
+def generate_cascade_initial(wave_number):
+    """Generate the initial set of cascade enemy pieces placed on ranks 7-8."""
+    conf = CASCADE_CONFIGS.get(wave_number, CASCADE_CONFIGS[3])
+    pieces = [('k', 'e8')]
+
+    rank8 = ['a8', 'b8', 'c8', 'd8', 'f8', 'g8', 'h8']
+    random.shuffle(rank8)
+    rank7 = ['a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7']
+    random.shuffle(rank7)
+
+    available = rank8 + rank7
+    for sym, count in conf['initial_pieces']:
+        for _ in range(count):
+            if available:
+                pieces.append((sym, available.pop()))
+
+    return pieces
+
+
+def cascade_spawn_pieces(board, wave_number):
+    """Spawn new enemy pieces on empty squares in ranks 7-8 during cascade."""
+    conf = CASCADE_CONFIGS.get(wave_number, CASCADE_CONFIGS[3])
+    pool = conf['spawn_pool']
+    sym = random.choice(pool)
+
+    back_ranks = []
+    for r in [7, 6]:
+        for f in range(8):
+            sq = chess.square(f, r)
+            if board.piece_at(sq) is None:
+                back_ranks.append(sq)
+
+    if not back_ranks:
+        return None
+
+    sq = random.choice(back_ranks)
+    piece = _SYM_TO_PIECE.get(sym)
+    if piece is None:
+        return None
+    board.set_piece_at(sq, piece)
+    sq_name = chess.square_name(sq)
+    return {'piece': sym, 'square': sq_name}
+
+
+def cascade_tick_move(board, wave_number):
+    """Pick a single black piece and move it one step toward the player's king.
+
+    Returns (from_sq_name, to_sq_name, san, captured_white_piece_type) or None.
+    """
+    white_king_sq = board.king(chess.WHITE)
+    if white_king_sq is None:
+        return None
+
+    wkr = chess.square_rank(white_king_sq)
+    wkf = chess.square_file(white_king_sq)
+
+    black_pieces = []
+    for sq, piece in board.piece_map().items():
+        if piece.color == chess.BLACK and piece.piece_type != chess.KING:
+            black_pieces.append((sq, piece))
+
+    if not black_pieces:
+        return None
+
+    random.shuffle(black_pieces)
+
+    for sq, piece in black_pieces:
+        best_move = None
+        best_dist = 999
+
+        for move in board.legal_moves:
+            if move.from_square != sq:
+                continue
+            tr = chess.square_rank(move.to_square)
+            tf = chess.square_file(move.to_square)
+            dist = abs(tr - wkr) + abs(tf - wkf)
+
+            cap = board.piece_at(move.to_square)
+            if cap and cap.color == chess.WHITE:
+                dist -= 3
+
+            if board.gives_check(move):
+                dist -= 5
+
+            if dist < best_dist:
+                best_dist = dist
+                best_move = move
+
+        if best_move:
+            from_name = chess.square_name(best_move.from_square)
+            to_name = chess.square_name(best_move.to_square)
+            captured = board.piece_at(best_move.to_square)
+            cap_type = captured.piece_type if (captured and captured.color == chess.WHITE) else None
+            san = board.san(best_move)
+            board.push(best_move)
+            return from_name, to_name, san, cap_type
+
+    return None
+
+
+def cascade_check_player_alive(board):
+    """Return True if the player still has playable pieces (king present, not checkmated)."""
+    if board.king(chess.WHITE) is None:
+        return False
+    saved_turn = board.turn
+    board.turn = chess.WHITE
+    mated = board.is_checkmate()
+    board.turn = saved_turn
+    return not mated
+
+
+def get_cascade_bonus_pieces(wave_number):
+    """Return list of piece symbols to grant the player before a cascade wave."""
+    conf = CASCADE_CONFIGS.get(wave_number, CASCADE_CONFIGS[3])
+    return conf.get('bonus_pieces', [])

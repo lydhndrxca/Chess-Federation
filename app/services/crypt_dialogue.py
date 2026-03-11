@@ -456,6 +456,157 @@ BOSS_DEFEAT = [
 ]
 
 
+# ── CASCADE WAVE — Intro / Taunt ─────────────────────────────
+
+CASCADE_INTRO = [
+    "Oh, you thought the waves TOOK TURNS? Not anymore. I BROKE that rule. In HALF.",
+    "WATERFALL TIME. Everything I have is pouring down on you AT ONCE.",
+    "You see that wall of pieces? It's MOVING. It doesn't STOP. And neither do I.",
+    "I couldn't wait for you to make a move. So I'm making ALL of mine. SIMULTANEOUSLY.",
+    "This isn't chess anymore. This is a FLOOD. And you're standing at the BOTTOM.",
+    "The pieces march without pause. Without mercy. Without PATIENCE. Like ME.",
+    "EVERY FEW SECONDS another piece slides closer. You want a break? TOO BAD.",
+    "I ripped the turn order out of the rules and BURNED IT. Welcome to the cascade.",
+    "My pieces don't wait. MY pieces don't REST. They move when I TELL them to move. Which is ALWAYS.",
+    "This is the wave I designed at PEAK FURY. No turns. No breathing room. Just FALLING CHESS PIECES.",
+    "I opened the floodgates. My army pours through like WATER through a BROKEN DAM.",
+    "The cascade begins. I suggest you move VERY fast. Or don't. I'd PREFER you didn't.",
+    "Real-time destruction. My FAVORITE kind. The pieces don't wait. Neither does my REVENGE.",
+    "WATERFALL MODE. I invented it during a twelve-hour rage blackout. I'm VERY proud of it.",
+    "You get bonus pieces because I'm GENEROUS. You'll lose them because I'm BETTER.",
+    "I gave you extra pieces for this wave. Not because I care. Because I want you to last LONGER before you CRUMBLE.",
+    "Here's a queen, a knight, and a bishop. Consider them a FAREWELL GIFT.",
+    "Bonus pieces for the cascade. Enjoy them for the FOURTEEN SECONDS they'll survive.",
+    "Extra reinforcements? Yes. Will they SAVE you? ABSOLUTELY NOT.",
+    "I handed you more pieces so the DESTRUCTION takes longer. I want to SAVOR it.",
+]
+
+# ── CASCADE — Pieces Advancing ────────────────────────────────
+
+CASCADE_ADVANCING = [
+    "They're COMING. Closer. CLOSER. Do you feel that? That's DREAD.",
+    "One step. Another. The wall CREEPS. My patience does NOT.",
+    "Watch them slide toward you. Like a GLACIER of FURY.",
+    "Every tick, every STEP, your space SHRINKS. How does it FEEL?",
+    "They advance. RELENTLESSLY. I am conducting them from the DARK like an ORCHESTRA of DOOM.",
+    "Closer. CLOSER. My army breathes down your neck and I LOVE it.",
+    "The cascade doesn't pause. It doesn't THINK. It just MOVES. TOWARD YOU.",
+    "Tick. Step. Tick. Step. That's the rhythm of your DESTRUCTION.",
+    "My pieces shuffle forward and each step sounds like a HEARTBEAT. YOUR last heartbeat.",
+    "Creeping. Crawling. INEVITABLE. Like my WRATH.",
+    "The wall moves and your board SHRINKS. Soon there'll be NOWHERE left.",
+    "I can see you SCRAMBLING. The pieces see it too. They LIKE it.",
+    "Step by step they march. I am the CONDUCTOR. This is my FUNERAL MARCH. For YOU.",
+    "They don't stop. They CAN'T stop. I didn't give them that OPTION.",
+    "Forward. Always forward. Into YOUR position. Through YOUR defenses. Over YOUR pieces.",
+    "Each tick brings them closer. Each second is a GIFT I didn't intend to give.",
+    "The wall advances. I wish it would go FASTER. But patience is part of TORTURE.",
+    "CLOSER. My pieces are practically BREATHING on your king. Can you SMELL the rot?",
+    "They ooze forward like LAVA. Slow. HOT. UNSTOPPABLE.",
+    "Every square they claim used to be YOURS. Emphasis on USED TO BE.",
+]
+
+# ── CASCADE — Player Kill During Cascade ──────────────────────
+
+CASCADE_PLAYER_KILLS = [
+    "You killed one? DOESN'T MATTER. Three more are right BEHIND it.",
+    "A kill! Congratulations! The wall doesn't CARE.",
+    "ONE down? ONE?! I have an ENTIRE CORRIDOR full of REPLACEMENTS!",
+    "You chop and the CASCADE doesn't even FLINCH. It keeps COMING.",
+    "Oh, well done. You stopped a SINGLE DROP of the WATERFALL.",
+    "One less. But listen — do you hear the MARCHING? It hasn't STOPPED.",
+    "Kill them all you want. The SPAWNING doesn't stop until I SAY SO.",
+    "Impressive reflexes. Won't save you. But IMPRESSIVE.",
+    "One eliminated. Six more spawned. Do the MATH, genius.",
+    "You're swatting flies in a HURRICANE. But sure, keep trying.",
+    "A casualty! My cascade ABSORBS it. The wall repairs ITSELF.",
+    "That piece had a job. Its replacement is ALREADY on the board.",
+    "Fighting the tide! NOBLE. FUTILE. But noble.",
+    "You killed one and I SPAWNED another. This is a LOSING EQUATION for you.",
+    "The cascade doesn't mourn. The cascade REPLACES. Instantly.",
+]
+
+# ── CASCADE — Enemy Kill During Cascade ───────────────────────
+
+CASCADE_ENEMY_KILLS = [
+    "THE CASCADE EATS! It SWALLOWS your piece without STOPPING!",
+    "Consumed by the WAVE! One less obstacle between my army and your KING!",
+    "DEVOURED! The cascade claims another! My HEART sings!",
+    "SWEPT AWAY! Your piece just got TRAMPLED by the advancing wall!",
+    "The waterfall CRUSHES what it touches! Your piece is GONE!",
+    "Rolled right OVER it! Like it was NOTHING! Because it WAS nothing!",
+    "TAKEN by the tide! The cascade is UNSTOPPABLE!",
+    "Your piece just got FLATTENED by the march! I felt that from DOWN HERE!",
+    "The wall ABSORBS your pieces! They become part of the DARKNESS!",
+    "CLAIMED! One less defender! Your king grows COLDER!",
+    "Another piece eaten by the cascade! The wall grows STRONGER!",
+    "Swept into the ABYSS! Your army CRUMBLES before the wave!",
+    "The march takes what it WANTS! And it WANTED that piece!",
+    "OBLITERATED by the advancing line! I am VIBRATING with joy!",
+    "Crushed underfoot! The cascade doesn't even SLOW DOWN!",
+]
+
+# ── CASCADE — Spawn Event ─────────────────────────────────────
+
+CASCADE_SPAWN = [
+    "MORE! There's ALWAYS more! The corridor behind them is INFINITE!",
+    "Another one materializes. Did you think the spawning would STOP? It WON'T.",
+    "Fresh reinforcement. Straight from the DARK. Already ANGRY.",
+    "Another piece joins the march. Welcome to the WALL.",
+    "SPAWNING! The cascade GROWS! Like my FURY!",
+    "A new piece! Born in the darkness! Marching toward your DOOM!",
+    "The back ranks REFILL. The wall is SELF-HEALING. Like a FUNGUS of DEATH.",
+    "More emerge from the shadows. I have UNLIMITED RESERVES.",
+    "Another soldier for the cascade. I recruit from the ABYSS.",
+    "They keep COMING because I keep SENDING THEM.",
+    "New piece on the board. Fresh. ANGRY. Heading YOUR direction.",
+    "Spawned another. The factory never CLOSES. I AM the factory.",
+    "The wall thickens. Your window SHRINKS. Beautiful.",
+    "Reinforcements arrive. Not for you. For the DARKNESS.",
+    "Another body for the march. The cascade thanks you for your PATIENCE while we CRUSH you.",
+]
+
+# ── CASCADE — Survived ────────────────────────────────────────
+
+CASCADE_SURVIVED = [
+    "You SURVIVED?! My CASCADE?! I am INCONSOLABLE!",
+    "The waterfall BREAKS and you're still STANDING?! I can't BREATHE!",
+    "You weathered the cascade and I need to punch SEVERAL walls!",
+    "HOW?! The cascade was RELENTLESS! YOU were supposed to be CRUSHED!",
+    "The wave passes and you LIVE? I am going to need a BIGGER cascade!",
+    "Survived! SURVIVED?! I'm redesigning the cascade RIGHT NOW in my HEAD!",
+    "You endured my waterfall of fury and I am having a COMPLETE MELTDOWN!",
+    "The cascade FAILED to destroy you. I am PERSONALLY writing a formal complaint. TO MYSELF.",
+    "Still alive after the cascade. I am going to go scream into the PIPES for twenty minutes.",
+    "You stood against the flood and the flood BLINKED. I didn't even know floods COULD blink!",
+    "The cascade is OVER and you're still HERE?! My blood pressure is in ORBIT!",
+    "Survived the waterfall. I'm not ANGRY. I'm BEYOND angry. I've reached a new EMOTION.",
+    "The wave crashed and you held. I am going to need THERAPY. And a BIGGER army.",
+    "You lived through that? I built that cascade during a TWELVE-HOUR rage session! HOW?!",
+    "Cascade survived. I'm adding more pieces to the next one. MANY more. ANGRIER ones.",
+]
+
+# ── CASCADE — Player Lost in Cascade ──────────────────────────
+
+CASCADE_DEFEAT = [
+    "CRUSHED BY THE WAVE! The cascade SWALLOWS you! BEAUTIFUL!",
+    "SWEPT AWAY! Your king DROWNS in the waterfall! I am ELATED!",
+    "The cascade WINS! My wave of fury OBLITERATES your defenses!",
+    "DESTROYED by the march! Your pieces are SCATTERED! MAGNIFICENT!",
+    "The waterfall takes your king and I feel PEACE for the first time in WEEKS!",
+    "ANNIHILATED by the cascade! THIS is what I designed it FOR!",
+    "Your army CRUMBLES under the wave! The sound of defeat is MUSICAL!",
+    "OVERWHELMED! The cascade CRUSHED you! I need a MOMENT to CELEBRATE!",
+    "The wall rolled through you like you were NOTHING! Because you WERE!",
+    "DROWNED in the tide! Your king falls and the crypt REJOICES!",
+    "The cascade claims another victim! My REVENGE feels WARM!",
+    "SWEPT UNDER! The waterfall doesn't discriminate! It destroys EVERYTHING!",
+    "Your king toppled by the MARCH! I designed this SPECIFICALLY for this MOMENT!",
+    "CRUSHED! FLATTENED! OBLITERATED! The cascade is PERFECTION!",
+    "The wave took your EVERYTHING and I am absolutely THRILLED about it!",
+]
+
+
 def get_wave_start_line(wave):
     if wave in WAVE_SPECIFIC:
         return random.choice(WAVE_SPECIFIC[wave])
@@ -525,3 +676,31 @@ def get_check_line(player_checking):
     if player_checking:
         return random.choice(PLAYER_CHECKS)
     return random.choice(ENEMY_CHECKS)
+
+
+# ── Cascade getters ──────────────────────────────────────────────
+
+def get_cascade_intro_line():
+    return random.choice(CASCADE_INTRO)
+
+def get_cascade_advancing_line():
+    if random.random() < 0.35:
+        return random.choice(CASCADE_ADVANCING)
+    return None
+
+def get_cascade_player_kill_line():
+    return random.choice(CASCADE_PLAYER_KILLS)
+
+def get_cascade_enemy_kill_line():
+    return random.choice(CASCADE_ENEMY_KILLS)
+
+def get_cascade_spawn_line():
+    if random.random() < 0.5:
+        return random.choice(CASCADE_SPAWN)
+    return None
+
+def get_cascade_survived_line():
+    return random.choice(CASCADE_SURVIVED)
+
+def get_cascade_defeat_line():
+    return random.choice(CASCADE_DEFEAT)

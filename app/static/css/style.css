@@ -1884,6 +1884,118 @@ a:hover { text-decoration: underline; }
     30% { opacity: 1; transform: translateY(-3px); }
 }
 
+/* ── Reply preview inside message ── */
+.msg-reply-preview {
+    display: flex; gap: 0.3rem; align-items: baseline;
+    padding: 0.25rem 0.5rem; margin-bottom: 0.2rem;
+    border-left: 3px solid var(--accent, #0084ff);
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px; cursor: pointer;
+    font-size: 0.72rem; color: var(--text-muted);
+    max-width: 260px; overflow: hidden;
+}
+.msg-reply-author { font-weight: 700; color: var(--accent, #0084ff); white-space: nowrap; }
+.msg-reply-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Reactions ── */
+.msg-reactions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.msg-reaction-pill {
+    display: inline-flex; align-items: center; gap: 2px;
+    padding: 2px 6px; border-radius: 10px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+    font-size: 0.85rem; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.msg-reaction-pill:hover { background: rgba(255,255,255,0.15); }
+.msg-reaction-mine { border-color: var(--accent, #0084ff); background: rgba(0,132,255,0.12); }
+.msg-reaction-count { font-size: 0.65rem; color: var(--text-muted); }
+
+/* ── Long message collapse ── */
+.msg-text-long {
+    max-height: 4.8em; overflow: hidden;
+    -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent);
+    mask-image: linear-gradient(180deg, #000 60%, transparent);
+}
+.msg-expand-btn {
+    background: none; border: none; color: var(--accent, #0084ff);
+    font-size: 0.72rem; cursor: pointer; padding: 2px 0;
+    font-weight: 600;
+}
+
+/* ── Edited tag ── */
+.msg-edited { font-size: 0.6rem; color: var(--text-muted); font-style: italic; margin-left: 4px; }
+
+/* ── Chat image ── */
+.msg-image { max-width: 240px; max-height: 200px; border-radius: 8px; margin-bottom: 4px; display: block; cursor: pointer; }
+.msg-image:hover { opacity: 0.9; }
+
+/* ── Image upload button ── */
+.chat-img-btn {
+    display: flex; align-items: center; justify-content: center;
+    background: none; border: none; cursor: pointer;
+    padding: 4px; opacity: 0.55; transition: opacity 0.15s;
+    flex-shrink: 0; color: var(--text);
+}
+.chat-img-btn:hover { opacity: 1; }
+
+/* ── Context menu (long-press) ── */
+.msg-context-menu {
+    position: fixed; z-index: 1000;
+    background: var(--bg-surface, #1e1e1e); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    min-width: 200px; overflow: hidden;
+    animation: ctxPop 0.15s ease;
+}
+@keyframes ctxPop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.msg-ctx-reactions {
+    display: flex; gap: 4px; padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    justify-content: center;
+}
+.msg-ctx-emoji {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.05); border: none;
+    font-size: 1.2rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.12s, transform 0.12s;
+}
+.msg-ctx-emoji:hover { background: rgba(255,255,255,0.15); transform: scale(1.2); }
+.msg-ctx-actions { display: flex; flex-direction: column; }
+.msg-ctx-btn {
+    background: none; border: none; color: var(--text);
+    padding: 10px 16px; font-size: 0.85rem; cursor: pointer;
+    text-align: left; transition: background 0.12s;
+}
+.msg-ctx-btn:hover { background: rgba(255,255,255,0.06); }
+.msg-ctx-btn-danger { color: var(--red, #e05555); }
+
+/* ── Reply banner ── */
+.chat-reply-banner {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.4rem 0.6rem; background: var(--bg-surface);
+    border-top: 1px solid var(--border);
+    border-left: 3px solid var(--accent, #0084ff);
+}
+.reply-banner-info { flex: 1; overflow: hidden; }
+.reply-banner-label { font-size: 0.65rem; color: var(--text-muted); }
+.reply-banner-name { font-size: 0.75rem; color: var(--accent, #0084ff); margin-left: 4px; }
+.reply-banner-preview { display: block; font-size: 0.72rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reply-banner-close { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; padding: 4px; }
+
+/* ── Edit input inline ── */
+.msg-edit-input {
+    width: 100%; padding: 4px 6px; border: 1px solid var(--accent);
+    border-radius: 4px; background: var(--bg); color: var(--text);
+    font-size: 0.85rem;
+}
+
+/* ── Row highlight (when scrolling to replied msg) ── */
+.msg-row-highlight { animation: rowHighlight 1.5s ease; }
+@keyframes rowHighlight {
+    0%, 30% { background: rgba(0,132,255,0.15); }
+    100% { background: transparent; }
+}
+
 /* ── Scroll-to-bottom FAB ── */
 .chat-scroll-fab {
     position: absolute;
@@ -3843,8 +3955,8 @@ a:hover { text-decoration: underline; }
 }
 .rk-cell { display: flex; align-items: center; justify-content: center; position: relative; }
 .rk-cell-void { background: transparent; }
-.rk-cell-light { background: #b7b2a5; }
-.rk-cell-dark { background: #8a8477; }
+.rk-cell-light { background: #f0efe8; outline: 1px solid rgba(0,0,0,0.2); }
+.rk-cell-dark { background: #e0ddd4; outline: 1px solid rgba(0,0,0,0.2); }
 .rk-cell-sq { cursor: pointer; }
 .rk-cell-selected { box-shadow: inset 0 0 0 4px #f0c040; z-index: 2; }
 .rk-cell-legal { box-shadow: inset 0 0 0 4px #fff, inset 0 0 0 6px #000; z-index: 1; cursor: pointer; }
@@ -3865,6 +3977,15 @@ a:hover { text-decoration: underline; }
 .rk-piece-west  { color: #3d9aff; -webkit-text-stroke-color: #0a1e44; }
 .rk-piece-north { color: #f0c030; -webkit-text-stroke-color: #3a2a00; }
 .rk-piece-east  { color: #ff4444; -webkit-text-stroke-color: #3a0000; }
+.rk-piece-zombie {
+    color: #4aff4a; -webkit-text-stroke-color: #0a3a0a;
+    filter: drop-shadow(0 0 4px rgba(74,255,74,0.4)) drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+    animation: zombiePulse 2s infinite;
+}
+@keyframes zombiePulse {
+    0%, 100% { filter: drop-shadow(0 0 3px rgba(74,255,74,0.3)) drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
+    50% { filter: drop-shadow(0 0 8px rgba(74,255,74,0.6)) drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
+}
 
 /* ── Zoom controls ── */
 .rk-zoom-controls {
@@ -4221,6 +4342,48 @@ a:hover { text-decoration: underline; }
 .cr-rating-result { font-size: 1.1rem; padding: .5rem; border-radius: 6px; }
 .cr-rating-pos { background: rgba(40,160,40,.12); color: #4d4; border: 1px solid #4d4; }
 .cr-rating-neg { background: rgba(200,60,60,.12); color: #e66; border: 1px solid #c44; }
+
+/* ── Cascade Wave ── */
+.cr-cascade-intro {
+    position: fixed; inset: 0; z-index: 900;
+    background: rgba(0,0,0,.85); display: flex;
+    align-items: center; justify-content: center;
+}
+.cr-cascade-intro-inner {
+    background: #1a1a2e; border: 2px solid #c44;
+    border-radius: 12px; padding: 2rem; max-width: 420px; text-align: center;
+    color: #eee; box-shadow: 0 0 40px rgba(200,60,60,.4);
+}
+.cr-cascade-title {
+    font-size: 1.5rem; color: #f44; margin: 0 0 1rem; letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(255,60,60,.6);
+}
+.cr-cascade-intro-inner ul {
+    text-align: left; margin: .8rem 0; padding-left: 1.4rem; line-height: 1.6;
+    font-size: .9rem; color: #ccc;
+}
+.cr-cascade-bonus {
+    color: #4d4; font-weight: 700; margin-top: .8rem; font-size: .95rem;
+}
+.cr-cascade-hud {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .4rem .8rem; background: rgba(200,40,40,.15);
+    border: 1px solid rgba(200,40,40,.4); border-radius: 6px;
+    margin-bottom: .5rem;
+}
+.cr-cascade-label {
+    font-size: .7rem; font-weight: 700; color: #f44; letter-spacing: 1px; white-space: nowrap;
+}
+.cr-cascade-bar-wrap {
+    flex: 1; height: 8px; background: rgba(255,255,255,.1); border-radius: 4px; overflow: hidden;
+}
+.cr-cascade-bar {
+    height: 100%; background: linear-gradient(90deg, #f44, #ff6); border-radius: 4px;
+    width: 0%; transition: width .3s ease;
+}
+.cr-cascade-tick-count {
+    font-size: .75rem; color: #ccc; white-space: nowrap;
+}
 
 /* ── Leaderboard ── */
 .cr-leaderboard { max-width: 580px; margin: 1.5rem auto; padding: 0 1rem; }

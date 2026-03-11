@@ -15,8 +15,8 @@ from app.services.dialogue import (
     CHAT_ORCHESTRA, CHAT_PHILOSOPHY, CHAT_IDLE, CHAT_HUMOR,
     CHAT_FEDERATION_LORE,
     CMD_STANDINGS, CMD_RATING, CMD_DECREE, CMD_HELP,
-    CHAT_LATE_NIGHT, CHAT_QUIRKS, CHAT_CASUAL_ANNOUNCE,
-    CHAT_CRYPT_REVENGE_ANNOUNCE,
+    CHAT_LATE_NIGHT, CHAT_QUIRKS, CHAT_THESES, CHAT_CASUAL_ANNOUNCE,
+    CHAT_CRYPT_REVENGE_ANNOUNCE, CHAT_ZOMBIE_ANNOUNCE,
 )
 
 BOT_NAME = 'Enoch'
@@ -221,6 +221,26 @@ def ensure_casual_announcement():
     return msg
 
 
+_zombie_announced = False
+
+def ensure_zombie_announcement():
+    """Post a one-time Enoch announcement about the zombie pawns."""
+    global _zombie_announced
+    if _zombie_announced:
+        return
+    existing = ChatMessage.query.filter(
+        ChatMessage.is_bot == True,
+        ChatMessage.content.contains('Zombie pawns'),
+    ).first()
+    if existing:
+        _zombie_announced = True
+        return
+    _zombie_announced = True
+    msg = _post_bot(CHAT_ZOMBIE_ANNOUNCE)
+    db.session.commit()
+    return msg
+
+
 def maybe_quirk_interjection():
     """Occasional creepy Enoch quirks — late-night murmurings and accidental DMs.
 
@@ -243,6 +263,8 @@ def maybe_quirk_interjection():
 
     if is_late_night:
         line = random.choice(CHAT_LATE_NIGHT)
+    elif random.random() < 0.30:
+        line = random.choice(CHAT_THESES)
     else:
         line = random.choice(CHAT_QUIRKS)
 

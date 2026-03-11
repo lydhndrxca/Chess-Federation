@@ -18,6 +18,10 @@ from app.services.crypt_logic import (
     MILESTONES, BOSS_REWARD,
     get_safety_net, get_cashout_value, is_milestone_wave,
     runs_today, can_enter,
+    is_cascade_wave, CASCADE_CONFIGS,
+    generate_cascade_initial, cascade_spawn_pieces,
+    cascade_tick_move, cascade_check_player_alive,
+    get_cascade_bonus_pieces,
 )
 from app.services.crypt_dialogue import (
     get_wave_start_line, get_capture_line, get_wave_complete_line,
@@ -25,6 +29,9 @@ from app.services.crypt_dialogue import (
     get_battle_line, get_high_score_line,
     get_milestone_line, get_cashout_line,
     get_boss_battle_line, get_boss_victory_line, get_boss_defeat_line,
+    get_cascade_intro_line, get_cascade_advancing_line,
+    get_cascade_player_kill_line, get_cascade_enemy_kill_line,
+    get_cascade_spawn_line, get_cascade_survived_line, get_cascade_defeat_line,
 )
 
 crypt_bp = Blueprint('crypt', __name__)
@@ -81,10 +88,13 @@ def crypt_game(game_id):
         return redirect(url_for('crypt.crypt_home'))
 
     legal_moves = []
-    if game.phase == 'battle' and game.fen_current:
+    cascade_conf = None
+    if game.phase in ('battle', 'cascade') and game.fen_current:
         board = chess.Board(game.fen_current)
-        if board.turn == chess.WHITE:
-            legal_moves = get_legal_moves_list(board)
+        board.turn = chess.WHITE
+        legal_moves = get_legal_moves_list(board)
+        if game.phase == 'cascade':
+            cascade_conf = CASCADE_CONFIGS.get(game.wave, CASCADE_CONFIGS[3])
 
     highest_cleared = game.wave - 1
     return render_template(
@@ -101,6 +111,7 @@ def crypt_game(game_id):
         daily_runs=runs_today(current_user.id),
         can_enter=False,
         safety_net=get_safety_net(highest_cleared),
+        cascade_conf=cascade_conf,
     )
 
 
@@ -155,23 +166,49 @@ def crypt_deploy(game_id):
         if rank > 2:
             return jsonify(ok=False, error='Pieces must be on ranks 1–2.'), 400
 
-    enemy = generate_wave(game.wave)
-    fen = build_fen(placement, enemy)
-    game.fen_current = fen
-    game.phase = 'battle'
-    db.session.commit()
+    cascade = is_cascade_wave(game.wave)
 
-    board = chess.Board(fen)
+    if cascade:
+        enemy = generate_cascade_initial(game.wave)
+        fen = build_fen(placement, enemy)
+        game.fen_current = fen
+        game.phase = 'cascade'
+        conf = CASCADE_CONFIGS.get(game.wave, CASCADE_CONFIGS[3])
+        game.cascade_tick = 0
+        game.cascade_max_ticks = conf['ticks']
+        db.session.commit()
 
-    return jsonify(
-        ok=True,
-        fen=fen,
-        enemy_pieces=[{'piece': p, 'square': s} for p, s in enemy],
-        legal_moves=get_legal_moves_list(board),
-        wave=game.wave,
-        is_boss=(game.wave == MAX_WAVES),
-        enoch=get_wave_start_line(game.wave),
-    )
+        board = chess.Board(fen)
+        return jsonify(
+            ok=True,
+            fen=fen,
+            enemy_pieces=[{'piece': p, 'square': s} for p, s in enemy],
+            legal_moves=get_legal_moves_list(board),
+            wave=game.wave,
+            is_boss=False,
+            is_cascade=True,
+            cascade_interval=conf['interval_ms'],
+            cascade_max_ticks=conf['ticks'],
+            enoch=get_cascade_intro_line(),
+        )
+    else:
+        enemy = generate_wave(game.wave)
+        fen = build_fen(placement, enemy)
+        game.fen_current = fen
+        game.phase = 'battle'
+        db.session.commit()
+
+        board = chess.Board(fen)
+        return jsonify(
+            ok=True,
+            fen=fen,
+            enemy_pieces=[{'piece': p, 'square': s} for p, s in enemy],
+            legal_moves=get_legal_moves_list(board),
+            wave=game.wave,
+            is_boss=(game.wave == MAX_WAVES),
+            is_cascade=False,
+            enoch=get_wave_start_line(game.wave),
+        )
 
 
 @crypt_bp.route('/crypt/<int:game_id>/move', methods=['POST'])
@@ -267,6 +304,222 @@ def crypt_move(game_id):
     )
 
 
+# ── Cascade Wave Endpoints ────────────────────────────────────
+
+@crypt_bp.route('/crypt/<int:game_id>/cascade-move', methods=['POST'])
+@login_required
+def crypt_cascade_move(game_id):
+    """Player makes a move during a cascade wave (real-time, no AI reply)."""
+    game = CryptGame.query.get_or_404(game_id)
+    if game.user_id != current_user.id or game.phase != 'cascade':
+        return jsonify(ok=False, error='Invalid state.'), 400
+
+    data = request.get_json(force=True)
+    uci_str = data.get('uci', '')
+
+    board = chess.Board(game.fen_current)
+    if board.turn != chess.WHITE:
+        board.turn = chess.WHITE
+
+    try:
+        move = chess.Move.from_uci(uci_str)
+    except Exception:
+        return jsonify(ok=False, error='Invalid move format.'), 400
+
+    if move not in board.legal_moves:
+        return jsonify(ok=False, error='Illegal move.'), 400
+
+    captured = board.piece_at(move.to_square)
+    player_san = board.san(move)
+    board.push(move)
+
+    cap_gold = 0
+    cap_score = 0
+    enoch_line = None
+    if captured and captured.color == chess.BLACK:
+        cap_gold = CAPTURE_GOLD.get(captured.piece_type, 0)
+        cap_score = CAPTURE_SCORE.get(captured.piece_type, 0)
+        game.gold += cap_gold
+        game.gold_earned += cap_gold
+        game.score += cap_score
+        game.kills += 1
+        enoch_line = get_cascade_player_kill_line()
+
+    board.turn = chess.WHITE
+    game.fen_current = board.fen()
+    db.session.commit()
+
+    wc = check_wave_complete(board)
+    if wc:
+        return _finish_cascade_wave(game, board, cap_gold, cap_score)
+
+    legal = get_legal_moves_list(board)
+
+    return jsonify(
+        ok=True,
+        fen=board.fen(),
+        player_san=player_san,
+        legal_moves=legal,
+        capture_gold=cap_gold,
+        capture_score=cap_score,
+        gold=game.gold,
+        score=game.score,
+        kills=game.kills,
+        wave_complete=False,
+        game_over=False,
+        enoch=enoch_line,
+    )
+
+
+@crypt_bp.route('/crypt/<int:game_id>/cascade-tick', methods=['POST'])
+@login_required
+def crypt_cascade_tick(game_id):
+    """Server processes one AI tick during cascade: move a piece + maybe spawn."""
+    game = CryptGame.query.get_or_404(game_id)
+    if game.user_id != current_user.id or game.phase != 'cascade':
+        return jsonify(ok=False, error='Invalid state.'), 400
+
+    board = chess.Board(game.fen_current)
+    board.turn = chess.BLACK
+
+    tick = (game.cascade_tick or 0) + 1
+    game.cascade_tick = tick
+    max_ticks = game.cascade_max_ticks or 20
+
+    result = cascade_tick_move(board, game.wave)
+    ai_move_data = None
+    enoch_line = None
+
+    if result:
+        from_sq, to_sq, san, cap_type = result
+        ai_move_data = {'from': from_sq, 'to': to_sq, 'san': san}
+        if cap_type:
+            enoch_line = get_cascade_enemy_kill_line()
+        elif not enoch_line:
+            enoch_line = get_cascade_advancing_line()
+
+    board.turn = chess.WHITE
+
+    spawned = None
+    conf = CASCADE_CONFIGS.get(game.wave, CASCADE_CONFIGS[3])
+    if tick % conf['spawn_interval'] == 0 and tick < max_ticks - 2:
+        spawned = cascade_spawn_pieces(board, game.wave)
+        if spawned and not enoch_line:
+            enoch_line = get_cascade_spawn_line()
+
+    game.fen_current = board.fen()
+
+    if not cascade_check_player_alive(board):
+        return _finish_cascade_loss(game, board)
+
+    if check_wave_complete(board):
+        return _finish_cascade_wave(game, board, 0, 0)
+
+    done = tick >= max_ticks
+    if done:
+        return _finish_cascade_wave(game, board, 0, 0)
+
+    db.session.commit()
+
+    legal = get_legal_moves_list(board)
+
+    return jsonify(
+        ok=True,
+        fen=board.fen(),
+        ai_move=ai_move_data,
+        spawned=spawned,
+        legal_moves=legal,
+        tick=tick,
+        max_ticks=max_ticks,
+        wave_complete=False,
+        game_over=False,
+        gold=game.gold,
+        score=game.score,
+        kills=game.kills,
+        enoch=enoch_line,
+    )
+
+
+def _finish_cascade_wave(game, board, cap_gold, cap_score):
+    bg = wave_bonus_gold(game.wave)
+    bs = wave_bonus_score(game.wave)
+    game.gold += bg
+    game.gold_earned += bg
+    game.score += bs
+    game.score += 50  # cascade survival bonus
+
+    wave_just_cleared = game.wave
+    surviving = get_surviving_pieces(board)
+    game.inventory = json.dumps(surviving)
+
+    if wave_just_cleared >= MAX_WAVES:
+        game.phase = 'gameover'
+        game.completed_at = datetime.now(timezone.utc)
+        game.fen_current = board.fen()
+        game.rating_result = BOSS_REWARD
+        game.cashed_out = False
+        user = User.query.get(game.user_id)
+        user.rating += ENTRY_COST + BOSS_REWARD
+        db.session.commit()
+        return jsonify(
+            ok=True, fen=board.fen(), wave_complete=True, game_over=True,
+            victory=True, final_wave=game.wave, final_score=game.score,
+            final_kills=game.kills, gold=game.gold,
+            gold_earned=game.gold_earned, gold_spent=game.gold_spent,
+            capture_gold=cap_gold, capture_score=cap_score,
+            rating_change=BOSS_REWARD,
+            enoch=get_cascade_survived_line(),
+        )
+
+    game.wave += 1
+    game.phase = 'placement'
+    game.fen_current = None
+    game.cascade_tick = 0
+    db.session.commit()
+
+    is_ms = is_milestone_wave(wave_just_cleared)
+    cashout_val = get_cashout_value(wave_just_cleared)
+    safety = get_safety_net(wave_just_cleared)
+
+    return jsonify(
+        ok=True, fen=board.fen(), wave_complete=True, game_over=False,
+        bonus_gold=bg, bonus_score=bs + 50,
+        capture_gold=cap_gold, capture_score=cap_score,
+        next_wave=game.wave, inventory=surviving,
+        gold=game.gold, score=game.score, kills=game.kills,
+        wave_cleared=wave_just_cleared,
+        is_milestone=is_ms, cashout_value=cashout_val, safety_net=safety,
+        max_waves=MAX_WAVES,
+        enoch=get_cascade_survived_line(),
+        enoch_milestone=get_milestone_line(wave_just_cleared) if is_ms else None,
+        cascade_survived=True,
+    )
+
+
+def _finish_cascade_loss(game, board):
+    game.phase = 'gameover'
+    game.completed_at = datetime.now(timezone.utc)
+    game.fen_current = board.fen()
+    highest_cleared = game.wave - 1
+    net = get_safety_net(highest_cleared)
+    game.rating_result = net
+    user = User.query.get(game.user_id)
+    refund = ENTRY_COST + net
+    if refund > 0:
+        user.rating += refund
+    db.session.commit()
+
+    return jsonify(
+        ok=True, fen=board.fen(), game_over=True, victory=False,
+        wave_complete=False, final_wave=game.wave, final_score=game.score,
+        final_kills=game.kills, gold=game.gold,
+        gold_earned=game.gold_earned, gold_spent=game.gold_spent,
+        capture_gold=0, capture_score=0,
+        rating_change=net, safety_net_used=net,
+        enoch=get_cascade_defeat_line(),
+    )
+
+
 def _finish_wave(game, board, player_san, cap_gold, cap_score,
                  ai_san=None, ai_uci=None):
     bg = wave_bonus_gold(game.wave)
@@ -287,6 +540,15 @@ def _finish_wave(game, board, player_san, cap_gold, cap_score,
     game.wave += 1
     game.phase = 'placement'
     game.fen_current = None
+
+    next_is_cascade = is_cascade_wave(game.wave)
+    bonus_pieces_granted = []
+    if next_is_cascade:
+        bonus = get_cascade_bonus_pieces(game.wave)
+        surviving.extend(bonus)
+        game.inventory = json.dumps(surviving)
+        bonus_pieces_granted = bonus
+
     db.session.commit()
 
     is_milestone = is_milestone_wave(wave_just_cleared)
@@ -318,6 +580,8 @@ def _finish_wave(game, board, player_san, cap_gold, cap_score,
         max_waves=MAX_WAVES,
         enoch=enoch_line,
         enoch_milestone=milestone_enoch,
+        next_is_cascade=next_is_cascade,
+        cascade_bonus_pieces=bonus_pieces_granted,
     )
     if ai_san:
         resp['ai_move'] = {'san': ai_san, 'uci': ai_uci}
@@ -495,13 +759,17 @@ def crypt_state(game_id):
         'max_waves': MAX_WAVES,
     }
 
-    if game.phase == 'battle' and game.fen_current:
+    if game.phase in ('battle', 'cascade') and game.fen_current:
         board = chess.Board(game.fen_current)
         resp['fen'] = game.fen_current
-        if board.turn == chess.WHITE:
-            resp['legal_moves'] = get_legal_moves_list(board)
-        else:
-            resp['legal_moves'] = []
+        board.turn = chess.WHITE
+        resp['legal_moves'] = get_legal_moves_list(board)
+        if game.phase == 'cascade':
+            conf = CASCADE_CONFIGS.get(game.wave, CASCADE_CONFIGS[3])
+            resp['is_cascade'] = True
+            resp['cascade_tick'] = game.cascade_tick or 0
+            resp['cascade_max_ticks'] = game.cascade_max_ticks or conf['ticks']
+            resp['cascade_interval'] = conf['interval_ms']
 
     return jsonify(resp)
 

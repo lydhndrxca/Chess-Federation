@@ -198,6 +198,31 @@ def _migrate_db(app):
             cur.execute('ALTER TABLE crypt_game ADD COLUMN rating_result INTEGER')
         if 'cashed_out' not in crypt_cols:
             cur.execute('ALTER TABLE crypt_game ADD COLUMN cashed_out BOOLEAN DEFAULT 0')
+        if 'cascade_tick' not in crypt_cols:
+            cur.execute('ALTER TABLE crypt_game ADD COLUMN cascade_tick INTEGER DEFAULT 0')
+        if 'cascade_max_ticks' not in crypt_cols:
+            cur.execute('ALTER TABLE crypt_game ADD COLUMN cascade_max_ticks INTEGER DEFAULT 0')
+
+    # Chat enhancements: new columns + reactions table
+    chat_cols = {r[1] for r in cur.execute('PRAGMA table_info(chat_message)').fetchall()}
+    if 'reply_to_id' not in chat_cols:
+        cur.execute('ALTER TABLE chat_message ADD COLUMN reply_to_id INTEGER REFERENCES chat_message(id)')
+    if 'image_filename' not in chat_cols:
+        cur.execute('ALTER TABLE chat_message ADD COLUMN image_filename VARCHAR(200)')
+    if 'edited' not in chat_cols:
+        cur.execute("ALTER TABLE chat_message ADD COLUMN edited BOOLEAN DEFAULT 0")
+
+    if 'chat_reaction' not in tables:
+        cur.execute('''CREATE TABLE chat_reaction (
+            id INTEGER PRIMARY KEY,
+            message_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            emoji VARCHAR(10) NOT NULL,
+            created_at DATETIME,
+            FOREIGN KEY(message_id) REFERENCES chat_message(id),
+            FOREIGN KEY(user_id) REFERENCES user(id),
+            UNIQUE(message_id, user_id, emoji)
+        )''')
 
     if 'challenge' not in tables:
         cur.execute('''CREATE TABLE challenge (

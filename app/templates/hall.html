@@ -35,10 +35,41 @@
                     {% endif %}
             {% endif %}
 
-                    <div class="msg-row {{ 'msg-row-own' if is_own else '' }}" data-msg-id="{{ msg.id }}" data-user-id="{{ '' if msg.is_bot else msg.user_id }}" data-is-bot="{{ '1' if msg.is_bot else '0' }}">
-                        <div class="msg-bubble {{ 'msg-bubble-own' if is_own else ('msg-bubble-bot' if msg.is_bot else 'msg-bubble-other') }}">
-                            <p class="msg-text">{{ msg.content }}</p>
+                    <div class="msg-row {{ 'msg-row-own' if is_own else '' }}"
+                         data-msg-id="{{ msg.id }}"
+                         data-user-id="{{ '' if msg.is_bot else msg.user_id }}"
+                         data-is-bot="{{ '1' if msg.is_bot else '0' }}"
+                         data-content="{{ msg.content|e }}">
+
+                        {% if msg.reply_to_id and msg.reply_to %}
+                        <div class="msg-reply-preview" data-reply-id="{{ msg.reply_to.id }}">
+                            <span class="msg-reply-author">{{ 'Enoch' if msg.reply_to.is_bot else (msg.reply_to.user.username if msg.reply_to.user else '?') }}</span>
+                            <span class="msg-reply-text">{{ msg.reply_to.content|truncate(80) }}</span>
                         </div>
+                        {% endif %}
+
+                        <div class="msg-bubble {{ 'msg-bubble-own' if is_own else ('msg-bubble-bot' if msg.is_bot else 'msg-bubble-other') }}">
+                            {% if msg.image_filename %}
+                            <img src="{{ url_for('static', filename='uploads/chat/' + msg.image_filename) }}" class="msg-image" alt="image" loading="lazy">
+                            {% endif %}
+                            <p class="msg-text {% if msg.content|length > 200 %}msg-text-long{% endif %}">{{ msg.content }}</p>
+                            {% if msg.content|length > 200 %}
+                            <button class="msg-expand-btn" type="button">Show more</button>
+                            {% endif %}
+                            {% if msg.edited %}<span class="msg-edited">(edited)</span>{% endif %}
+                        </div>
+
+                        {% if msg.reactions %}
+                        <div class="msg-reactions">
+                            {% for r in msg.reactions %}
+                            <button class="msg-reaction-pill{% if r.user_id == current_user.id %} msg-reaction-mine{% endif %}"
+                                    data-emoji="{{ r.emoji }}" data-msg-id="{{ msg.id }}">
+                                {{ r.emoji }}
+                            </button>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
                         <span class="msg-time">{{ msg.timestamp.strftime('%I:%M %p') }}</span>
                     </div>
 
@@ -57,10 +88,42 @@
 
     <button class="chat-scroll-fab" id="chatScrollFab" aria-label="Scroll to bottom">&#8595;</button>
 
+    {# ── Long-press context menu ── #}
+    <div class="msg-context-menu" id="msgContextMenu" style="display:none">
+        <div class="msg-ctx-reactions" id="ctxReactions">
+            <button class="msg-ctx-emoji" data-emoji="❤️">❤️</button>
+            <button class="msg-ctx-emoji" data-emoji="😂">😂</button>
+            <button class="msg-ctx-emoji" data-emoji="😮">😮</button>
+            <button class="msg-ctx-emoji" data-emoji="😢">😢</button>
+            <button class="msg-ctx-emoji" data-emoji="😡">😡</button>
+            <button class="msg-ctx-emoji" data-emoji="👍">👍</button>
+            <button class="msg-ctx-emoji" id="ctxEmojiMore" title="More">+</button>
+        </div>
+        <div class="msg-ctx-actions">
+            <button class="msg-ctx-btn" id="ctxReply">Reply</button>
+            <button class="msg-ctx-btn" id="ctxEdit" style="display:none">Edit</button>
+            <button class="msg-ctx-btn msg-ctx-btn-danger" id="ctxDelete" style="display:none">Delete</button>
+        </div>
+    </div>
+
+    {# ── Reply banner ── #}
+    <div class="chat-reply-banner" id="replyBanner" style="display:none">
+        <div class="reply-banner-info">
+            <span class="reply-banner-label">Replying to</span>
+            <strong class="reply-banner-name" id="replyBannerName"></strong>
+            <span class="reply-banner-preview" id="replyBannerPreview"></span>
+        </div>
+        <button class="reply-banner-close" id="replyBannerClose" type="button">&times;</button>
+    </div>
+
     <div class="chat-composer">
         <div class="chat-composer-inner">
             <button class="chat-emoji-btn" id="emojiToggle" type="button" title="Emoji" aria-label="Insert emoji">&#128578;</button>
-            <input type="text" id="chatInput" class="chat-composer-input" placeholder="Type a message..." maxlength="1000" autocomplete="off" aria-label="Chat message">
+            <label class="chat-img-btn" title="Send image" aria-label="Attach image">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <input type="file" id="chatImageInput" accept="image/*" style="display:none">
+            </label>
+            <input type="text" id="chatInput" class="chat-composer-input" placeholder="Type a message..." maxlength="2000" autocomplete="off" aria-label="Chat message">
             <button class="chat-send-btn" id="chatSendBtn" type="button" aria-label="Send">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
@@ -80,7 +143,8 @@ window.CHAT_CONFIG = {
     currentUsername: {{ current_user.username | tojson }},
     enochTitle: {{ enoch_title | tojson }},
     enochImg: "{{ url_for('static', filename='img/enoch.png') }}",
-    staticBase: "{{ url_for('static', filename='') }}"
+    staticBase: "{{ url_for('static', filename='') }}",
+    uploadBase: "{{ url_for('static', filename='uploads/chat/') }}"
 };
 </script>
 <script src="{{ url_for('static', filename='js/hall.js') }}"></script>

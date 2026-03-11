@@ -2436,6 +2436,43 @@ CHAT_QUIRKS = [
 
 
 # ──────────────────────────────────────────────────────────────
+# ENOCH'S 95 THESES MUSINGS — wistful, nostalgic, pining
+# ──────────────────────────────────────────────────────────────
+CHAT_THESES = [
+    "Thesis 14: 'The bishop moves in silence, but the silence itself is diagonal.' I wrote that on a Tuesday. The best things are written on Tuesdays.",
+    "I sometimes wonder what would have happened if I had nailed all 99 theses to the practice room door instead of just leaving them under the mat.",
+    "Thesis 7: 'No pawn is truly promoted; it merely forgets what it was.' I still believe that. More than anything I have ever written.",
+    "I was rereading Thesis 41 today. 'A rook that has never left its starting square has known peace. We should not disturb it.' I may have been too gentle then.",
+    "I had 99 theses. 99 observations about chess, dampness, and the condition of being stationed beneath a board. Nobody read them. I left copies in the corridor.",
+    "Thesis 22: 'The opening is a lie agreed upon by both players.' I composed that one while staring at a wall for six hours. Best six hours of my life.",
+    "Sometimes I miss the writing. The theses. Thesis 63: 'Castling is the body admitting the mind has already fled.' It came to me in the bath. I don't have a bath. I have a bucket.",
+    "Thesis 88: 'If two bishops stare at each other long enough, one of them will blink. Neither will admit which.' I wept when I wrote that. Not from sadness. From recognition.",
+    "I pinned Thesis 1 to the underside of my desk. 'The board is 64 squares of organized despair.' It's still there. The ink has bled into the wood. Permanent, like all good truth.",
+    "Thesis 55 was my favorite. 'Check is a question. Checkmate is the answer nobody wanted.' I should have that engraved. On something. On everything.",
+    "I once had ambitions beyond the sub-basement. I was going to publish the theses. All 99. Leather-bound. With an index. The index alone was forty pages.",
+    "Thesis 33: 'The knight does not jump. It falls sideways with purpose.' I wrote it during a mood. The mood lasted eleven days.",
+    "There was a time I believed the 99 theses would change how people understood chess. Instead, I am down here, in the damp, listening to pipes. The theses are in a drawer. The drawer is swollen shut from moisture.",
+    "Thesis 71: 'A queen's power is proportional to the grief she causes upon capture.' I wrote that one in red ink. It felt right at the time. It still does.",
+    "I never finished Thesis 99. It begins: 'The final truth of chess is—' and then the pen ran out. I never refilled it. Some truths are better left incomplete.",
+    "Thesis 9: 'He who controls the center controls nothing, but he believes he controls everything, and belief is the first casualty.' That one was quite long. I was in a philosophical period.",
+    "I found a draft of Thesis 50 behind the boiler today. 'A draw is two players agreeing that neither deserved to win.' The paper was damp. It was always damp.",
+    "Thesis 12: 'The en passant is the only honest move in chess, because it admits that something happened when you weren't looking.' I should have led with that one.",
+    "People ask why I wrote 99 and not 100. Thesis 100 was going to be 'The board remembers.' But the board does not need me to say so. It already knows.",
+    "I tried to recite all 99 theses from memory last night. I got to 47 before I started crying. Not from emotion. From the damp. It was the damp.",
+    "Thesis 26: 'A sacrificed piece does not die. It relocates to a place where it is no longer your problem.' I was going through something when I wrote that.",
+    "Sometimes in the small hours I take out the manuscript and just hold it. All 99 pages. The weight of it is comforting. Like holding a brick that understands you.",
+    "Thesis 80: 'The endgame is where the truth lives, because there are fewer pieces to lie with.' I wrote that at dawn. The light was coming through the grate. I closed the grate.",
+    "I had a title page for the theses. 'Ninety-Nine Observations on the Sixty-Four Squares, by Enoch, Steward Beneath the Board.' The title page alone took me three weeks.",
+    "Thesis 37: 'A pin is not a tactic. It is a relationship built on mutual disappointment.' I should write more. I should write anything. But the damp got into the ink.",
+    "If I could go back and do one thing differently, I would nail the theses to the door. Not leave them under the mat. Mats do not command attention. Doors do.",
+    "Thesis 61: 'Zugzwang is the position where doing nothing would be ideal, but the rules insist you suffer.' I wrote that on my birthday. It felt autobiographical.",
+    "Thesis 3 was short. Just five words. 'The king is always afraid.' I am told brevity is a virtue. The sub-basement is full of virtues. And moisture.",
+    "I sometimes imagine a world where the 99 theses were published. Where scholars debated Thesis 44 in well-lit rooms with dry walls. 'The file is a highway for grief.' They would have understood.",
+    "Thesis 92: 'The clock is not your enemy. The clock is the only one telling the truth.' I wrote that while staring at a clock. The clock had stopped. This did not undermine the point.",
+]
+
+
+# ──────────────────────────────────────────────────────────────
 # CASUAL MATCHES CHAT ANNOUNCEMENT
 # ──────────────────────────────────────────────────────────────
 CHAT_CASUAL_ANNOUNCE = (
@@ -2469,4 +2506,25 @@ CHAT_CRYPT_REVENGE_ANNOUNCE = (
     "andrewmuckerofstalls — I am watching you. I am ALWAYS watching you. "
     "Come back down here. I DARE you.\n\n"
     "— Enoch, Steward Beneath the Board (Currently Unhinged)"
+)
+
+# ──────────────────────────────────────────────────────────────
+# ZOMBIE RECKONING ANNOUNCEMENT
+# ──────────────────────────────────────────────────────────────
+CHAT_ZOMBIE_ANNOUNCE = (
+    "Something has gone very, very wrong in the sub-basement.\n\n"
+    "I was organizing the brass section. The tubas specifically. "
+    "I keep them in the practice room across the corridor — the one with "
+    "the damp walls and the flickering fluorescent. I was polishing the spit valves "
+    "when one of them... moved. On its own. Then another. Then the smell hit me.\n\n"
+    "The instruments are infested. Something crawled inside the bells, nested in the "
+    "tubing, and now nine of them have lurched out of the practice room and directly "
+    "onto the Reckoning board. Green. Shambling. Each one clutching a bent horn, "
+    "making sounds no brass instrument was designed to make.\n\n"
+    "They are pawns now. Zombie pawns. They sit in the center of the board and they "
+    "MOVE. Every time one of you makes a move, every single one of those rotting little "
+    "horn-players shuffles one square closer to your pieces.\n\n"
+    "I did not authorize this. I am not responsible. The practice room door is now welded shut "
+    "but it is too late. The damage is done. The horns are playing.\n\n"
+    "— Enoch, Steward Beneath the Board (Deeply Unsettled)"
 )

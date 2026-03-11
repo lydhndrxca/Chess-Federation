@@ -389,6 +389,35 @@
         setTimeout(poll, 3000);
     }
 
+    /* ── Zombie horn intro ─────────────────────────────────────── */
+    var zombieIntroKey = 'rk_zombie_horns_' + gameId;
+    if (gameStatus === 'active' && !sessionStorage.getItem(zombieIntroKey)) {
+        sessionStorage.setItem(zombieIntroKey, '1');
+        var hornBase = (window.RK_AUDIO_CONFIG && window.RK_AUDIO_CONFIG.staticBase) || '/static/';
+        hornBase += 'audio/reckoning/';
+        var hornFiles = ['horn_dying_1.mp3','horn_dying_2.mp3','horn_dying_3.mp3','horn_dying_4.mp3','horn_dying_5.mp3','horn_dying_6.mp3'];
+        var zombieCells = board.querySelectorAll('.rk-piece-zombie');
+        if (zombieCells.length) {
+            zombieCells.forEach(function(z) {
+                z.style.transition = 'transform 0.4s ease';
+                z.style.transform = 'scale(0.5)';
+            });
+            setTimeout(function() {
+                zombieCells.forEach(function(z, i) {
+                    setTimeout(function() {
+                        z.style.transform = 'scale(1.3)';
+                        setTimeout(function() { z.style.transform = 'scale(1)'; }, 200);
+                        if (!rkMuted && i < hornFiles.length) {
+                            var horn = new Audio(hornBase + hornFiles[i]);
+                            horn.volume = 0.15 + Math.random() * 0.1;
+                            horn.play().catch(function(){});
+                        }
+                    }, i * 180);
+                });
+            }, 600);
+        }
+    }
+
     /* ── Zoom controls ─────────────────────────────────────────── */
 
     var rkBoardEl = document.getElementById('rkBoard');

@@ -97,6 +97,18 @@ const $waveDoneTitle = document.getElementById('waveDoneTitle');
 const $gameoverTitle = document.getElementById('gameoverTitle');
 const $gameoverRating = document.getElementById('gameoverRating');
 const $ladderCompact = document.getElementById('ladderCompact');
+const $cascadeIntro = document.getElementById('cascadeIntro');
+const $cascadeBonusMsg = document.getElementById('cascadeBonusMsg');
+const $btnStartCascade = document.getElementById('btnStartCascade');
+const $cascadeHud = document.getElementById('cascadeHud');
+const $cascadeBar = document.getElementById('cascadeBar');
+const $cascadeTickCount = document.getElementById('cascadeTickCount');
+
+let cascadeTimer = null;
+let cascadeInterval = 1500;
+let cascadeMaxTicks = 20;
+let cascadeTick = 0;
+let cascadePaused = false;
 
 /* ── Chess Sounds ─────────────────────────────────────── */
 
@@ -128,6 +140,7 @@ const XFADE = 2.0;
 const cryptAmbient = {
     normalSrc: null,
     bossSrc: null,
+    cascadeSrc: null,
     ghostHowl: null,
     activeKey: null,
     playing: false,
@@ -146,8 +159,9 @@ function _makeAudio(src, vol) {
 
 function initAmbientAudio() {
     const base = (window.STATIC_BASE || '/static/') + 'audio/crypt/';
-    cryptAmbient.normalSrc = base + 'ambient_loop.mp3';
-    cryptAmbient.bossSrc   = base + 'boss_ambient.mp3';
+    cryptAmbient.normalSrc  = base + 'ambient_loop.mp3';
+    cryptAmbient.bossSrc    = base + 'boss_ambient.mp3';
+    cryptAmbient.cascadeSrc = base + 'cascade_intense.mp3';
 
     cryptAmbient.ghostHowl = new Audio(base + 'ghost_howl.mp3');
     cryptAmbient.ghostHowl.preload = 'auto';
@@ -155,7 +169,17 @@ function initAmbientAudio() {
 }
 initAmbientAudio();
 
-function _ambientVol(key) { return key === 'boss' ? 0.3 : 0.25; }
+function _ambientVol(key) {
+    if (key === 'boss') return 0.3;
+    if (key === 'cascade') return 0.35;
+    return 0.25;
+}
+
+function _ambientSrc(key) {
+    if (key === 'boss') return cryptAmbient.bossSrc;
+    if (key === 'cascade') return cryptAmbient.cascadeSrc;
+    return cryptAmbient.normalSrc;
+}
 
 function _tickCrossfade() {
     const a = cryptAmbient._a;
@@ -167,7 +191,7 @@ function _tickCrossfade() {
     if (remaining <= XFADE && remaining > 0) {
         if (!cryptAmbient._b) {
             const key = cryptAmbient.activeKey;
-            const src = key === 'boss' ? cryptAmbient.bossSrc : cryptAmbient.normalSrc;
+            const src = _ambientSrc(key);
             const vol = _ambientVol(key);
             const b = _makeAudio(src, 0);
             b.currentTime = 0;
@@ -190,10 +214,10 @@ function _tickCrossfade() {
     cryptAmbient._raf = requestAnimationFrame(_tickCrossfade);
 }
 
-function startAmbient(isBoss) {
+function startAmbient(keyOrBoss) {
     stopAmbient();
-    const key = isBoss ? 'boss' : 'normal';
-    const src = isBoss ? cryptAmbient.bossSrc : cryptAmbient.normalSrc;
+    const key = (typeof keyOrBoss === 'string') ? keyOrBoss : (keyOrBoss ? 'boss' : 'normal');
+    const src = _ambientSrc(key);
     const vol = _ambientVol(key);
 
     cryptAmbient.activeKey = key;
@@ -208,8 +232,8 @@ function startAmbient(isBoss) {
     scheduleLightning();
 }
 
-function resumeAmbient(isBoss) {
-    const key = isBoss ? 'boss' : 'normal';
+function resumeAmbient(keyOrBoss) {
+    const key = (typeof keyOrBoss === 'string') ? keyOrBoss : (keyOrBoss ? 'boss' : 'normal');
     if (cryptAmbient.activeKey === key && cryptAmbient.playing && cryptAmbient._a && !cryptAmbient._a.paused) return;
     if (cryptAmbient.activeKey === key && cryptAmbient._a && cryptAmbient._a.paused && !enochMuted) {
         cryptAmbient._a.play().catch(() => {});
@@ -217,7 +241,7 @@ function resumeAmbient(isBoss) {
         if (!cryptAmbient._raf) cryptAmbient._raf = requestAnimationFrame(_tickCrossfade);
         return;
     }
-    startAmbient(isBoss);
+    startAmbient(key);
 }
 
 function _pauseAmbientAudio() {
@@ -293,7 +317,7 @@ function triggerLightning() {
 }
 
 function scheduleLightning() {
-    const delay = 25000 + Math.random() * 50000;
+    const delay = 12000 + Math.random() * 25000;
     _lightningTimer = setTimeout(() => {
         if (cryptAmbient.playing && cryptAmbient._a && !cryptAmbient._a.paused) {
             triggerLightning();
@@ -413,7 +437,7 @@ function updateLadder(currentWave) {
 
 function showPanel(name) {
     $panelPlace.style.display = name === 'placement' ? '' : 'none';
-    $panelBattle.style.display = name === 'battle' ? '' : 'none';
+    $panelBattle.style.display = (name === 'battle' || name === 'cascade') ? '' : 'none';
     $panelWave.style.display = name === 'wave' ? '' : 'none';
     $panelOver.style.display = name === 'gameover' ? '' : 'none';
 
@@ -423,8 +447,10 @@ function showPanel(name) {
 
     if ($ladderCompact) $ladderCompact.style.display = (name === 'wave') ? '' : 'none';
 
-    if (name !== 'battle') {
-        $confirmBar.style.display = 'none';
+    if ($cascadeHud) $cascadeHud.style.display = (name === 'cascade') ? '' : 'none';
+
+    if (name !== 'battle' && name !== 'cascade') {
+        if ($confirmBar) $confirmBar.style.display = 'none';
         pendingMove = null;
     }
 }
@@ -671,7 +697,7 @@ $btnAbandon.addEventListener('click', () => {
    ═══════════════════════════════════════════════════════ */
 
 async function animateWaveEntry(data) {
-    showPanel('battle');
+    showPanel(data.is_cascade ? 'cascade' : 'battle');
     updateLadder(data.wave);
     if (data.enoch) setEnoch(data.enoch);
 
@@ -708,7 +734,15 @@ async function animateWaveEntry(data) {
     await new Promise(r => setTimeout(r, 300));
 
     currentLegalMoves = data.legal_moves || [];
-    enableBattle();
+
+    if (data.is_cascade) {
+        cascadeInterval = data.cascade_interval || 1500;
+        cascadeMaxTicks = data.cascade_max_ticks || 20;
+        cascadeTick = 0;
+        showCascadeIntro();
+    } else {
+        enableBattle();
+    }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -737,49 +771,18 @@ function onPlayerMove(orig, dest) {
     const match = currentLegalMoves.find(m => m.from === orig && m.to === dest);
     if (!match) return;
 
-    preMovefen = ground.getFen();
-
     const isPromo = match.promotion && match.promotion !== '';
     let uci = orig + dest;
     if (isPromo) uci += 'q';
-
-    pendingMove = { orig, dest, uci, san: match.san };
 
     ground.set({
         movable: { free: false, color: undefined, dests: new Map() },
         draggable: { enabled: false },
     });
 
-    $confirmBar.style.display = 'flex';
+    playSound(match.san, false);
+    sendMove(uci);
 }
-
-$confirmYes.addEventListener('click', () => {
-    if (!pendingMove) return;
-    $confirmBar.style.display = 'none';
-    playSound(pendingMove.san, false);
-    sendMove(pendingMove.uci);
-    pendingMove = null;
-});
-
-$confirmNo.addEventListener('click', () => {
-    pendingMove = null;
-    $confirmBar.style.display = 'none';
-    ground.set({
-        fen: preMovefen || cfg.fen,
-        turnColor: 'white',
-        lastMove: undefined,
-        movable: {
-            free: false,
-            color: 'white',
-            dests: buildDests(currentLegalMoves),
-            showDests: true,
-        },
-        draggable: { enabled: true },
-        selectable: { enabled: true },
-        events: { move: onPlayerMove },
-    });
-    preMovefen = null;
-});
 
 function sendMove(uci) {
     ground.set({ movable: { color: undefined, dests: new Map() }, draggable: { enabled: false } });
@@ -836,6 +839,7 @@ function sendMove(uci) {
 function showWaveComplete(d) {
     phase = 'wave_done';
     stopAmbient();
+    stopCascade();
     showPanel('wave');
     updateLadder(d.next_wave);
 
@@ -843,18 +847,27 @@ function showWaveComplete(d) {
 
     if (d.victory) {
         $waveDoneTitle.textContent = 'THE CRYPT IS CONQUERED!';
+    } else if (d.cascade_survived) {
+        $waveDoneTitle.textContent = `Cascade Wave ${waveCleared} Survived!`;
     } else {
         $waveDoneTitle.textContent = `Wave ${waveCleared} Cleared!`;
     }
 
-    const stats = document.getElementById('waveDoneStats');
-    stats.innerHTML = `
+    let statsHtml = `
         <div class="cr-wd-row"><span>Wave</span><strong>${waveCleared} / ${MAX_WAVES}</strong></div>
-        <div class="cr-wd-row"><span>Bonus Gold</span><strong>+${d.bonus_gold}g</strong></div>
-        <div class="cr-wd-row"><span>Bonus Score</span><strong>+${d.bonus_score}</strong></div>
+        <div class="cr-wd-row"><span>Bonus Gold</span><strong>+${d.bonus_gold || 0}g</strong></div>
+        <div class="cr-wd-row"><span>Bonus Score</span><strong>+${d.bonus_score || 0}</strong></div>
         <div class="cr-wd-row"><span>Total Gold</span><strong>${d.gold}g</strong></div>
         <div class="cr-wd-row"><span>Total Score</span><strong>${d.score}</strong></div>
     `;
+    if (d.next_is_cascade && d.cascade_bonus_pieces && d.cascade_bonus_pieces.length) {
+        const labels = {Q:'Queen', N:'Knight', B:'Bishop', R:'Rook', P:'Pawn'};
+        const names = d.cascade_bonus_pieces.map(p => labels[p] || p).join(', ');
+        statsHtml += `<div class="cr-wd-row" style="color:#4d4;font-weight:700"><span>Cascade Bonus</span><strong>+${names}</strong></div>`;
+    }
+
+    const stats = document.getElementById('waveDoneStats');
+    stats.innerHTML = statsHtml;
 
     inventory = d.inventory;
     gold = d.gold;
@@ -996,12 +1009,193 @@ if ($muteBtn) {
             if (cryptAmbient.ghostHowl) try { cryptAmbient.ghostHowl.pause(); } catch(e){}
             thunderSounds.forEach(s => { try { s.pause(); } catch(e){} });
         } else {
-            if (cryptAmbient.playing && phase === 'battle') {
+            if (cryptAmbient.playing && (phase === 'battle' || phase === 'cascade')) {
                 _resumeAmbientAudio();
             }
         }
     });
 }
+
+/* ═══════════════════════════════════════════════════════
+   CASCADE WAVE MODE
+   ═══════════════════════════════════════════════════════ */
+
+function showCascadeIntro() {
+    if ($cascadeBonusMsg) {
+        $cascadeBonusMsg.textContent = 'Bonus pieces granted: Queen, Knight, Bishop!';
+    }
+    if ($cascadeIntro) $cascadeIntro.style.display = '';
+}
+
+if ($btnStartCascade) {
+    $btnStartCascade.addEventListener('click', () => {
+        if ($cascadeIntro) $cascadeIntro.style.display = 'none';
+        startCascade();
+    });
+}
+
+function startCascade() {
+    phase = 'cascade';
+    cascadePaused = false;
+    resumeAmbient('cascade');
+    showPanel('cascade');
+    updateCascadeHud();
+
+    ground.set({
+        movable: {
+            free: false,
+            color: 'white',
+            dests: buildDests(currentLegalMoves),
+            showDests: true,
+        },
+        draggable: { enabled: true },
+        selectable: { enabled: true },
+        turnColor: 'white',
+        events: { move: onCascadePlayerMove },
+    });
+
+    scheduleCascadeTick();
+}
+
+function onCascadePlayerMove(orig, dest) {
+    const match = currentLegalMoves.find(m => m.from === orig && m.to === dest);
+    if (!match) return;
+
+    const isPromo = match.promotion && match.promotion !== '';
+    let uci = orig + dest;
+    if (isPromo) uci += 'q';
+
+    playSound(match.san, false);
+
+    fetch(`/crypt/${GAME_ID}/cascade-move`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({uci}),
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (!d.ok) return;
+
+        gold = d.gold;
+        score = d.score;
+        kills = d.kills;
+        updateHud();
+
+        if (d.enoch) setEnoch(d.enoch);
+
+        if (d.wave_complete) {
+            stopCascade();
+            showWaveComplete(d);
+            return;
+        }
+        if (d.game_over) {
+            stopCascade();
+            showGameOver(d);
+            return;
+        }
+
+        ground.set({ fen: d.fen, turnColor: 'white' });
+        currentLegalMoves = d.legal_moves || [];
+        ground.set({
+            movable: {
+                free: false,
+                color: 'white',
+                dests: buildDests(currentLegalMoves),
+                showDests: true,
+            },
+            events: { move: onCascadePlayerMove },
+        });
+    });
+}
+
+function scheduleCascadeTick() {
+    if (cascadeTimer) clearTimeout(cascadeTimer);
+    cascadeTimer = setTimeout(doCascadeTick, cascadeInterval);
+}
+
+function doCascadeTick() {
+    if (phase !== 'cascade' || cascadePaused) return;
+
+    fetch(`/crypt/${GAME_ID}/cascade-tick`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (!d.ok) return;
+
+        cascadeTick = d.tick;
+        cascadeMaxTicks = d.max_ticks;
+        gold = d.gold;
+        score = d.score;
+        kills = d.kills;
+        updateHud();
+        updateCascadeHud();
+
+        if (d.enoch) setEnoch(d.enoch);
+
+        if (d.ai_move) {
+            ground.set({
+                fen: d.fen,
+                lastMove: [d.ai_move.from, d.ai_move.to],
+                turnColor: 'white',
+            });
+            playSound(d.ai_move.san, false);
+        } else {
+            ground.set({ fen: d.fen, turnColor: 'white' });
+        }
+
+        if (d.spawned) {
+            setTimeout(() => {
+                const m = new Map();
+                m.set(d.spawned.square, { role: SYM_TO_ROLE[d.spawned.piece], color: 'black' });
+                ground.setPieces(m, false);
+                playSound(null);
+            }, 200);
+        }
+
+        if (d.wave_complete) {
+            stopCascade();
+            showWaveComplete(d);
+            return;
+        }
+        if (d.game_over) {
+            stopCascade();
+            showGameOver(d);
+            return;
+        }
+
+        currentLegalMoves = d.legal_moves || [];
+        ground.set({
+            movable: {
+                free: false,
+                color: 'white',
+                dests: buildDests(currentLegalMoves),
+                showDests: true,
+            },
+            events: { move: onCascadePlayerMove },
+        });
+
+        scheduleCascadeTick();
+    });
+}
+
+function stopCascade() {
+    if (cascadeTimer) {
+        clearTimeout(cascadeTimer);
+        cascadeTimer = null;
+    }
+    cascadePaused = true;
+    if ($cascadeHud) $cascadeHud.style.display = 'none';
+}
+
+function updateCascadeHud() {
+    if (!$cascadeBar || !$cascadeTickCount) return;
+    const pct = cascadeMaxTicks > 0 ? Math.min(100, (cascadeTick / cascadeMaxTicks) * 100) : 0;
+    $cascadeBar.style.width = pct + '%';
+    $cascadeTickCount.textContent = `${cascadeTick} / ${cascadeMaxTicks}`;
+}
+
 
 /* ═══════════════════════════════════════════════════════
    INIT
@@ -1014,6 +1208,16 @@ if (phase === 'placement') {
     ground.set({ fen: cfg.fen, turnColor: 'white' });
     currentLegalMoves = cfg.legalMoves || [];
     enableBattle();
+} else if (phase === 'cascade' && cfg.fen) {
+    showPanel('cascade');
+    ground.set({ fen: cfg.fen, turnColor: 'white' });
+    currentLegalMoves = cfg.legalMoves || [];
+    if (cfg.cascadeConf) {
+        cascadeInterval = cfg.cascadeConf.interval;
+        cascadeMaxTicks = cfg.cascadeConf.maxTicks;
+        cascadeTick = cfg.cascadeConf.tick;
+    }
+    showCascadeIntro();
 } else if (phase === 'gameover') {
     showPanel('gameover');
     if (cfg.fen) ground.set({ fen: cfg.fen });

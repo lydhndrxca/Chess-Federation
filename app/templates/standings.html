@@ -428,6 +428,25 @@ These games count toward your rating. There is no deadline. Play as many as you 
     </div>
 </div>
 
+{# ── Zombie Reckoning Announcement ── #}
+<div class="wr-overlay" id="zombieAnnounceOverlay" style="display:none">
+    <div class="wr-modal">
+        <div class="wr-header">
+            <img src="{{ url_for('static', filename='img/enoch.png') }}" class="wr-enoch-avatar" alt="Enoch">
+            <h2 class="wr-title">The Horns Are Playing</h2>
+            <span class="wr-subtitle">A Disturbance in the Practice Room</span>
+        </div>
+        <div class="wr-body">
+            <p class="wr-enoch-text" style="white-space:pre-line">"Something crawled into the brass instruments. Nine of them lurched out of the practice room and onto the Reckoning board. Green. Shambling. Each clutching a bent horn.
+
+They are zombie pawns now. They sit in the center and they move — every time you make a move, every single one shuffles one square closer to your pieces.
+
+I did not authorize this. The practice room door is welded shut but it is too late. The horns are playing."</p>
+        </div>
+        <button class="btn wr-dismiss" id="zombieAnnounceDismiss" style="background:#4aff4a;color:#000">Face the Horns</button>
+    </div>
+</div>
+
 {# ── The Crypt Announcement ── #}
 <div class="wr-overlay" id="cryptAnnounceOverlay" style="display:none">
     <div class="wr-modal">
@@ -491,6 +510,12 @@ document.addEventListener('DOMContentLoaded', function() {
     var caKey = 'casualAnnounceSeen_v1';
     if (caOverlay && !localStorage.getItem(caKey)) {
         announceQueue.push({ el: caOverlay, key: caKey, btnId: 'casualAnnounceDismiss' });
+    }
+
+    var zOverlay = document.getElementById('zombieAnnounceOverlay');
+    var zKey = 'zombieAnnounceSeen_v1';
+    if (zOverlay && !localStorage.getItem(zKey)) {
+        announceQueue.push({ el: zOverlay, key: zKey, btnId: 'zombieAnnounceDismiss' });
     }
 
     var crOverlay = document.getElementById('cryptAnnounceOverlay');

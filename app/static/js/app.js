@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
        ═══════════════════════════════════════════════════════ */
 
     const NOTIF_PREF_KEY = 'cfNotifPref';
-    const NOTIF_PROMPTED_KEY = 'cfNotifPrompted';
+    const NOTIF_PROMPTED_KEY = 'cfNotifPrompted2';
 
     function getNotifPref() {
         return localStorage.getItem(NOTIF_PREF_KEY);

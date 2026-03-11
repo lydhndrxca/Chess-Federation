@@ -261,7 +261,84 @@ Data-driven rules engine separating:
 
 ### Version 2+ (build later)
 
-- Power Position rotation system
-- Weekly rule declarations and archive
 - Variant-capable rules engine
 - Custom pieces / board changes / federation mutations
+
+## 14. Casual Matches
+
+- Players can challenge each other to normal chess games outside the weekly cycle
+- No weekly limit; unlimited casual games
+- Casual games count toward standard ratings and stats
+- Only one active casual game allowed per player pair
+- Color assignment randomized with a running tally for fairness
+- Challenge flow: send challenge → opponent accepts or declines
+- Listed below the weekly "Game of the Week" on the standings page
+
+## 15. The Crypt (Solo Wave Defense)
+
+- Solo mode: player defends against waves of AI-controlled enemy pieces
+- Player starts with limited pieces and earns gold by capturing enemies
+- Shop system between waves: buy Queen, Rook, Bishop, Knight, Pawn
+- Waves increase in difficulty (more enemies, stronger AI per wave)
+- Cascade mode: every 3rd wave (3, 6, 9, ...) is a real-time survival round
+  - Enemies auto-move toward the player's king every ~1.5 seconds
+  - New enemies continuously spawn from back ranks
+  - Player moves in real-time without waiting for turns
+  - Player receives bonus pieces (Queen, Knight, Bishop) before cascade
+- King-hunting AI prioritizes the player's king during cascade
+- Dark crypt theme with ambient horror music, lightning/thunder effects
+- Dedicated cascade music track with crossfade audio looping
+- ~100+ Enoch dialogue lines specific to crypt events
+- High scores tracked per player and visible on profiles
+
+## 16. The Reckoning (4-Player Mode)
+
+- Custom 14x14 board with 4 players (south, west, north, east)
+- Enoch occupies the north seat as an AI opponent
+- Zombie pawns: 9 green pawns spawn in the center, move one square any direction after each player's turn
+- 4-hour turn timer with live countdown next to active player's name
+- If a player is idle for 4 hours, Enoch auto-moves a random legal piece for them
+- 5 voiced taunt lines play when the idle player returns
+- Dying horn sounds accompany the zombie intro animation
+- Elimination: when a player's king is captured, they are removed
+- Last player standing wins
+
+## 17. Chat System (Federation Hall)
+
+- Persistent chat room accessible from the navigation and a compact widget on the standings page
+- Emoji reactions: hold/long-press a message to react (heart, laugh, shocked, sad, angry, thumbs up, or custom)
+- Reply threading: hold a message to reply directly to it
+- Edit and delete own messages via long-press context menu
+- Image posting: upload via file picker or paste
+- Long messages (>4 lines) auto-collapse with expand/collapse toggle
+- Compact chat on the home page mirrors all features of the full chat hall
+- Enoch chat quirks:
+  - Late-night murmurings (12 AM–4 AM CT)
+  - Rare daytime oddities (e.g., accidental DM followed by save-face message)
+  - 99 Theses musings (~30% chance during daytime quirks)
+  - @Enoch slash commands
+
+## 18. Web Push Notifications
+
+- Browser notification prompt (Enoch-themed modal with randomized in-character lines)
+- Notifications fire when the browser tab is not focused:
+  - Turn alerts: "Your turn! It's your move against [opponent]"
+  - Chat mentions: "You were mentioned in the Hall"
+- Preference stored in localStorage; user can dismiss or allow
+
+## 19. Board Enhancements
+
+- Last-move animation: when returning to a game, the opponent's most recent move animates on the board
+- Decree board theme: weekly custom-rule games have a unique iridescent board (cream/purple squares, rainbow glow border)
+- Move destination highlights: thick white outlines on legal move squares
+- Move confirmation bar: confirm or cancel a move before committing (positioned for mobile visibility)
+- Chess move sounds for captures, moves, check, win, and loss
+
+## 20. Power Position System (Implemented)
+
+- Weekly rotation among active players
+- Decree holder can submit a custom rule at any time before the deadline
+- Custom rules modify piece behavior (e.g., extended knight movement: 3 forward, 2 sideways)
+- Rules apply only to weekly PvP games (not Enoch practice or casual)
+- Rule snapshot stored with each game for historical accuracy
+- 25 custom Enoch commentary lines generated per active rule

@@ -4,6 +4,15 @@
 
 (none)
 
+## Health Audit Cleanup
+
+- [x] Rotate ElevenLabs API key; remove from `generate_crypt_audio.py`, load from `.env`
+- [x] Update `SPEC.md` with all new features (casual matches, chat reactions, cascade, zombies, notifications, turn timer)
+- [x] Update `ARCHITECTURE.md` with new models and routes
+- [ ] Split `dialogue.py` into per-mode dialogue modules
+- [ ] Add `pytest` smoke tests for route imports and basic requests
+- [ ] Extract compact chat JS from `standings.html` into shared module
+
 ## Next
 
 - [ ] Variant-capable rules engine (Power Position v2)
@@ -16,6 +25,7 @@
 
 ## Done
 
+- [x] Health audit report generated (report_id: 20260310_235035)
 - [x] Health audit report generated (report_id: 20260307_231723)
 - [x] Health audit cleanup: update all governance docs, pin deps, gitignore
 - [x] Add 15 Enoch gambling collectibles (The Gambling Debts collection)

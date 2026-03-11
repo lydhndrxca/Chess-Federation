@@ -14,9 +14,15 @@ import time
 
 import requests
 
-API_KEY = "sk_33435639f469f48ea44796e33e99bc356d342b31ff9ee114"
-VOICE_ID = "9Vz82zdsVrUAmqOZoUIj"
+API_KEY = os.environ.get("ELEVENLABS_API_KEY", "")
+VOICE_ID = os.environ.get("ELEVENLABS_VOICE_ID", "9Vz82zdsVrUAmqOZoUIj")
 TTS_URL = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
+
+if not API_KEY:
+    print("ERROR: Set ELEVENLABS_API_KEY environment variable (or add to .env)")
+    print("  Windows:  set ELEVENLABS_API_KEY=sk_your_key_here")
+    print("  Linux:    export ELEVENLABS_API_KEY=sk_your_key_here")
+    sys.exit(1)
 
 AUDIO_ROOT = os.path.join("app", "static", "audio", "enoch")
 MANIFEST_PATH = os.path.join(AUDIO_ROOT, "manifest.json")

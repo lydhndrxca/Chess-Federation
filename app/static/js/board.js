@@ -397,26 +397,50 @@ class ChessBoard {
         const movableColor = (this.isPlayerTurn && !this.gameOver && this.isParticipant)
             ? this.playerColor : undefined;
 
+        const shouldAnimateLastMove = this.isPlayerTurn && this.lastMoveUci
+            && config.prevFen && this.isParticipant && !this.gameOver;
+
         this.ground = Chessground(document.getElementById('chessBoard'), {
-            fen: this.fen,
+            fen: shouldAnimateLastMove ? config.prevFen : this.fen,
             orientation,
             turnColor: this.isPlayerTurn ? this.playerColor : this.otherColor(),
-            lastMove: uciToLastMove(this.lastMoveUci),
+            lastMove: shouldAnimateLastMove ? undefined : uciToLastMove(this.lastMoveUci),
             coordinates: true,
             viewOnly: this.gameOver || !this.isParticipant,
-            animation: { enabled: true, duration: 200 },
+            animation: { enabled: true, duration: shouldAnimateLastMove ? 400 : 200 },
             highlight: { lastMove: true, check: true },
             draggable: { enabled: true, showGhost: true },
             selectable: { enabled: true },
             movable: {
                 free: false,
-                color: movableColor,
+                color: shouldAnimateLastMove ? undefined : movableColor,
                 dests: buildDests(this.legalMoves),
                 showDests: true,
                 events: { after: (orig, dest) => this.onMove(orig, dest) },
             },
             premovable: { enabled: false },
         });
+
+        if (shouldAnimateLastMove) {
+            setTimeout(() => {
+                this.ground.set({
+                    fen: this.fen,
+                    lastMove: uciToLastMove(this.lastMoveUci),
+                    animation: { enabled: true, duration: 400 },
+                    movable: {
+                        color: movableColor,
+                        dests: buildDests(this.legalMoves),
+                        showDests: true,
+                    },
+                });
+                if (this.lastMoveUci) {
+                    const moves = document.querySelectorAll('.gv-ms, .gv-ms-b');
+                    const lastMoveEl = moves.length ? moves[moves.length - 1] : null;
+                    const san = lastMoveEl ? lastMoveEl.textContent : '';
+                    playMoveSound(san, false);
+                }
+            }, 600);
+        }
 
         const boardEl = document.getElementById('chessBoard');
         if (boardEl) {

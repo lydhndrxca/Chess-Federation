@@ -299,12 +299,31 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!row || e.target.closest('.msg-reaction-pill') || e.target.closest('.msg-expand-btn') || e.target.closest('.msg-reply-preview')) return;
         longPressTimer = setTimeout(() => {
             longPressTimer = null;
+            window.getSelection()?.removeAllRanges();
             showCtxMenu(row, e.clientX, e.clientY);
         }, 500);
     });
     messages.addEventListener('pointerup', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
-    messages.addEventListener('pointermove', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
+    messages.addEventListener('pointermove', (e) => {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
+    });
     messages.addEventListener('pointercancel', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
+
+    messages.addEventListener('touchstart', (e) => {
+        const row = e.target.closest('.msg-row');
+        if (row && !e.target.closest('.msg-reaction-pill') && !e.target.closest('.msg-expand-btn')) {
+            e.target._touchStarted = true;
+        }
+    }, { passive: true });
+    messages.addEventListener('touchend', (e) => {
+        if (e.target._touchStarted) {
+            e.target._touchStarted = false;
+            window.getSelection()?.removeAllRanges();
+        }
+    }, { passive: true });
 
     messages.addEventListener('contextmenu', (e) => {
         const row = e.target.closest('.msg-row');

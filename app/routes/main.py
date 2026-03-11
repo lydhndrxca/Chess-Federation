@@ -219,6 +219,26 @@ def standings():
     )
 
 
+@main_bp.route('/api/my-turns')
+@login_required
+def api_my_turns():
+    from flask import jsonify
+    active = Game.query.filter(
+        or_(Game.white_id == current_user.id, Game.black_id == current_user.id),
+        Game.status.in_(['pending', 'active']),
+    ).all()
+    turns = []
+    for g in active:
+        my_color = 'white' if g.white_id == current_user.id else 'black'
+        if g.current_turn == my_color:
+            opp = g.black if my_color == 'white' else g.white
+            turns.append({
+                'game_id': g.id,
+                'opponent': opp.username if opp else 'Unknown',
+            })
+    return jsonify({'turns': turns, 'count': len(turns)})
+
+
 @main_bp.route('/archive')
 @login_required
 def archive():

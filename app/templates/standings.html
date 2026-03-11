@@ -956,11 +956,18 @@ document.addEventListener('DOMContentLoaded', function() {
         box.addEventListener('pointerdown', function(e) {
             var row = e.target.closest('.msg-row');
             if (!row || e.target.closest('.msg-reaction-pill') || e.target.closest('.msg-expand-btn') || e.target.closest('.msg-reply-preview')) return;
-            longPressTimer = setTimeout(function() { longPressTimer = null; showCtx(row, e.clientX, e.clientY); }, 500);
+            longPressTimer = setTimeout(function() {
+                longPressTimer = null;
+                if (window.getSelection) window.getSelection().removeAllRanges();
+                showCtx(row, e.clientX, e.clientY);
+            }, 500);
         });
         box.addEventListener('pointerup', function() { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
         box.addEventListener('pointermove', function() { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
         box.addEventListener('pointercancel', function() { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
+        box.addEventListener('touchend', function() {
+            if (window.getSelection) window.getSelection().removeAllRanges();
+        }, { passive: true });
         box.addEventListener('contextmenu', function(e) {
             var row = e.target.closest('.msg-row');
             if (row) { e.preventDefault(); showCtx(row, e.clientX, e.clientY); }

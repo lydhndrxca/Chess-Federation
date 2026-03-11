@@ -208,6 +208,7 @@ def view_game(game_id):
 
     starting_fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
     replay_fens = [starting_fen] + [m.fen_after for m in moves]
+    prev_fen = replay_fens[-2] if len(replay_fens) >= 2 else None
 
     weekly_rule = None
     if custom:
@@ -241,6 +242,7 @@ def view_game(game_id):
         replay_fens=replay_fens,
         captures=_get_captures(game.fen_current),
         weekly_rule=weekly_rule,
+        prev_fen=prev_fen,
     )
 
 

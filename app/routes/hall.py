@@ -200,7 +200,17 @@ def unread_count():
     after_id = request.args.get('after', 0, type=int)
     count = ChatMessage.query.filter(ChatMessage.id > after_id).count()
     latest = db.session.query(db.func.max(ChatMessage.id)).scalar() or 0
-    return jsonify({'count': count, 'latest_id': latest})
+
+    username = current_user.username
+    mentions = 0
+    if username and count > 0:
+        mentions = ChatMessage.query.filter(
+            ChatMessage.id > after_id,
+            ChatMessage.user_id != current_user.id,
+            ChatMessage.content.ilike(f'%{username}%'),
+        ).count()
+
+    return jsonify({'count': count, 'latest_id': latest, 'mentions': mentions})
 
 
 @hall_bp.route('/hall/poll')

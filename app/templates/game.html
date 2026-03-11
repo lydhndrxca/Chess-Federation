@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% from "macros.html" import avatar %}
 {% block title %}Game #{{ game.id }} — Chess Federation{% endblock %}
+{% if weekly_rule %}{% block body_class %}theme-decree{% endblock %}{% endif %}
 
 {% block head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.1.0/assets/chessground.base.css">
@@ -341,6 +342,7 @@
         gameOver: {{ 'true' if game.status in ('completed', 'forfeited') else 'false' }},
         isParticipant: {{ 'true' if is_participant else 'false' }},
         lastMoveUci: {{ last_move_uci | tojson if last_move_uci else 'null' }},
+        prevFen: {{ prev_fen | tojson if prev_fen else 'null' }},
         hasCommended: {{ 'true' if has_commended else 'false' }},
         isPractice: {{ 'true' if is_practice else 'false' }},
         activeWager: {{ active_wager | tojson if active_wager else 'null' }},

@@ -125,6 +125,23 @@
         "The Ledger records: zero buckets. Wonderful.",
     ];
 
+    var EXPLORATION_AMBIENT = [
+        "The forest is quiet today. Too quiet for my liking.",
+        "I can see you from the grate. Moving through MY trees.",
+        "Keep walking. The good sap is further in. Much further.",
+        "The creatures here... I made them from memory. They're happy.",
+        "This place is what the school looked like. Before.",
+        "Don't mind the fog. It's just... the forest breathing.",
+    ];
+
+    var MERCHANT_GREETING = [
+        "Psst! Over here. I've got things. Good things. Forest things.",
+        "Ah, a tapper! You look like you could use an edge. For a price.",
+        "The old man downstairs doesn't know I'm here. Let's keep it that way.",
+        "Roman gold, friend. That's the only currency that matters in these woods.",
+        "You've got that look. The 'I need to survive the next harvest' look.",
+    ];
+
     // ── DOM refs ────────────────────────────────────────
     var grid = document.getElementById('sapGrid');
     var gridWrap = document.getElementById('sapGridWrap');
@@ -288,7 +305,7 @@
                 cell.className = 'sap-cell';
                 var my = oy + r, mx = ox + c;
 
-                if (!isVisited && !(screenX === screenX && screenY === screenY)) {
+                if (!isVisited) {
                     cell.classList.add('fog');
                     grid.appendChild(cell);
                     continue;
@@ -402,6 +419,10 @@
                 renderScreen();
                 grid.classList.remove('transitioning');
             }, 200);
+            if (Math.random() < 0.3) {
+                var amb = EXPLORATION_AMBIENT[Math.floor(Math.random() * EXPLORATION_AMBIENT.length)];
+                sapPlayLine(amb);
+            }
         } else {
             renderScreen();
         }
@@ -721,6 +742,7 @@
         var enc = NPC_ENCOUNTERS[idx];
 
         dialogueText.textContent = enc[0];
+        sapPlayLine(enc[0]);
         dialogueBtnA.textContent = enc[1];
         dialogueBtnB.textContent = enc[2];
 
@@ -728,12 +750,14 @@
             dialogueBtnA.removeEventListener('click', onA);
             dialogueBtnB.removeEventListener('click', onB);
             dialogueText.textContent = enc[3];
+            sapPlayLine(enc[3]);
             showDismissBtn();
         };
         var onB = function () {
             dialogueBtnA.removeEventListener('click', onA);
             dialogueBtnB.removeEventListener('click', onB);
             dialogueText.textContent = enc[4];
+            sapPlayLine(enc[4]);
             showDismissBtn();
         };
         dialogueBtnA.addEventListener('click', onA);
@@ -759,6 +783,8 @@
     // ── merchant ────────────────────────────────────────
     function showMerchant() {
         state = 'merchant';
+        var mg = MERCHANT_GREETING[Math.floor(Math.random() * MERCHANT_GREETING.length)];
+        sapPlayLine(mg);
         merchantItems.innerHTML = '';
         var catalog = C.abilitiesCatalog;
         Object.keys(catalog).forEach(function (key) {
@@ -851,33 +877,24 @@
         movePlayer(r, c);
     });
 
-    // ── start game ──────────────────────────────────────
-    startBtn.addEventListener('click', function () {
-        if (C.status === 'active' && C.trees > 0) {
-            startOverlay.style.display = 'none';
-            state = 'explore';
-            treesCount = C.trees;
-            updateHud();
-            renderScreen();
-            renderAbilities();
-            return;
-        }
-        startOverlay.style.display = 'none';
-        state = 'explore';
-        treesCount = 0;
-        updateHud();
-        renderScreen();
-        renderAbilities();
-    });
-
     // ── init ────────────────────────────────────────────
     sapLoadManifest();
     generateMap();
+
     if (C.status !== 'active') {
         startOverlay.querySelector('h2').textContent = '🍁 Run Complete';
         startOverlay.querySelector('p').textContent = 'This run is over. Start a new one from the main page.';
         startBtn.textContent = 'Back to Federation';
         startBtn.addEventListener('click', function () { window.location.href = '/'; });
+    } else {
+        startBtn.addEventListener('click', function () {
+            startOverlay.style.display = 'none';
+            state = 'explore';
+            treesCount = C.trees || 0;
+            updateHud();
+            renderScreen();
+            renderAbilities();
+        });
     }
     renderAbilities();
 })();

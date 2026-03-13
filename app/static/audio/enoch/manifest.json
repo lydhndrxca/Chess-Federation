@@ -11198,5 +11198,369 @@
   "sap_announce/001": {
     "text": "I found a door behind the boiler that leads outside. Not outside-outside. Forest-outside. There are maple trees. Hundreds of them. The sap runs thick and golden and it is MINE.",
     "file": "sap_announce/001.mp3"
+  },
+  "sap_fury/031": {
+    "text": "This forest is my KINGDOM!",
+    "file": "sap_fury/031.mp3"
+  },
+  "sap_fury/032": {
+    "text": "I found this place FIRST!",
+    "file": "sap_fury/032.mp3"
+  },
+  "sap_fury/033": {
+    "text": "Every bucket you fill — I FEEL IT!",
+    "file": "sap_fury/033.mp3"
+  },
+  "sap_fury/034": {
+    "text": "The pipes beneath carry MY sap!",
+    "file": "sap_fury/034.mp3"
+  },
+  "sap_fury/035": {
+    "text": "Crawl back to your cabin!",
+    "file": "sap_fury/035.mp3"
+  },
+  "sap_fury/036": {
+    "text": "The spiders are on MY side!",
+    "file": "sap_fury/036.mp3"
+  },
+  "sap_fury/037": {
+    "text": "Drown in maple! DROWN!",
+    "file": "sap_fury/037.mp3"
+  },
+  "sap_fury/038": {
+    "text": "You think you can take from ME?!",
+    "file": "sap_fury/038.mp3"
+  },
+  "sap_fury/039": {
+    "text": "I've been collecting since BEFORE you!",
+    "file": "sap_fury/039.mp3"
+  },
+  "sap_fury/040": {
+    "text": "Each tap is a WOUND!",
+    "file": "sap_fury/040.mp3"
+  },
+  "sap_survived/006": {
+    "text": "I'm going to find BIGGER pieces next time.",
+    "file": "sap_survived/006.mp3"
+  },
+  "sap_survived/007": {
+    "text": "That sap was forty years old. FORTY.",
+    "file": "sap_survived/007.mp3"
+  },
+  "sap_survived/008": {
+    "text": "You'll choke on it. Eventually. They all do.",
+    "file": "sap_survived/008.mp3"
+  },
+  "sap_survived/009": {
+    "text": "I can hear the tree crying. You monster.",
+    "file": "sap_survived/009.mp3"
+  },
+  "sap_survived/010": {
+    "text": "Fine. Take it. But the forest is watching now.",
+    "file": "sap_survived/010.mp3"
+  },
+  "sap_defeated/006": {
+    "text": "I told you. I TOLD you. But you didn't listen.",
+    "file": "sap_defeated/006.mp3"
+  },
+  "sap_defeated/007": {
+    "text": "My pieces! My BEAUTIFUL pieces! They did it!",
+    "file": "sap_defeated/007.mp3"
+  },
+  "sap_defeated/008": {
+    "text": "The maple runs red today. Poetic.",
+    "file": "sap_defeated/008.mp3"
+  },
+  "sap_defeated/009": {
+    "text": "Back to the cabin with NOTHING. Perfect.",
+    "file": "sap_defeated/009.mp3"
+  },
+  "sap_defeated/010": {
+    "text": "The Ledger records: zero buckets. Wonderful.",
+    "file": "sap_defeated/010.mp3"
+  },
+  "sap_ambient/001": {
+    "text": "The forest is quiet today. Too quiet for my liking.",
+    "file": "sap_ambient/001.mp3"
+  },
+  "sap_ambient/002": {
+    "text": "I can see you from the grate. Moving through MY trees.",
+    "file": "sap_ambient/002.mp3"
+  },
+  "sap_ambient/003": {
+    "text": "Keep walking. The good sap is further in. Much further.",
+    "file": "sap_ambient/003.mp3"
+  },
+  "sap_ambient/004": {
+    "text": "The creatures here... I made them from memory. They're happy.",
+    "file": "sap_ambient/004.mp3"
+  },
+  "sap_ambient/005": {
+    "text": "This place is what the school looked like. Before.",
+    "file": "sap_ambient/005.mp3"
+  },
+  "sap_ambient/006": {
+    "text": "Don't mind the fog. It's just... the forest breathing.",
+    "file": "sap_ambient/006.mp3"
+  },
+  "sap_merchant/001": {
+    "text": "Psst! Over here. I've got things. Good things. Forest things.",
+    "file": "sap_merchant/001.mp3"
+  },
+  "sap_merchant/002": {
+    "text": "Ah, a tapper! You look like you could use an edge. For a price.",
+    "file": "sap_merchant/002.mp3"
+  },
+  "sap_merchant/003": {
+    "text": "The old man downstairs doesn't know I'm here. Let's keep it that way.",
+    "file": "sap_merchant/003.mp3"
+  },
+  "sap_merchant/004": {
+    "text": "Roman gold, friend. That's the only currency that matters in these woods.",
+    "file": "sap_merchant/004.mp3"
+  },
+  "sap_merchant/005": {
+    "text": "You've got that look. The 'I need to survive the next harvest' look.",
+    "file": "sap_merchant/005.mp3"
+  },
+  "sap_npc/001": {
+    "text": "Oh! A visitor! I've been counting pinecones all morning. I'm up to eleven.",
+    "file": "sap_npc/001.mp3"
+  },
+  "sap_npc/002": {
+    "text": "It IS peaceful. The squirrels don't judge. Not like HIM down there.",
+    "file": "sap_npc/002.mp3"
+  },
+  "sap_npc/003": {
+    "text": "He told me to. Said every pinecone is a soul. I don't ask questions anymore.",
+    "file": "sap_npc/003.mp3"
+  },
+  "sap_npc/004": {
+    "text": "Shh! I'm listening to the sap move inside the tree. You can hear it if you press your ear real close.",
+    "file": "sap_npc/004.mp3"
+  },
+  "sap_npc/005": {
+    "text": "It sounds like a tiny river! A river that goes UP. Isn't that wonderful?",
+    "file": "sap_npc/005.mp3"
+  },
+  "sap_npc/006": {
+    "text": "Maybe. But the trees don't think so. They told me you'd say that.",
+    "file": "sap_npc/006.mp3"
+  },
+  "sap_npc/007": {
+    "text": "Hello friend! Would you like a leaf? I collected the best ones today.",
+    "file": "sap_npc/007.mp3"
+  },
+  "sap_npc/008": {
+    "text": "Here! This one looks like a hand waving. I named it Gerald.",
+    "file": "sap_npc/008.mp3"
+  },
+  "sap_npc/009": {
+    "text": "Oh. That's okay. Gerald doesn't mind. Gerald doesn't mind anything.",
+    "file": "sap_npc/009.mp3"
+  },
+  "sap_npc/010": {
+    "text": "I built a tiny house out of bark! It has a door and everything. Want to see?",
+    "file": "sap_npc/010.mp3"
+  },
+  "sap_npc/011": {
+    "text": "Look! The door even opens! I put a beetle inside. He's the mayor.",
+    "file": "sap_npc/011.mp3"
+  },
+  "sap_npc/012": {
+    "text": "The mayor will be disappointed. He prepared a speech.",
+    "file": "sap_npc/012.mp3"
+  },
+  "sap_npc/013": {
+    "text": "Do you ever wonder what clouds taste like? I think they taste like cold bread.",
+    "file": "sap_npc/013.mp3"
+  },
+  "sap_npc/014": {
+    "text": "Yes! The kind that's been in the cellar too long. But in a nice way.",
+    "file": "sap_npc/014.mp3"
+  },
+  "sap_npc/015": {
+    "text": "Oh. I think about them all the time. Every single one has a name.",
+    "file": "sap_npc/015.mp3"
+  },
+  "sap_npc/016": {
+    "text": "I found a feather yesterday! A real one! From a real bird! Probably!",
+    "file": "sap_npc/016.mp3"
+  },
+  "sap_npc/017": {
+    "text": "I know! I'm going to use it to write important things. Like 'hello' and 'tree'.",
+    "file": "sap_npc/017.mp3"
+  },
+  "sap_npc/018": {
+    "text": "Well... it FEELS real. And isn't that what matters? That's what the moth said.",
+    "file": "sap_npc/018.mp3"
+  },
+  "sap_npc/019": {
+    "text": "The mushrooms here glow at night. Not bright, just... enough to read by.",
+    "file": "sap_npc/019.mp3"
+  },
+  "sap_npc/020": {
+    "text": "The same note, over and over. It says 'YOU ARE SAFE HERE.' I believe it.",
+    "file": "sap_npc/020.mp3"
+  },
+  "sap_npc/021": {
+    "text": "Not eerie. Cozy. Everything down — I mean, out HERE — is cozy.",
+    "file": "sap_npc/021.mp3"
+  },
+  "sap_npc/022": {
+    "text": "I used to live somewhere darker. But I can't remember where. Isn't that nice?",
+    "file": "sap_npc/022.mp3"
+  },
+  "sap_npc/023": {
+    "text": "Me too! The sunlight here is warm. It doesn't flicker like candles.",
+    "file": "sap_npc/023.mp3"
+  },
+  "sap_npc/024": {
+    "text": "Worry? No. Worrying is for places with stone walls. This is a FOREST.",
+    "file": "sap_npc/024.mp3"
+  },
+  "sap_npc/025": {
+    "text": "Would you like to hear a song? I only know one note, but I sing it very well.",
+    "file": "sap_npc/025.mp3"
+  },
+  "sap_npc/026": {
+    "text": "Laaaaaaaaaa! Thank you for listening. You're my favorite audience.",
+    "file": "sap_npc/026.mp3"
+  },
+  "sap_npc/027": {
+    "text": "It is if you mean it hard enough. That's what the owl told me before it left.",
+    "file": "sap_npc/027.mp3"
+  },
+  "sap_npc/028": {
+    "text": "I planted a seed here last week. Nothing's grown yet, but I check every day.",
+    "file": "sap_npc/028.mp3"
+  },
+  "sap_npc/029": {
+    "text": "It WILL grow! I can feel it thinking about it down there in the dirt.",
+    "file": "sap_npc/029.mp3"
+  },
+  "sap_npc/030": {
+    "text": "No! Seeds are just... patient. Very, very patient. Like me.",
+    "file": "sap_npc/030.mp3"
+  },
+  "sap_npc/031": {
+    "text": "There's a stream nearby that runs backwards sometimes. Only when no one's watching.",
+    "file": "sap_npc/031.mp3"
+  },
+  "sap_npc/032": {
+    "text": "I... hm. You're cleverer than the last visitor. The deer didn't ask that.",
+    "file": "sap_npc/032.mp3"
+  },
+  "sap_npc/033": {
+    "text": "THIS one does. It told me so. In bubbles.",
+    "file": "sap_npc/033.mp3"
+  },
+  "sap_npc/034": {
+    "text": "I keep a collection of nice stones. This one is my favorite. It's warm.",
+    "file": "sap_npc/034.mp3"
+  },
+  "sap_npc/035": {
+    "text": "Careful! It means a lot to me. It was a gift. From someone below.",
+    "file": "sap_npc/035.mp3"
+  },
+  "sap_npc/036": {
+    "text": "To you, maybe. To me, it remembers where it's been. All rocks do.",
+    "file": "sap_npc/036.mp3"
+  },
+  "sap_npc/037": {
+    "text": "The trees whisper to each other at dusk. I've been learning their language.",
+    "file": "sap_npc/037.mp3"
+  },
+  "sap_npc/038": {
+    "text": "Mostly 'stay' and 'grow' and 'he's coming.' I try not to think about the last one.",
+    "file": "sap_npc/038.mp3"
+  },
+  "sap_npc/039": {
+    "text": "Not with mouths. With roots. Everything important happens underground.",
+    "file": "sap_npc/039.mp3"
+  },
+  "sap_npc/040": {
+    "text": "I made a crown out of twigs! Look! Am I a king now?",
+    "file": "sap_npc/040.mp3"
+  },
+  "sap_npc/041": {
+    "text": "Ha! I decree that all acorns shall be free! This is the best day!",
+    "file": "sap_npc/041.mp3"
+  },
+  "sap_npc/042": {
+    "text": "My kingdom is this patch of moss. That's enough. Some kingdoms are too big.",
+    "file": "sap_npc/042.mp3"
+  },
+  "sap_npc/043": {
+    "text": "Something left footprints near my favorite stump. Big ones. I put flowers in them.",
+    "file": "sap_npc/043.mp3"
+  },
+  "sap_npc/044": {
+    "text": "The kind without toes. Like something was dragged. But the flowers make it better.",
+    "file": "sap_npc/044.mp3"
+  },
+  "sap_npc/045": {
+    "text": "Brave? Or... I just don't want to think about what made them. The flowers help.",
+    "file": "sap_npc/045.mp3"
+  },
+  "sap_npc/046": {
+    "text": "I've been here so long I forgot what rain feels like. Does it still happen?",
+    "file": "sap_npc/046.mp3"
+  },
+  "sap_npc/047": {
+    "text": "How wonderful! I only get the dew. The dew is gentle. Rain sounds exciting.",
+    "file": "sap_npc/047.mp3"
+  },
+  "sap_npc/048": {
+    "text": "Exactly. Some things just... stop. And that's okay. The sun is reliable.",
+    "file": "sap_npc/048.mp3"
+  },
+  "sap_npc/049": {
+    "text": "Want to play a game? I hide behind the tree, and you pretend you can't see me.",
+    "file": "sap_npc/049.mp3"
+  },
+  "sap_npc/050": {
+    "text": "You're very good at pretending! Best game ever!",
+    "file": "sap_npc/050.mp3"
+  },
+  "sap_npc/051": {
+    "text": "That's the whole point. Pretending is the best part of everything.",
+    "file": "sap_npc/051.mp3"
+  },
+  "sap_npc/052": {
+    "text": "The fireflies spelled out a word last night. I think it was 'STAY.'",
+    "file": "sap_npc/052.mp3"
+  },
+  "sap_npc/053": {
+    "text": "I thought so too. I'm going to stay. I was always going to stay.",
+    "file": "sap_npc/053.mp3"
+  },
+  "sap_npc/054": {
+    "text": "Creepy things can be beautiful. That's what HE always says. From below.",
+    "file": "sap_npc/054.mp3"
+  },
+  "sap_npc/055": {
+    "text": "I drew a map of the forest on a leaf! But the wind took it. So now the wind has a map.",
+    "file": "sap_npc/055.mp3"
+  },
+  "sap_npc/056": {
+    "text": "Then it has one for free! Lucky wind!",
+    "file": "sap_npc/056.mp3"
+  },
+  "sap_npc/057": {
+    "text": "Thank you! I also wrote a poem once. It was one word: 'moss.' I think it captured everything.",
+    "file": "sap_npc/057.mp3"
+  },
+  "sap_npc/058": {
+    "text": "I found a key buried in the roots. It doesn't fit anything up here. I keep it anyway.",
+    "file": "sap_npc/058.mp3"
+  },
+  "sap_npc/059": {
+    "text": "Below... yes. I think it does. I dream about a door sometimes. A heavy one.",
+    "file": "sap_npc/059.mp3"
+  },
+  "sap_npc/060": {
+    "text": "No. I'll keep it. Some things are worth holding even when they open nothing.",
+    "file": "sap_npc/060.mp3"
   }
 }

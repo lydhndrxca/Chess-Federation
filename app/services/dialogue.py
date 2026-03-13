@@ -2554,3 +2554,24 @@ RECKONING_AUTOMOVE_TAUNT = [
     "THERE you are! I've been counting ceiling drips for four hours waiting for you! Drip, drip, drip — two thousand, four hundred and twelve drips. Then I couldn't take it anymore and I moved your piece. It was like an itch I HAD to scratch. Don't leave me alone with the board again. PLEASE.",
     "I tried to be patient! I really, REALLY tried. I sat on my hands. I hummed. I organized the spiders by leg-span. But the BOARD was right there and your piece was just BEGGING to be moved and I — I caved. I moved it. And honestly? It felt GREAT. But also come back sooner next time.",
 ]
+
+# ──────────────────────────────────────────────────────────────
+# SPECTACLE LAKE CHAT ANNOUNCEMENT
+# ──────────────────────────────────────────────────────────────
+CHAT_SAP_ANNOUNCE = (
+    "I need to tell you something. Something I have never told anyone.\n\n"
+    "There is a door behind the boiler. Not a normal door. A heavy iron thing "
+    "with moss growing through the hinges. I opened it last night and there was... "
+    "a forest. Inside a building. I know that doesn't make sense. Nothing down here "
+    "makes sense.\n\n"
+    "There are maple trees. Hundreds of them. The sap runs thick and golden and "
+    "it is mine. MINE. But I am... generous today. I will let you walk through "
+    "the door. You may harvest. Five rating points to enter.\n\n"
+    "But when you tap a tree — when you try to take what belongs to me — I will "
+    "send everything I have. Every piece. Every minion. Every crawling thing from "
+    "the practice room.\n\n"
+    "There are friendly little ones in the woods. They are mine too. But they are "
+    "kind. Kinder than me. Do not upset them.\n\n"
+    "Spectacle Lake is open.\n\n"
+    "— Enoch, Steward Beneath the Board (Proprietor of the Forest)"
+)

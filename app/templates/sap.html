@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Spectacle Lake — Chess Federation{% endblock %}
+{% block body_class %}theme-sap{% endblock %}
+
+{% block head %}
+<style>
+.sap-wrap{display:flex;flex-direction:column;align-items:center;width:100%;max-width:500px;margin:0 auto;padding:0.5rem;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.sap-hud{display:flex;justify-content:space-between;width:100%;padding:0.4rem 0.2rem;font-size:0.75rem;color:#c9a84c;font-family:'Courier New',monospace}
+.sap-hud span{display:flex;align-items:center;gap:0.25rem}
+.sap-grid-wrap{position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;border:2px solid #3a5a2a;border-radius:6px;background:#1a1a1a;touch-action:none}
+.sap-grid{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);width:100%;height:100%;transition:opacity 0.25s}
+.sap-cell{position:relative;display:flex;align-items:center;justify-content:center;font-size:1.4rem;line-height:1;cursor:pointer;border:1px solid rgba(60,100,40,0.15);transition:background 0.15s}
+.sap-cell.grass{background:#3a6b28}
+.sap-cell.grass-alt{background:#347a24}
+.sap-cell.dense{background:#1e3b14;cursor:default}
+.sap-cell.water{background:#2a5a8a;cursor:default}
+.sap-cell.fog{background:#111;cursor:default}
+.sap-cell.cabin{background:#6b4c2a}
+.sap-cell.tree-tile{background:#2d5a1e}
+.sap-cell.queen-cell{z-index:5}
+.sap-cell .entity{pointer-events:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5))}
+.sap-cell .enemy{pointer-events:auto;cursor:pointer;animation:sap-enemy-pulse 0.6s ease-in-out infinite alternate;z-index:4}
+@keyframes sap-enemy-pulse{0%{transform:scale(1)}100%{transform:scale(1.15)}}
+.sap-cell .npc{filter:drop-shadow(0 0 4px rgba(255,255,200,0.6))}
+.sap-cell .harvest-zone{position:absolute;inset:0;border:2px solid rgba(255,180,0,0.4);pointer-events:none;animation:sap-zone-pulse 1.5s ease-in-out infinite}
+@keyframes sap-zone-pulse{0%,100%{border-color:rgba(255,180,0,0.3)}50%{border-color:rgba(255,180,0,0.7)}}
+.sap-cell .queen-marker{font-size:1.6rem;filter:drop-shadow(0 0 6px rgba(255,215,0,0.7))}
+.sap-cell .tree-icon{font-size:1.5rem}
+.sap-cell .merchant-icon{font-size:1.4rem}
+
+/* harvest timer bar */
+.sap-harvest-bar{position:absolute;bottom:0;left:0;right:0;height:6px;background:rgba(0,0,0,0.5);z-index:10}
+.sap-harvest-fill{height:100%;background:linear-gradient(90deg,#ff6b35,#ffd93d);transition:width 0.3s linear;border-radius:0 3px 3px 0}
+
+/* lightning flash */
+.sap-lightning{position:absolute;inset:0;background:white;opacity:0;pointer-events:none;z-index:20;transition:opacity 0.05s}
+
+/* dialogue box */
+.sap-dialogue{position:absolute;bottom:0;left:0;right:0;background:rgba(10,30,10,0.95);border-top:2px solid #c9a84c;padding:0.6rem;z-index:15;display:none;max-height:50%}
+.sap-dialogue-text{color:#e8dcc8;font-size:0.8rem;line-height:1.4;margin-bottom:0.5rem;font-family:Georgia,serif;white-space:pre-wrap}
+.sap-dialogue-btns{display:flex;gap:0.5rem}
+.sap-dialogue-btn{flex:1;padding:0.4rem;background:rgba(60,100,40,0.6);border:1px solid #c9a84c;color:#e8dcc8;border-radius:4px;font-size:0.7rem;cursor:pointer;font-family:Georgia,serif}
+.sap-dialogue-btn:active{background:rgba(100,160,60,0.6)}
+
+/* merchant overlay */
+.sap-merchant{position:absolute;inset:0;background:rgba(10,20,10,0.95);z-index:15;display:none;flex-direction:column;padding:0.6rem;overflow-y:auto}
+.sap-merchant h3{color:#c9a84c;font-size:0.9rem;margin:0 0 0.5rem;text-align:center}
+.sap-merchant-item{display:flex;align-items:center;gap:0.5rem;padding:0.4rem;background:rgba(60,100,40,0.3);border:1px solid rgba(201,168,76,0.3);border-radius:4px;margin-bottom:0.4rem;cursor:pointer}
+.sap-merchant-item:active{background:rgba(100,160,60,0.4)}
+.sap-merchant-item .mi-icon{font-size:1.2rem}
+.sap-merchant-item .mi-info{flex:1;font-size:0.7rem;color:#e8dcc8}
+.sap-merchant-item .mi-name{font-weight:700;color:#c9a84c}
+.sap-merchant-item .mi-cost{color:#ffd93d;font-size:0.7rem;font-weight:700;white-space:nowrap}
+.sap-merchant-close{text-align:center;padding:0.4rem;color:#888;font-size:0.75rem;cursor:pointer;margin-top:0.3rem}
+
+/* result overlay */
+.sap-result{position:absolute;inset:0;background:rgba(10,20,10,0.95);z-index:18;display:none;flex-direction:column;align-items:center;justify-content:center;padding:1rem;text-align:center}
+.sap-result h2{color:#c9a84c;font-size:1.1rem;margin:0 0 0.5rem}
+.sap-result p{color:#e8dcc8;font-size:0.8rem;margin:0.2rem 0}
+.sap-result-btns{display:flex;gap:0.8rem;margin-top:1rem}
+.sap-result-btn{padding:0.5rem 1.2rem;border-radius:4px;font-size:0.8rem;font-weight:700;cursor:pointer;border:1px solid #c9a84c}
+.sap-result-btn.continue{background:rgba(60,160,60,0.6);color:#fff}
+.sap-result-btn.cashout{background:rgba(160,120,40,0.6);color:#fff}
+.sap-result-btn:active{filter:brightness(1.3)}
+
+/* Enoch fury text */
+.sap-fury{position:absolute;top:8%;left:50%;transform:translateX(-50%);color:#ff3333;font-weight:900;font-size:1rem;text-shadow:0 0 10px #ff0000,0 0 20px #880000;z-index:12;pointer-events:none;opacity:0;transition:opacity 0.15s;text-align:center;white-space:nowrap;font-family:'Courier New',monospace;text-transform:uppercase}
+
+/* screen transition */
+.sap-grid.transitioning{opacity:0}
+
+/* harvest mode storm */
+.sap-grid-wrap.storm .sap-cell.grass,.sap-grid-wrap.storm .sap-cell.grass-alt{background:#1a1a1a}
+.sap-grid-wrap.storm .sap-cell.dense{background:#0a0a0a}
+.sap-grid-wrap.storm .sap-cell.tree-tile{background:#1a1a0a}
+.sap-grid-wrap.storm .sap-cell.water{background:#0a1a2a}
+.sap-grid-wrap.storm .sap-cell.cabin{background:#2a1a0a}
+.sap-grid-wrap.storm{border-color:#4a0a0a}
+
+/* abilities bar */
+.sap-abilities{display:flex;gap:0.3rem;padding:0.3rem 0;flex-wrap:wrap;justify-content:center}
+.sap-ability{font-size:1.2rem;padding:0.15rem 0.25rem;background:rgba(60,100,40,0.3);border:1px solid rgba(201,168,76,0.3);border-radius:4px;cursor:pointer}
+.sap-ability:active{background:rgba(100,160,60,0.5)}
+.sap-ability.used{opacity:0.3;cursor:default}
+
+/* start overlay */
+.sap-start{position:absolute;inset:0;background:rgba(10,30,10,0.97);z-index:25;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;text-align:center}
+.sap-start h2{color:#c9a84c;font-size:1.1rem;margin:0 0 0.8rem;font-family:Georgia,serif}
+.sap-start p{color:#e8dcc8;font-size:0.75rem;line-height:1.5;margin:0 0 0.4rem;font-family:Georgia,serif}
+.sap-start-btn{margin-top:1rem;padding:0.6rem 2rem;background:rgba(60,160,60,0.6);border:1px solid #c9a84c;color:#fff;font-size:0.9rem;font-weight:700;border-radius:4px;cursor:pointer}
+.sap-start-btn:active{filter:brightness(1.3)}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sap-wrap" id="sapWrap" data-game-id="{{ game.id }}" data-seed="{{ game.map_seed }}"
+     data-trees="{{ game.trees_harvested }}" data-difficulty="{{ game.difficulty }}"
+     data-status="{{ game.status }}" data-abilities='{{ game.abilities or "[]" }}'
+     data-gold="{{ current_user.roman_gold or 0 }}" data-rating="{{ current_user.rating }}">
+
+    <div class="sap-hud">
+        <span>🌲 <b id="sapTrees">{{ game.trees_harvested }}</b></span>
+        <span>⭐ <b id="sapRating">{{ current_user.rating }}</b></span>
+        <span>🪙 <b id="sapGold">{{ current_user.roman_gold or 0 }}</b></span>
+        <span>🔥 Lv <b id="sapDifficulty">{{ game.difficulty }}</b></span>
+    </div>
+
+    <div class="sap-abilities" id="sapAbilities"></div>
+
+    <div class="sap-grid-wrap" id="sapGridWrap">
+        <div class="sap-grid" id="sapGrid"></div>
+        <div class="sap-harvest-bar" id="sapHarvestBar" style="display:none">
+            <div class="sap-harvest-fill" id="sapHarvestFill" style="width:0%"></div>
+        </div>
+        <div class="sap-lightning" id="sapLightning"></div>
+        <div class="sap-fury" id="sapFury"></div>
+
+        <div class="sap-dialogue" id="sapDialogue">
+            <div class="sap-dialogue-text" id="sapDialogueText"></div>
+            <div class="sap-dialogue-btns">
+                <button class="sap-dialogue-btn" id="sapDialogueA"></button>
+                <button class="sap-dialogue-btn" id="sapDialogueB"></button>
+            </div>
+        </div>
+
+        <div class="sap-merchant" id="sapMerchant">
+            <h3>🏪 Forest Merchant</h3>
+            <div id="sapMerchantItems"></div>
+            <div class="sap-merchant-close" id="sapMerchantClose">Leave</div>
+        </div>
+
+        <div class="sap-result" id="sapResult">
+            <h2 id="sapResultTitle"></h2>
+            <p id="sapResultText"></p>
+            <div class="sap-result-btns" id="sapResultBtns"></div>
+        </div>
+
+        <div class="sap-start" id="sapStart">
+            <h2>🍁 Spectacle Lake</h2>
+            <p>Enoch's private maple forest. The sap runs thick and golden.</p>
+            <p>Explore the woods. Find trees. Harvest sap. Each bucket earns 5 rating points.</p>
+            <p>But when you tap a tree... Enoch sends his pieces. Survive 30 seconds to collect.</p>
+            <p>Cash out anytime — or push your luck.</p>
+            <p style="color:#c9a84c;margin-top:0.5rem">Cost: 5 rating points to enter.</p>
+            <button class="sap-start-btn" id="sapStartBtn">Enter the Forest</button>
+        </div>
+    </div>
+
+    <div style="padding:0.5rem;text-align:center">
+        <a href="{{ url_for('main.standings') }}" style="color:#888;font-size:0.75rem;text-decoration:none">← Back to Federation</a>
+    </div>
+</div>
+
+<script>
+window.SAP_CONFIG = {
+    gameId: {{ game.id }},
+    seed: {{ game.map_seed }},
+    trees: {{ game.trees_harvested }},
+    difficulty: {{ game.difficulty }},
+    status: "{{ game.status }}",
+    abilities: {{ game.abilities or '[]' }},
+    gold: {{ current_user.roman_gold or 0 }},
+    rating: {{ current_user.rating }},
+    abilitiesCatalog: {{ abilities_catalog|safe }},
+    manifestUrl: "{{ url_for('static', filename='audio/enoch/manifest.json') }}",
+    audioBase: "{{ audio_cdn_base }}enoch/",
+};
+</script>
+<script src="{{ url_for('static', filename='js/sap.js') }}"></script>
+{% endblock %}

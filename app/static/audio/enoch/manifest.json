@@ -11034,5 +11034,169 @@
   "reckoning_automove/005": {
     "text": "I tried to be patient! I really, REALLY tried. I sat on my hands. I hummed. I organized the spiders by leg-span. But the BOARD was right there and your piece was just BEGGING to be moved and I — I caved. I moved it. And honestly? It felt GREAT. But also come back sooner next time.",
     "file": "reckoning_automove/005.mp3"
+  },
+  "sap_fury/001": {
+    "text": "NO!",
+    "file": "sap_fury/001.mp3"
+  },
+  "sap_fury/002": {
+    "text": "MINE!",
+    "file": "sap_fury/002.mp3"
+  },
+  "sap_fury/003": {
+    "text": "That sap is MINE!",
+    "file": "sap_fury/003.mp3"
+  },
+  "sap_fury/004": {
+    "text": "GET AWAY FROM MY TREE!",
+    "file": "sap_fury/004.mp3"
+  },
+  "sap_fury/005": {
+    "text": "STOP TOUCHING IT!",
+    "file": "sap_fury/005.mp3"
+  },
+  "sap_fury/006": {
+    "text": "I PLANTED THAT!",
+    "file": "sap_fury/006.mp3"
+  },
+  "sap_fury/007": {
+    "text": "THIEF!",
+    "file": "sap_fury/007.mp3"
+  },
+  "sap_fury/008": {
+    "text": "Little RAT!",
+    "file": "sap_fury/008.mp3"
+  },
+  "sap_fury/009": {
+    "text": "HANDS OFF!",
+    "file": "sap_fury/009.mp3"
+  },
+  "sap_fury/010": {
+    "text": "You DARE?!",
+    "file": "sap_fury/010.mp3"
+  },
+  "sap_fury/011": {
+    "text": "I'LL DROWN YOU IN MAPLE!",
+    "file": "sap_fury/011.mp3"
+  },
+  "sap_fury/012": {
+    "text": "The forest HATES you!",
+    "file": "sap_fury/012.mp3"
+  },
+  "sap_fury/013": {
+    "text": "Every drop is MINE!",
+    "file": "sap_fury/013.mp3"
+  },
+  "sap_fury/014": {
+    "text": "I can SMELL your greed!",
+    "file": "sap_fury/014.mp3"
+  },
+  "sap_fury/015": {
+    "text": "You'll PAY for that!",
+    "file": "sap_fury/015.mp3"
+  },
+  "sap_fury/016": {
+    "text": "The roots remember!",
+    "file": "sap_fury/016.mp3"
+  },
+  "sap_fury/017": {
+    "text": "GET OUT!",
+    "file": "sap_fury/017.mp3"
+  },
+  "sap_fury/018": {
+    "text": "VERMIN!",
+    "file": "sap_fury/018.mp3"
+  },
+  "sap_fury/019": {
+    "text": "My PRECIOUS sap!",
+    "file": "sap_fury/019.mp3"
+  },
+  "sap_fury/020": {
+    "text": "I waited YEARS for this!",
+    "file": "sap_fury/020.mp3"
+  },
+  "sap_fury/021": {
+    "text": "The trees SCREAM!",
+    "file": "sap_fury/021.mp3"
+  },
+  "sap_fury/022": {
+    "text": "Leave! LEAVE!",
+    "file": "sap_fury/022.mp3"
+  },
+  "sap_fury/023": {
+    "text": "I'll BURY you here!",
+    "file": "sap_fury/023.mp3"
+  },
+  "sap_fury/024": {
+    "text": "WRETCHED tapper!",
+    "file": "sap_fury/024.mp3"
+  },
+  "sap_fury/025": {
+    "text": "Not ONE drop!",
+    "file": "sap_fury/025.mp3"
+  },
+  "sap_fury/026": {
+    "text": "The bark weeps!",
+    "file": "sap_fury/026.mp3"
+  },
+  "sap_fury/027": {
+    "text": "BACK! BACK!",
+    "file": "sap_fury/027.mp3"
+  },
+  "sap_fury/028": {
+    "text": "From the BASEMENT I send them!",
+    "file": "sap_fury/028.mp3"
+  },
+  "sap_fury/029": {
+    "text": "My minions! SWARM!",
+    "file": "sap_fury/029.mp3"
+  },
+  "sap_fury/030": {
+    "text": "Choke on amber!",
+    "file": "sap_fury/030.mp3"
+  },
+  "sap_survived/001": {
+    "text": "No... no no no no no...",
+    "file": "sap_survived/001.mp3"
+  },
+  "sap_survived/002": {
+    "text": "You got one. Fine. FINE. It won't happen again.",
+    "file": "sap_survived/002.mp3"
+  },
+  "sap_survived/003": {
+    "text": "Enjoy that bucket. It's the last one you'll ever fill.",
+    "file": "sap_survived/003.mp3"
+  },
+  "sap_survived/004": {
+    "text": "The forest will remember this theft.",
+    "file": "sap_survived/004.mp3"
+  },
+  "sap_survived/005": {
+    "text": "One tree. ONE. The next won't be so easy.",
+    "file": "sap_survived/005.mp3"
+  },
+  "sap_defeated/001": {
+    "text": "HA! Yes! YES! The forest RECLAIMS!",
+    "file": "sap_defeated/001.mp3"
+  },
+  "sap_defeated/002": {
+    "text": "Down you go. Into the roots. Where you BELONG.",
+    "file": "sap_defeated/002.mp3"
+  },
+  "sap_defeated/003": {
+    "text": "Did you really think you could steal from ME?",
+    "file": "sap_defeated/003.mp3"
+  },
+  "sap_defeated/004": {
+    "text": "The sap stays in the bark. AS IT SHOULD.",
+    "file": "sap_defeated/004.mp3"
+  },
+  "sap_defeated/005": {
+    "text": "Another little thief, consumed by the forest.",
+    "file": "sap_defeated/005.mp3"
+  },
+  "sap_announce/001": {
+    "text": "I found a door behind the boiler that leads outside. Not outside-outside. Forest-outside. There are maple trees. Hundreds of them. The sap runs thick and golden and it is MINE.",
+    "file": "sap_announce/001.mp3"
   }
 }

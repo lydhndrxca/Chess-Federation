@@ -262,6 +262,27 @@ def ensure_reckoning_automove_announcement():
     return msg
 
 
+_sap_announced = False
+
+def ensure_sap_announcement():
+    """Post a one-time Enoch chat announcement about Spectacle Lake."""
+    global _sap_announced
+    if _sap_announced:
+        return
+    existing = ChatMessage.query.filter(
+        ChatMessage.is_bot == True,
+        ChatMessage.content.contains('Spectacle Lake is open'),
+    ).first()
+    if existing:
+        _sap_announced = True
+        return
+    _sap_announced = True
+    from app.services.dialogue import CHAT_SAP_ANNOUNCE
+    msg = _post_bot(CHAT_SAP_ANNOUNCE)
+    db.session.commit()
+    return msg
+
+
 def maybe_quirk_interjection():
     """Occasional creepy Enoch quirks — late-night murmurings and accidental DMs.
 

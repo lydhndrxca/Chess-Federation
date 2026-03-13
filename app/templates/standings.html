@@ -268,32 +268,17 @@
         </div>
     </div>
 
-    {# ── The Reckoning (4-player) ── #}
+    {# ── Spectacle Lake (sap collection) ── #}
     <div class="sp-section">
-        <h3 class="sp-section-title">The Reckoning</h3>
-        {% if active_reckoning %}
-        <a href="{{ url_for('four_player.view_reckoning', game_id=active_reckoning.id) }}" class="sp-reckoning-card">
-            <span class="sp-reckoning-icon">&#9876;</span>
+        <h3 class="sp-section-title">Spectacle Lake</h3>
+        <div class="sp-reckoning-card" id="sapLaunchCard" style="cursor:pointer">
+            <span class="sp-reckoning-icon">🍁</span>
             <div class="sp-reckoning-info">
-                <span class="sp-reckoning-name">The Reckoning</span>
-                <span class="sp-reckoning-sub">Four-player chess &middot; Enoch sits at the table</span>
+                <span class="sp-reckoning-name">Spectacle Lake</span>
+                <span class="sp-reckoning-sub">Maple harvest &middot; "The forest is mine. Every drop."</span>
             </div>
-            {% if active_reckoning.status == 'waiting' %}
-            <span class="sp-reckoning-badge">{{ active_reckoning.filled_seats() }}/4 seated</span>
-            {% else %}
-            <span class="sp-reckoning-badge">In progress</span>
-            {% endif %}
-        </a>
-        {% else %}
-        <a href="{{ url_for('four_player.reckoning_lobby') }}" class="sp-reckoning-card">
-            <span class="sp-reckoning-icon">&#9876;</span>
-            <div class="sp-reckoning-info">
-                <span class="sp-reckoning-name">The Reckoning</span>
-                <span class="sp-reckoning-sub">"I have cleared the large table. Sit down."</span>
-            </div>
-            <span class="sp-reckoning-badge">Join</span>
-        </a>
-        {% endif %}
+            <span class="sp-reckoning-badge">Enter</span>
+        </div>
     </div>
 
     {# ── The Crypt (wave defence) ── #}
@@ -506,6 +491,33 @@ Three attempts per day. Come down. If you dare."</p>
     </div>
 </div>
 
+{# ── Spectacle Lake Announcement ── #}
+<div class="wr-overlay" id="sapAnnounceOverlay" style="display:none">
+    <div class="wr-modal">
+        <div class="wr-header">
+            <img src="{{ url_for('static', filename='img/enoch.png') }}" class="wr-enoch-avatar" alt="Enoch">
+            <h2 class="wr-title">Spectacle Lake</h2>
+            <span class="wr-subtitle">A New Place I Found</span>
+        </div>
+        <div class="wr-body">
+            <p class="wr-enoch-text" style="white-space:pre-line">"I found a door behind the boiler that leads outside. Not outside-outside. Forest-outside. There are maple trees. Hundreds of them. The sap runs thick and golden and it is MINE.
+
+But I am... generous today. You may enter the forest. You may try to harvest the sap. Five rating points to walk through the door.
+
+Each bucket you fill earns five points back. But the moment you tap a tree... I will know. And I will send everything I have.
+
+There are friendly little ones in the woods. They are mine too. But they are kind. They will talk to you. Do not upset them.
+
+Cash out whenever you like. Or push deeper. The forest gets darker the further you go. And I get ANGRIER."</p>
+            <p class="wr-description" style="margin-top:1rem; font-style:normal; opacity:.85">
+                <strong>Spectacle Lake</strong> — Roguelite maple harvest. Explore a procedural forest, find trees, and survive Enoch's waves to collect sap.
+                Costs 5 rating points. Earn 5 per tree (max 50 rating, then Roman gold). Cash out or keep risking it.
+            </p>
+        </div>
+        <button class="btn wr-dismiss" id="sapAnnounceDismiss" style="background:#3a6b28;color:#fff">Enter the Forest</button>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -565,6 +577,12 @@ document.addEventListener('DOMContentLoaded', function() {
         announceQueue.push({ el: crOverlay, key: crKey, btnId: 'cryptAnnounceDismiss' });
     }
 
+    var sapOverlay = document.getElementById('sapAnnounceOverlay');
+    var sapKey = 'sapAnnounceSeen_v1';
+    if (sapOverlay && !localStorage.getItem(sapKey)) {
+        announceQueue.push({ el: sapOverlay, key: sapKey, btnId: 'sapAnnounceDismiss' });
+    }
+
     function showNextAnnounce() {
         if (!announceQueue.length) return;
         var a = announceQueue.shift();
@@ -598,6 +616,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     } else {
         showNextAnnounce();
+    }
+
+    /* ── Spectacle Lake launch ── */
+    var sapCard = document.getElementById('sapLaunchCard');
+    if (sapCard) {
+        sapCard.addEventListener('click', function () {
+            fetch('/sap/start', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+                .then(function (r) { return r.json(); })
+                .then(function (d) {
+                    if (d.game_id) { window.location.href = '/sap/' + d.game_id; }
+                    else if (d.error) { alert(d.error); }
+                });
+        });
     }
 
     var btnChallenge = document.getElementById('btnChallengeEnoch');

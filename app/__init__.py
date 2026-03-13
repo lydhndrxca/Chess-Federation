@@ -45,6 +45,8 @@ def _migrate_db(app):
         cur.execute('ALTER TABLE user ADD COLUMN is_active_player BOOLEAN DEFAULT 1')
     if 'created_at' not in user_cols:
         cur.execute('ALTER TABLE user ADD COLUMN created_at DATETIME')
+    if 'roman_gold' not in user_cols:
+        cur.execute('ALTER TABLE user ADD COLUMN roman_gold INTEGER DEFAULT 0')
 
     game_cols = {row[1] for row in cur.execute('PRAGMA table_info(game)').fetchall()}
     if 'power_holder_id' not in game_cols:
@@ -232,6 +234,22 @@ def _migrate_db(app):
             UNIQUE(message_id, user_id, emoji)
         )''')
 
+    if 'sap_game' not in tables:
+        cur.execute('''CREATE TABLE sap_game (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            map_seed INTEGER NOT NULL,
+            trees_harvested INTEGER DEFAULT 0,
+            difficulty INTEGER DEFAULT 1,
+            rating_earned INTEGER DEFAULT 0,
+            gold_earned INTEGER DEFAULT 0,
+            abilities TEXT DEFAULT '[]',
+            status VARCHAR(20) DEFAULT 'active',
+            created_at DATETIME,
+            completed_at DATETIME,
+            FOREIGN KEY(user_id) REFERENCES user(id)
+        )''')
+
     if 'challenge' not in tables:
         cur.execute('''CREATE TABLE challenge (
             id INTEGER PRIMARY KEY,
@@ -300,6 +318,9 @@ def create_app():
 
     from app.routes.challenge import challenge_bp
     app.register_blueprint(challenge_bp)
+
+    from app.routes.sap import sap_bp
+    app.register_blueprint(sap_bp)
 
     _migrate_db(app)
 

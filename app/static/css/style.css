@@ -4844,3 +4844,9 @@ body.theme-crypt .flash-container .flash { background: #1a141a; border-color: #2
     100% { opacity: 0; }
 }
 
+/* ═══════════════════════════════════════════════════════
+   SPECTACLE LAKE — SAP COLLECTION MODE
+   ═══════════════════════════════════════════════════════ */
+body.theme-sap { background: #0d1a0a; }
+body.theme-sap .nav { background: rgba(20,40,15,0.95); border-bottom-color: #3a5a2a; }
+

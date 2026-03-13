@@ -25,6 +25,7 @@ class User(UserMixin, db.Model):
     enoch_wager_wins = db.Column(db.Integer, default=0)
     enoch_wager_losses = db.Column(db.Integer, default=0)
     enoch_wager_draws = db.Column(db.Integer, default=0)
+    roman_gold = db.Column(db.Integer, default=0)
     last_seen = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -291,6 +292,23 @@ class CryptGame(db.Model):
     cascade_tick = db.Column(db.Integer, default=0)
     cascade_max_ticks = db.Column(db.Integer, default=0)
     started_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    completed_at = db.Column(db.DateTime)
+
+    user = db.relationship('User', foreign_keys=[user_id])
+
+
+class SapGame(db.Model):
+    """Spectacle Lake — Enoch's Maple Forest roguelite mode."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    map_seed = db.Column(db.Integer, nullable=False)
+    trees_harvested = db.Column(db.Integer, default=0)
+    difficulty = db.Column(db.Integer, default=1)
+    rating_earned = db.Column(db.Integer, default=0)
+    gold_earned = db.Column(db.Integer, default=0)
+    abilities = db.Column(db.Text, default='[]')
+    status = db.Column(db.String(20), default='active')
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     completed_at = db.Column(db.DateTime)
 
     user = db.relationship('User', foreign_keys=[user_id])

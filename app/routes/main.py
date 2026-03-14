@@ -184,12 +184,11 @@ def standings():
         pass
 
     try:
-        from app.services.enoch_chat import ensure_casual_announcement, ensure_crypt_revenge_announcement, ensure_zombie_announcement, ensure_reckoning_automove_announcement, ensure_sap_announcement
+        from app.services.enoch_chat import ensure_casual_announcement, ensure_crypt_revenge_announcement, ensure_zombie_announcement, ensure_reckoning_automove_announcement
         ensure_casual_announcement()
         ensure_crypt_revenge_announcement()
         ensure_zombie_announcement()
         ensure_reckoning_automove_announcement()
-        ensure_sap_announcement()
     except (ImportError, Exception):
         pass
 
@@ -243,6 +242,42 @@ def api_my_turns():
                 'opponent': opp.username if opp else 'Unknown',
             })
     return jsonify({'turns': turns, 'count': len(turns)})
+
+
+@main_bp.route('/rankings')
+@login_required
+def rankings():
+    from app.services.rating import TIERS, get_tier, get_progression
+
+    standings_list = User.query.filter_by(
+        is_active_player=True
+    ).order_by(User.rating.desc()).all()
+
+    player_data = []
+    for player in standings_list:
+        prog = get_progression(player.rating)
+        player_data.append({
+            'user': player,
+            'tier': prog['current'],
+            'progression': prog,
+        })
+
+    tier_data = []
+    for lvl, threshold, name, desc in TIERS:
+        members = [p for p in standings_list if get_tier(p.rating)['level'] == lvl]
+        tier_data.append({
+            'level': lvl,
+            'threshold': threshold,
+            'name': name,
+            'desc': desc,
+            'members': members,
+        })
+
+    return render_template(
+        'rankings.html',
+        standings=player_data,
+        tiers=tier_data,
+    )
 
 
 @main_bp.route('/archive')

@@ -13,6 +13,14 @@
         </span>
     </div>
 
+    {# ── Dogecoin Ticker ── #}
+    <div class="sp-doge-ticker" id="dogeTicker">
+        <span class="sp-doge-icon">&#208;</span>
+        <span class="sp-doge-label">DOGE</span>
+        <span class="sp-doge-price" id="dogePrice">--</span>
+        <span class="sp-doge-change" id="dogeChange"></span>
+    </div>
+
     {# ══════ WEEKLY MATCHES — "Game of the Week" ══════ #}
     <div class="sp-section">
         <div class="sp-section-header">
@@ -85,28 +93,6 @@
         </div>
         {% endif %}
 
-        {% if other_games %}
-        <div class="sp-sub-section">
-            <h4 class="sp-sub-title">Other Weekly Contests</h4>
-            {% for g in other_games %}
-            <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="sp-other-row">
-                <span>{{ g.white.username }} vs {{ g.black.username }}</span>
-                {% if g.custom_rule_name %}
-                <span class="badge badge-rule">{{ g.custom_rule_name }}</span>
-                {% endif %}
-                {% if g.status == 'completed' %}
-                <span class="badge badge-completed">{{ g.result }}</span>
-                {% elif g.status == 'active' %}
-                <span class="badge badge-active">In progress</span>
-                {% elif g.status == 'pending' %}
-                <span class="badge badge-pending">Unbegun</span>
-                {% elif g.status == 'forfeited' %}
-                <span class="badge badge-forfeited">Forfeit</span>
-                {% endif %}
-            </a>
-            {% endfor %}
-        </div>
-        {% endif %}
     </div>
 
     {# ══════ CASUAL MATCHES — Normal Rules ══════ #}
@@ -234,6 +220,30 @@
         </div>
     </div>
 
+    {# ── Other Weekly Contests (moved below chat) ── #}
+    {% if other_games %}
+    <div class="sp-section">
+        <h4 class="sp-section-title">Other Weekly Contests</h4>
+        {% for g in other_games %}
+        <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="sp-other-row">
+            <span>{{ g.white.username }} vs {{ g.black.username }}</span>
+            {% if g.custom_rule_name %}
+            <span class="badge badge-rule">{{ g.custom_rule_name }}</span>
+            {% endif %}
+            {% if g.status == 'completed' %}
+            <span class="badge badge-completed">{{ g.result }}</span>
+            {% elif g.status == 'active' %}
+            <span class="badge badge-active">In progress</span>
+            {% elif g.status == 'pending' %}
+            <span class="badge badge-pending">Unbegun</span>
+            {% elif g.status == 'forfeited' %}
+            <span class="badge badge-forfeited">Forfeit</span>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     {# ── Practice Opponents (Enoch) ── #}
     <div class="sp-section sp-practice">
         <h3 class="sp-section-title">Practice Opponents</h3>
@@ -248,36 +258,16 @@
                     <span class="sp-mood-sep">&middot;</span>
                     <span class="sp-mood-rating">~{{ enoch_mood.rating }}</span>
                 </span>
-                <span class="sp-practice-meta">Practice Match Only</span>
+                <span class="sp-practice-points">
+                    <span class="sp-pts-win">Win: +{{ enoch_mood.points_win }} pts</span>
+                    <span class="sp-pts-sep">&middot;</span>
+                    <span class="sp-pts-loss">Loss: {{ enoch_mood.points_loss }} pts</span>
+                </span>
             </div>
-            <button class="btn btn-sm btn-practice" id="btnChallengeEnoch">Challenge</button>
-        </div>
-        <div class="sp-wager-offer" id="wagerOffer" style="display:none;">
-            <div class="sp-wager-dialogue" id="wagerDialogue"></div>
-            <div class="sp-wager-details" id="wagerDetails">
-                <span class="sp-wager-label">Wager:</span>
-                <span class="sp-wager-amount" id="wagerAmount"></span>
-                <span class="sp-wager-label">rating points</span>
+            <div class="sp-practice-actions">
+                <button class="btn btn-sm btn-practice" id="btnRatedEnoch">Play for Points</button>
+                <button class="btn btn-sm btn-outline" id="btnPracticeEnoch">Just Practice</button>
             </div>
-            <div class="sp-wager-actions">
-                <button class="btn btn-sm btn-wager" id="btnAcceptWager">Play for Points</button>
-                <button class="btn btn-sm" id="btnDeclineWager">Just Practice</button>
-                <button class="btn btn-sm btn-outline" id="btnCancelPractice">Retreat</button>
-            </div>
-            <div class="sp-wager-limit" id="wagerLimitMsg" style="display:none;"></div>
-        </div>
-    </div>
-
-    {# ── Spectacle Lake (sap collection) ── #}
-    <div class="sp-section">
-        <h3 class="sp-section-title">Spectacle Lake</h3>
-        <div class="sp-reckoning-card" id="sapLaunchCard" style="cursor:pointer">
-            <span class="sp-reckoning-icon">🍁</span>
-            <div class="sp-reckoning-info">
-                <span class="sp-reckoning-name">Spectacle Lake</span>
-                <span class="sp-reckoning-sub">Maple harvest &middot; "The forest is mine. Every drop."</span>
-            </div>
-            <span class="sp-reckoning-badge">Enter</span>
         </div>
     </div>
 
@@ -491,33 +481,6 @@ Three attempts per day. Come down. If you dare."</p>
     </div>
 </div>
 
-{# ── Spectacle Lake Announcement ── #}
-<div class="wr-overlay" id="sapAnnounceOverlay" style="display:none">
-    <div class="wr-modal">
-        <div class="wr-header">
-            <img src="{{ url_for('static', filename='img/enoch.png') }}" class="wr-enoch-avatar" alt="Enoch">
-            <h2 class="wr-title">Spectacle Lake</h2>
-            <span class="wr-subtitle">A New Place I Found</span>
-        </div>
-        <div class="wr-body">
-            <p class="wr-enoch-text" style="white-space:pre-line">"I found a door behind the boiler that leads outside. Not outside-outside. Forest-outside. There are maple trees. Hundreds of them. The sap runs thick and golden and it is MINE.
-
-But I am... generous today. You may enter the forest. You may try to harvest the sap. Five rating points to walk through the door.
-
-Each bucket you fill earns five points back. But the moment you tap a tree... I will know. And I will send everything I have.
-
-There are friendly little ones in the woods. They are mine too. But they are kind. They will talk to you. Do not upset them.
-
-Cash out whenever you like. Or push deeper. The forest gets darker the further you go. And I get ANGRIER."</p>
-            <p class="wr-description" style="margin-top:1rem; font-style:normal; opacity:.85">
-                <strong>Spectacle Lake</strong> — Roguelite maple harvest. Explore a procedural forest, find trees, and survive Enoch's waves to collect sap.
-                Costs 5 rating points. Earn 5 per tree (max 50 rating, then Roman gold). Cash out or keep risking it.
-            </p>
-        </div>
-        <button class="btn wr-dismiss" id="sapAnnounceDismiss" style="background:#3a6b28;color:#fff">Enter the Forest</button>
-    </div>
-</div>
-
 {% endblock %}
 
 {% block scripts %}
@@ -577,12 +540,6 @@ document.addEventListener('DOMContentLoaded', function() {
         announceQueue.push({ el: crOverlay, key: crKey, btnId: 'cryptAnnounceDismiss' });
     }
 
-    var sapOverlay = document.getElementById('sapAnnounceOverlay');
-    var sapKey = 'sapAnnounceSeen_v1';
-    if (sapOverlay && !localStorage.getItem(sapKey)) {
-        announceQueue.push({ el: sapOverlay, key: sapKey, btnId: 'sapAnnounceDismiss' });
-    }
-
     function showNextAnnounce() {
         if (!announceQueue.length) return;
         var a = announceQueue.shift();
@@ -618,107 +575,31 @@ document.addEventListener('DOMContentLoaded', function() {
         showNextAnnounce();
     }
 
-    /* ── Spectacle Lake launch ── */
-    var sapCard = document.getElementById('sapLaunchCard');
-    if (sapCard) {
-        sapCard.addEventListener('click', function () {
-            fetch('/sap/start', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
-                .then(function (r) { return r.json(); })
-                .then(function (d) {
-                    if (d.game_id) { window.location.href = '/sap/' + d.game_id; }
-                    else if (d.error) { alert(d.error); }
-                });
-        });
-    }
+    var btnRated = document.getElementById('btnRatedEnoch');
+    var btnPractice = document.getElementById('btnPracticeEnoch');
 
-    var btnChallenge = document.getElementById('btnChallengeEnoch');
-    var offerPanel = document.getElementById('wagerOffer');
-    var btnAccept = document.getElementById('btnAcceptWager');
-    var btnDecline = document.getElementById('btnDeclineWager');
-    var btnCancel = document.getElementById('btnCancelPractice');
-    var dialogueEl = document.getElementById('wagerDialogue');
-    var amountEl = document.getElementById('wagerAmount');
-    var detailsEl = document.getElementById('wagerDetails');
-    var limitEl = document.getElementById('wagerLimitMsg');
-
-    var currentOffer = null;
-
-    if (btnChallenge) {
-        btnChallenge.addEventListener('click', function() {
-            btnChallenge.disabled = true;
-            btnChallenge.textContent = 'Asking\u2026';
-            fetch('/practice/offer', {method: 'POST', headers: {'Content-Type': 'application/json'}})
+    if (btnRated) {
+        btnRated.addEventListener('click', function() {
+            btnRated.disabled = true;
+            btnRated.textContent = 'Descending\u2026';
+            fetch('/practice/rated', {method: 'POST', headers: {'Content-Type': 'application/json'}})
                 .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    currentOffer = data;
-                    dialogueEl.textContent = data.dialogue;
-                    if (data.is_anomaly) {
-                        dialogueEl.classList.add('sp-wager-anomaly');
-                        offerPanel.classList.add('sp-wager-anomaly-panel');
-                    } else {
-                        dialogueEl.classList.remove('sp-wager-anomaly');
-                        offerPanel.classList.remove('sp-wager-anomaly-panel');
-                    }
-                    amountEl.textContent = data.wager;
-                    detailsEl.style.display = data.can_wager ? '' : 'none';
-                    btnAccept.style.display = data.can_wager ? '' : 'none';
-                    if (data.daily_limit_msg) {
-                        limitEl.textContent = data.daily_limit_msg;
-                        limitEl.style.display = 'block';
-                    } else {
-                        limitEl.style.display = 'none';
-                    }
-                    offerPanel.style.display = 'block';
-                    btnChallenge.textContent = 'Challenge';
+                .then(function(d) {
+                    if (d.url) window.location.href = d.url;
+                    else { alert(d.error || 'Failed'); btnRated.disabled = false; btnRated.textContent = 'Play for Points'; }
                 });
         });
     }
-    if (btnCancel) {
-        btnCancel.addEventListener('click', function() {
-            offerPanel.style.display = 'none';
-            btnChallenge.disabled = false;
-        });
-    }
-    if (btnDecline) {
-        btnDecline.addEventListener('click', function() {
-            btnDecline.disabled = true;
-            btnDecline.textContent = 'Descending\u2026';
+    if (btnPractice) {
+        btnPractice.addEventListener('click', function() {
+            btnPractice.disabled = true;
+            btnPractice.textContent = 'Descending\u2026';
             fetch('/practice/new', {method: 'POST', headers: {'Content-Type': 'application/json'}})
                 .then(function(r) { return r.json(); })
                 .then(function(d) {
                     if (d.url) window.location.href = d.url;
-                    else { btnDecline.disabled = false; btnDecline.textContent = 'Just Practice'; }
+                    else { btnPractice.disabled = false; btnPractice.textContent = 'Just Practice'; }
                 });
-        });
-    }
-    if (btnAccept) {
-        btnAccept.addEventListener('click', function() {
-            if (!currentOffer) return;
-            btnAccept.disabled = true;
-            btnAccept.textContent = 'Signing\u2026';
-            fetch('/practice/wager', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    wager: currentOffer.wager,
-                    mood_key: currentOffer.mood_key,
-                    is_anomaly: currentOffer.is_anomaly,
-                }),
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(d) {
-                if (d.url) window.location.href = d.url;
-                else if (d.error === 'daily_limit') {
-                    limitEl.textContent = d.dialogue || 'Already wagered today.';
-                    limitEl.style.display = 'block';
-                    btnAccept.style.display = 'none';
-                    detailsEl.style.display = 'none';
-                } else {
-                    alert(d.error || 'Failed');
-                }
-                btnAccept.disabled = false;
-                btnAccept.textContent = 'Play for Points';
-            });
         });
     }
 
@@ -822,8 +703,10 @@ document.addEventListener('DOMContentLoaded', function() {
             else box.scrollTop = box.scrollHeight;
         }
 
+        var avatarBase = "{{ url_for('static', filename='uploads/avatars/') }}";
         function avatarHtml(m) {
             if (m.is_bot) return '<img src="' + enochImg + '" class="avatar avatar-sm avatar-enoch" alt="">';
+            if (m.avatar) return '<img src="' + avatarBase + m.avatar + '" class="avatar avatar-sm" alt="">';
             return '<span class="avatar avatar-sm avatar-placeholder">' + (m.username || '?')[0].toUpperCase() + '</span>';
         }
 
@@ -1185,6 +1068,33 @@ document.addEventListener('DOMContentLoaded', function() {
             if (urls.length) window.EnochCache.preloadUrls(urls);
         }).catch(function() {});
     }
+
+    /* ── Dogecoin ticker ── */
+    (function() {
+        var priceEl = document.getElementById('dogePrice');
+        var changeEl = document.getElementById('dogeChange');
+        if (!priceEl) return;
+        function fetchDoge() {
+            fetch('https://api.coingecko.com/api/v3/simple/price?ids=dogecoin&vs_currencies=usd&include_24hr_change=true')
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.dogecoin) {
+                        var price = d.dogecoin.usd;
+                        var change = d.dogecoin.usd_24h_change;
+                        priceEl.textContent = '$' + price.toFixed(4);
+                        if (change != null) {
+                            var sign = change >= 0 ? '+' : '';
+                            changeEl.textContent = sign + change.toFixed(2) + '%';
+                            changeEl.className = 'sp-doge-change ' + (change >= 0 ? 'sp-doge-up' : 'sp-doge-down');
+                        }
+                    }
+                }).catch(function() {
+                    priceEl.textContent = '--';
+                });
+        }
+        fetchDoge();
+        setInterval(fetchDoge, 60000);
+    })();
 });
 </script>
 {% endblock %}

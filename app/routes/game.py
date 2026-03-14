@@ -10,7 +10,7 @@ from app.services.chess_engine import ChessEngine
 from app.services.enoch import get_move_commentary, comment_game_start, get_title
 from app.services.sequences import get_sequence_info, name_sequence
 from app.services.collectibles_catalog import CATALOG_BY_ID
-from app.services.enoch_ai import pick_move, get_practice_commentary, generate_wager_offer
+from app.services.enoch_ai import pick_move, get_practice_commentary, get_current_mood, MOOD_BY_KEY
 from app.services.practice_dialogue import (
     PRACTICE_GAME_START, PRACTICE_AT_ENOCH_EASY, PRACTICE_AT_ENOCH_WHY,
     PRACTICE_AT_ENOCH_WHO_WINNING, PRACTICE_AT_ENOCH_INSULT,
@@ -124,6 +124,27 @@ def _get_earned_items(game_id, user_id):
     return items
 
 
+def _find_next_turn_game(user_id, exclude_game_id):
+    """Find another active game where it's this user's turn."""
+    from sqlalchemy import or_
+    games = Game.query.filter(
+        or_(Game.white_id == user_id, Game.black_id == user_id),
+        Game.status.in_(['pending', 'active']),
+        Game.id != exclude_game_id,
+        Game.is_practice == False,
+    ).all()
+    for g in games:
+        my_color = 'white' if g.white_id == user_id else 'black'
+        if g.current_turn == my_color:
+            opp = g.black if my_color == 'white' else g.white
+            return {
+                'game_id': g.id,
+                'opponent': opp.username if opp else 'Unknown',
+                'url': url_for('game.view_game', game_id=g.id),
+            }
+    return None
+
+
 @game_bp.route('/game/<int:game_id>')
 @login_required
 def view_game(game_id):
@@ -194,14 +215,14 @@ def view_game(game_id):
     enoch_mood = None
     active_wager = None
     if game.is_practice:
-        from app.services.enoch_ai import get_current_mood
         enoch_mood = get_current_mood()
         w = EnochWager.query.filter_by(game_id=game.id).first()
         if w:
+            mood_info = MOOD_BY_KEY.get(w.mood, enoch_mood)
             active_wager = {
-                'amount': w.wager_amount,
+                'amount': mood_info.get('points_win', 0),
                 'mood': w.mood,
-                'is_anomaly': w.is_anomaly,
+                'is_anomaly': False,
                 'result': w.result,
                 'points_change': w.points_change,
             }
@@ -385,6 +406,11 @@ def make_move(game_id):
         resp['sequence'] = seq['match']
     if seq.get('can_name') and current_user.can_name_openings:
         resp['can_name_sequence'] = seq['can_name']
+
+    if not is_over:
+        next_game = _find_next_turn_game(current_user.id, game.id)
+        if next_game:
+            resp['next_game'] = next_game
 
     return jsonify(resp)
 
@@ -773,77 +799,16 @@ def start_practice():
     return jsonify({'game_id': game.id, 'url': url_for('game.view_game', game_id=game.id)})
 
 
-DAILY_WAGER_LIMIT = 3
-
-
-def _wagers_today(user_id):
-    """Return how many wagers the player has made today (UTC day)."""
-    from datetime import date
-    today_start = datetime.combine(date.today(), datetime.min.time()).replace(tzinfo=timezone.utc)
-    return EnochWager.query.filter(
-        EnochWager.user_id == user_id,
-        EnochWager.created_at >= today_start,
-    ).count()
-
-
-def _has_wagered_today(user_id):
-    """Check if the player has reached the daily wager limit."""
-    return _wagers_today(user_id) >= DAILY_WAGER_LIMIT
-
-
-@game_bp.route('/practice/offer', methods=['POST'])
+@game_bp.route('/practice/rated', methods=['POST'])
 @login_required
-def practice_offer():
-    """Generate a wager offer for the player. Returns mood, wager, dialogue."""
-    used = _wagers_today(current_user.id)
-    at_limit = used >= DAILY_WAGER_LIMIT
-    offer = generate_wager_offer()
-
-    daily_limit_msg = None
-    if at_limit:
-        from app.services.wager_dialogue import WAGER_DAILY_LIMIT
-        daily_limit_msg = random.choice(WAGER_DAILY_LIMIT)
-
-    return jsonify({
-        'mood_key': offer['mood_key'],
-        'mood_label': offer['mood_label'],
-        'mood_icon': offer['mood_icon'],
-        'elo': offer['elo'],
-        'wager': offer['wager'],
-        'is_anomaly': offer['is_anomaly'],
-        'dialogue': offer['dialogue'],
-        'can_wager': not at_limit,
-        'wagers_remaining': max(0, DAILY_WAGER_LIMIT - used),
-        'daily_limit_msg': daily_limit_msg,
-        'player_rating': current_user.rating,
-    })
-
-
-@game_bp.route('/practice/wager', methods=['POST'])
-@login_required
-def start_wager():
-    """Start a rated wager match against Enoch."""
+def start_rated_practice():
+    """Start a rated match against Enoch with points based on current mood."""
     enoch = _get_enoch_user()
     if not enoch:
         return jsonify({'error': 'Enoch is not available'}), 500
 
-    if _has_wagered_today(current_user.id):
-        from app.services.wager_dialogue import WAGER_DAILY_LIMIT
-        return jsonify({
-            'error': 'daily_limit',
-            'dialogue': random.choice(WAGER_DAILY_LIMIT),
-        }), 429
-
-    data = request.get_json() or {}
-    wager_amount = data.get('wager', 0)
-    mood_key = data.get('mood_key', '')
-    is_anomaly = data.get('is_anomaly', False)
-
-    if not isinstance(wager_amount, int) or wager_amount < 1 or wager_amount > 60:
-        return jsonify({'error': 'Invalid wager amount'}), 400
-
-    if wager_amount > current_user.rating:
-        return jsonify({'error': 'You do not have enough rating points'}), 400
+    mood = get_current_mood()
+    points_win = mood.get('points_win', 5)
 
     game = Game(
         white_id=current_user.id,
@@ -860,33 +825,32 @@ def start_wager():
     wager = EnochWager(
         user_id=current_user.id,
         game_id=game.id,
-        mood=mood_key,
-        wager_amount=wager_amount,
-        is_anomaly=is_anomaly,
+        mood=mood['key'],
+        wager_amount=points_win,
+        is_anomaly=False,
     )
     db.session.add(wager)
-
-    from app.services.wager_dialogue import WAGER_ACCEPT
-    accept_line = random.choice(WAGER_ACCEPT)
-
     db.session.commit()
+
     return jsonify({
         'game_id': game.id,
         'url': url_for('game.view_game', game_id=game.id),
-        'dialogue': accept_line,
     })
 
 
 def _settle_wager(game):
-    """Settle an Enoch wager after game completion. Returns settlement info dict or None."""
+    """Settle an Enoch rated match after game completion. Returns settlement info dict or None."""
     wager = EnochWager.query.filter_by(game_id=game.id).first()
     if not wager or wager.result is not None:
         return None
 
-    from app.services.wager_dialogue import WAGER_PLAYER_WINS, WAGER_ENOCH_WINS, WAGER_DRAW
+    from app.services.practice_dialogue import PRACTICE_PLAYER_WINS, PRACTICE_ENOCH_WINS, PRACTICE_DRAW
 
     user = db.session.get(User, wager.user_id)
-    enoch = _get_enoch_user()
+    mood_info = MOOD_BY_KEY.get(wager.mood, {})
+    points_win = mood_info.get('points_win', wager.wager_amount)
+    points_loss = mood_info.get('points_loss', -wager.wager_amount)
+
     player_won = (
         (game.result == '1-0' and game.white_id == user.id) or
         (game.result == '0-1' and game.black_id == user.id)
@@ -895,23 +859,23 @@ def _settle_wager(game):
 
     if player_won:
         wager.result = 'win'
-        wager.points_change = wager.wager_amount
-        user.rating += wager.wager_amount
-        user.enoch_points += wager.wager_amount
+        wager.points_change = points_win
+        user.rating += points_win
+        user.enoch_points += points_win
         user.enoch_wager_wins += 1
-        line = random.choice(WAGER_PLAYER_WINS).replace('[Wager]', str(wager.wager_amount))
+        line = random.choice(PRACTICE_PLAYER_WINS)
     elif is_draw:
         wager.result = 'draw'
         wager.points_change = 0
         user.enoch_wager_draws += 1
-        line = random.choice(WAGER_DRAW)
+        line = random.choice(PRACTICE_DRAW)
     else:
         wager.result = 'loss'
-        wager.points_change = -wager.wager_amount
-        user.rating = max(1, user.rating - wager.wager_amount)
-        user.enoch_points -= wager.wager_amount
+        wager.points_change = points_loss
+        user.rating = max(1, user.rating + points_loss)
+        user.enoch_points += points_loss
         user.enoch_wager_losses += 1
-        line = random.choice(WAGER_ENOCH_WINS).replace('[Wager]', str(wager.wager_amount))
+        line = random.choice(PRACTICE_ENOCH_WINS)
 
     earned_gambling = []
     try:
@@ -923,10 +887,10 @@ def _settle_wager(game):
         pass
 
     return {
-        'wager_amount': wager.wager_amount,
+        'wager_amount': points_win,
         'result': wager.result,
         'points_change': wager.points_change,
-        'is_anomaly': wager.is_anomaly,
+        'is_anomaly': False,
         'dialogue': line,
         'new_rating': user.rating,
         'earned_items': [{
@@ -957,7 +921,6 @@ def scrapbook():
             next_milestone = m
             break
 
-    from app.services.enoch_ai import get_current_mood
     return render_template(
         'scrapbook.html',
         games=games,

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% from "macros.html" import avatar %}
+{% block title %}Rankings — Chess Federation{% endblock %}
+
+{% block content %}
+<div class="rk">
+    <h2 class="rk-title">Federation Rankings</h2>
+
+    <div class="rk-section">
+        <h3 class="rk-section-title">Player Standings</h3>
+        <div class="rk-standings">
+            {% for p in standings %}
+            <a href="{{ url_for('players.player_profile', username=p.user.username) }}" class="rk-row">
+                <span class="rk-rank">{{ loop.index }}</span>
+                {{ avatar(p.user, 'sm', show_online=true) }}
+                <div class="rk-info">
+                    <span class="rk-name">{{ p.user.username }}</span>
+                    <span class="rk-tier-name">{{ p.tier.name }}</span>
+                </div>
+                <div class="rk-right">
+                    <span class="rk-rating">{{ p.user.rating }}</span>
+                    <span class="rk-record">{{ p.user.wins }}W {{ p.user.losses }}L {{ p.user.draws }}D</span>
+                </div>
+                <div class="rk-progress">
+                    {% if not p.progression.at_max %}
+                    <div class="rk-bar">
+                        <div class="rk-bar-fill" style="width: {{ p.progression.pct }}%"></div>
+                    </div>
+                    <span class="rk-bar-label">{{ p.progression.points_needed }} pts to {{ p.progression.next.name|truncate(30, true) }}</span>
+                    {% else %}
+                    <span class="rk-bar-label rk-bar-max">Maximum tier achieved</span>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="rk-section">
+        <h3 class="rk-section-title">The 10 Tiers</h3>
+        <div class="rk-tiers">
+            {% for t in tiers %}
+            <div class="rk-tier-card {{ 'rk-tier-populated' if t.members else '' }}">
+                <div class="rk-tier-header">
+                    <span class="rk-tier-level">Tier {{ t.level }}</span>
+                    <span class="rk-tier-threshold">{{ t.threshold }}+ rating</span>
+                </div>
+                <h4 class="rk-tier-title">{{ t.name }}</h4>
+                <p class="rk-tier-desc">{{ t.desc }}</p>
+                {% if t.members %}
+                <div class="rk-tier-members">
+                    {% for m in t.members %}
+                    <div class="rk-tier-member">
+                        {{ avatar(m, 'xs', show_online=true) }}
+                        <span>{{ m.username }}</span>
+                        <span class="rk-tier-member-rating">({{ m.rating }})</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="rk-tier-empty">No players at this tier yet</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

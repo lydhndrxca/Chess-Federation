@@ -664,6 +664,9 @@ class ChessBoard {
                     } else {
                         updateTurn(false);
                         this.startPolling();
+                        if (data.next_game) {
+                            showNextGameBanner(data.next_game);
+                        }
                     }
                 }
             } else {
@@ -1259,6 +1262,33 @@ const _assetsReady = sessionStorage.getItem('chess_assets_loaded') === '1';
 
 if (_assetsReady) {
     dismissLoading();
+}
+
+function showNextGameBanner(nextGame) {
+    let banner = document.getElementById('nextGameBanner');
+    if (banner) banner.remove();
+    banner = document.createElement('div');
+    banner.id = 'nextGameBanner';
+    banner.className = 'gv-next-game-banner';
+    banner.innerHTML = `<span>Your turn vs <strong>${nextGame.opponent}</strong></span><a href="${nextGame.url}" class="btn btn-sm btn-primary">Go &rarr;</a>`;
+    const container = document.getElementById('gameContainer');
+    const toolbar = container && container.querySelector('.gv-toolbar');
+    if (toolbar) toolbar.parentNode.insertBefore(banner, toolbar);
+    else if (container) container.appendChild(banner);
+    let countdown = 8;
+    const timer = setInterval(() => {
+        countdown--;
+        if (countdown <= 0) {
+            clearInterval(timer);
+            window.location.href = nextGame.url;
+        }
+        const goBtn = banner.querySelector('.btn');
+        if (goBtn) goBtn.textContent = `Go (${countdown}s) →`;
+    }, 1000);
+    banner.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'A') return;
+        clearInterval(timer);
+    });
 }
 
 _setLoadPct(5);

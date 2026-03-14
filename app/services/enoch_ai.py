@@ -20,9 +20,12 @@ import chess
 # ── Mood System ─────────────────────────────────────────────────
 
 MOODS = [
-    {'key': 'chill',   'label': 'Chill',   'rating': 500,  'icon': '\U0001f56f\ufe0f'},
-    {'key': 'annoyed', 'label': 'Annoyed', 'rating': 800,  'icon': '\U0001f610'},
-    {'key': 'angry',   'label': 'Angry',   'rating': 1200, 'icon': '\U0001f525'},
+    {'key': 'chill',     'label': 'Chill',     'rating': 500,  'icon': '\U0001f56f\ufe0f', 'points_win': 5,   'points_loss': -2},
+    {'key': 'uneasy',   'label': 'Uneasy',   'rating': 600,  'icon': '\U0001f611',        'points_win': 8,   'points_loss': -3},
+    {'key': 'irritated', 'label': 'Irritated', 'rating': 700,  'icon': '\U0001f624',        'points_win': 12,  'points_loss': -5},
+    {'key': 'annoyed',  'label': 'Annoyed',  'rating': 800,  'icon': '\U0001f610',        'points_win': 16,  'points_loss': -8},
+    {'key': 'furious',  'label': 'Furious',  'rating': 1000, 'icon': '\U0001f92c',        'points_win': 22,  'points_loss': -12},
+    {'key': 'angry',    'label': 'Angry',    'rating': 1200, 'icon': '\U0001f525',        'points_win': 30,  'points_loss': -18},
 ]
 
 MOOD_BY_KEY = {m['key']: m for m in MOODS}
@@ -40,64 +43,10 @@ def get_current_mood():
 
     seed = int(hashlib.md5(f'enoch-mood-{day_key}'.encode()).hexdigest(), 16)
     rng = random.Random(seed)
-    schedule = list(MOODS) * 2
+    schedule = list(MOODS)
     rng.shuffle(schedule)
-    schedule = schedule[:6]
 
-    return schedule[segment]
-
-
-# ── Wager System ─────────────────────────────────────────────────
-
-WAGER_BANDS = {
-    'chill':   {'min': 5,  'max': 10},
-    'annoyed': {'min': 10, 'max': 15},
-    'angry':   {'min': 15, 'max': 25},
-}
-
-ANOMALY_CHANCE = 0.01
-ANOMALY_WAGER_RANGE = (30, 50)
-ANOMALY_ELO = 1500
-
-
-def generate_wager_offer():
-    """Generate today's wager parameters based on current mood.
-
-    Returns a dict:
-        mood_key, mood_label, mood_icon, elo, wager, is_anomaly, dialogue
-    """
-    from app.services.wager_dialogue import WAGER_OFFER_BY_MOOD
-
-    mood = get_current_mood()
-
-    is_anomaly = random.random() < ANOMALY_CHANCE
-    if is_anomaly:
-        wager = random.randint(*ANOMALY_WAGER_RANGE)
-        elo = ANOMALY_ELO
-        pool = WAGER_OFFER_BY_MOOD['anomaly']
-        mood_label = 'Unhinged'
-        mood_icon = '\U0001f480'
-        mood_key = mood['key']
-    else:
-        band = WAGER_BANDS[mood['key']]
-        wager = random.randint(band['min'], band['max'])
-        elo = mood['rating']
-        pool = WAGER_OFFER_BY_MOOD[mood['key']]
-        mood_label = mood['label']
-        mood_icon = mood['icon']
-        mood_key = mood['key']
-
-    line = random.choice(pool).replace('[Wager]', str(wager))
-
-    return {
-        'mood_key': mood_key,
-        'mood_label': mood_label,
-        'mood_icon': mood_icon,
-        'elo': elo,
-        'wager': wager,
-        'is_anomaly': is_anomaly,
-        'dialogue': line,
-    }
+    return schedule[segment % len(schedule)]
 
 
 # ── Mood-dependent AI parameters ────────────────────────────────
@@ -113,12 +62,33 @@ _MOOD_PARAMS = {
         'top_n': 6,
         'time_limit': 0.8,
     },
+    'uneasy': {
+        'depth': 2,
+        'noise': 90,
+        'blunder_chance': 0.14,
+        'top_n': 5,
+        'time_limit': 0.9,
+    },
+    'irritated': {
+        'depth': 3,
+        'noise': 70,
+        'blunder_chance': 0.10,
+        'top_n': 4,
+        'time_limit': 1.0,
+    },
     'annoyed': {
         'depth': 3,
         'noise': 50,
         'blunder_chance': 0.06,
         'top_n': 3,
         'time_limit': 1.2,
+    },
+    'furious': {
+        'depth': 4,
+        'noise': 30,
+        'blunder_chance': 0.03,
+        'top_n': 2,
+        'time_limit': 1.4,
     },
     'angry': {
         'depth': 4,

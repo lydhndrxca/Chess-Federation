@@ -12,6 +12,7 @@ from app.models import db, User
 login_manager = LoginManager()
 
 MIGRATION_FLAG = 'v2_rating_reset_done'
+ANDREW_REFUND_FLAG = 'v3_andrew_sap_refund'
 
 
 def _migrate_db(app):
@@ -275,6 +276,15 @@ def _migrate_db(app):
         cur.execute('UPDATE user SET rating=200, wins=0, losses=0, draws=0, forfeits=0')
         cur.execute("INSERT INTO _migration_flags(flag) VALUES(?)", (MIGRATION_FLAG,))
 
+    refund_done = cur.execute(
+        "SELECT 1 FROM _migration_flags WHERE flag=?", (ANDREW_REFUND_FLAG,)
+    ).fetchone()
+    if not refund_done:
+        cur.execute(
+            "UPDATE user SET rating = rating + 20 WHERE LOWER(username) = 'andrewmuckerofstalls'"
+        )
+        cur.execute("INSERT INTO _migration_flags(flag) VALUES(?)", (ANDREW_REFUND_FLAG,))
+
     conn.commit()
     conn.close()
 
@@ -319,8 +329,6 @@ def create_app():
     from app.routes.challenge import challenge_bp
     app.register_blueprint(challenge_bp)
 
-    from app.routes.sap import sap_bp
-    app.register_blueprint(sap_bp)
 
     _migrate_db(app)
 

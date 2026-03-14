@@ -73,7 +73,7 @@ def crypt_home():
         entry_cost=ENTRY_COST,
         daily_limit=DAILY_LIMIT,
         daily_runs=today_runs,
-        can_enter=today_runs < DAILY_LIMIT and current_user.rating >= ENTRY_COST,
+        can_enter=today_runs < DAILY_LIMIT,
         ladder=LADDER,
         max_waves=MAX_WAVES,
         boss_reward=BOSS_REWARD,
@@ -128,11 +128,7 @@ def crypt_new():
     if not can_enter(current_user.id):
         return jsonify(ok=False, error='Daily limit reached (3 per day).'), 400
 
-    if current_user.rating < ENTRY_COST:
-        return jsonify(ok=False, error=f'Not enough rating ({ENTRY_COST} required).'), 400
-
-    current_user.rating -= ENTRY_COST
-    game = CryptGame(user_id=current_user.id, rating_entry=ENTRY_COST)
+    game = CryptGame(user_id=current_user.id, rating_entry=0)
     db.session.add(game)
     db.session.commit()
     return jsonify(ok=True, game_id=game.id)
@@ -456,10 +452,8 @@ def _finish_cascade_wave(game, board, cap_gold, cap_score):
         game.phase = 'gameover'
         game.completed_at = datetime.now(timezone.utc)
         game.fen_current = board.fen()
-        game.rating_result = BOSS_REWARD
+        game.rating_result = 0
         game.cashed_out = False
-        user = User.query.get(game.user_id)
-        user.rating += ENTRY_COST + BOSS_REWARD
         db.session.commit()
         return jsonify(
             ok=True, fen=board.fen(), wave_complete=True, game_over=True,
@@ -467,7 +461,7 @@ def _finish_cascade_wave(game, board, cap_gold, cap_score):
             final_kills=game.kills, gold=game.gold,
             gold_earned=game.gold_earned, gold_spent=game.gold_spent,
             capture_gold=cap_gold, capture_score=cap_score,
-            rating_change=BOSS_REWARD,
+            rating_change=0,
             enoch=get_cascade_survived_line(),
         )
 
@@ -500,13 +494,7 @@ def _finish_cascade_loss(game, board):
     game.phase = 'gameover'
     game.completed_at = datetime.now(timezone.utc)
     game.fen_current = board.fen()
-    highest_cleared = game.wave - 1
-    net = get_safety_net(highest_cleared)
-    game.rating_result = net
-    user = User.query.get(game.user_id)
-    refund = ENTRY_COST + net
-    if refund > 0:
-        user.rating += refund
+    game.rating_result = 0
     db.session.commit()
 
     return jsonify(
@@ -515,7 +503,7 @@ def _finish_cascade_loss(game, board):
         final_kills=game.kills, gold=game.gold,
         gold_earned=game.gold_earned, gold_spent=game.gold_spent,
         capture_gold=0, capture_score=0,
-        rating_change=net, safety_net_used=net,
+        rating_change=0, safety_net_used=0,
         enoch=get_cascade_defeat_line(),
     )
 
@@ -594,11 +582,8 @@ def _finish_game_victory(game, board, player_san, ai_san, ai_uci,
     game.phase = 'gameover'
     game.completed_at = datetime.now(timezone.utc)
     game.fen_current = board.fen()
-    game.rating_result = BOSS_REWARD
+    game.rating_result = 0
     game.cashed_out = False
-
-    user = User.query.get(game.user_id)
-    user.rating += ENTRY_COST + BOSS_REWARD
 
     prev_best = _best_wave(game.user_id)
     is_new_best = game.wave > prev_best
@@ -621,7 +606,7 @@ def _finish_game_victory(game, board, player_san, ai_san, ai_uci,
         gold_spent=game.gold_spent,
         capture_gold=cap_gold,
         capture_score=cap_score,
-        rating_change=BOSS_REWARD,
+        rating_change=0,
         is_new_best=is_new_best,
         enoch=get_boss_victory_line(),
         enoch_highscore=get_high_score_line() if is_new_best else None,
@@ -636,13 +621,7 @@ def _finish_game(game, board, player_san, ai_san, ai_move,
     game.fen_current = board.fen()
 
     highest_cleared = game.wave - 1
-    net = get_safety_net(highest_cleared)
-    game.rating_result = net
-
-    user = User.query.get(game.user_id)
-    refund = ENTRY_COST + net
-    if refund > 0:
-        user.rating += refund
+    game.rating_result = 0
 
     prev_best = _best_wave(game.user_id)
     is_new_best = game.wave > prev_best
@@ -667,8 +646,8 @@ def _finish_game(game, board, player_san, ai_san, ai_move,
         gold_spent=game.gold_spent,
         capture_gold=cap_gold,
         capture_score=cap_score,
-        rating_change=net,
-        safety_net_used=net,
+        rating_change=0,
+        safety_net_used=0,
         is_new_best=is_new_best,
         enoch=enoch_line,
         enoch_highscore=get_high_score_line() if is_new_best else None,
@@ -690,18 +669,15 @@ def crypt_cashout(game_id):
 
     game.phase = 'gameover'
     game.completed_at = datetime.now(timezone.utc)
-    game.rating_result = cashout_val
+    game.rating_result = 0
     game.cashed_out = True
-
-    user = User.query.get(game.user_id)
-    user.rating += ENTRY_COST + cashout_val
 
     db.session.commit()
 
     return jsonify(
         ok=True,
-        rating_change=cashout_val,
-        total_returned=ENTRY_COST + cashout_val,
+        rating_change=0,
+        total_returned=0,
         final_wave=highest_cleared,
         final_score=game.score,
         final_kills=game.kills,
@@ -783,16 +759,9 @@ def crypt_abandon(game_id):
     if game.completed_at:
         return jsonify(ok=False, error='Already finished.'), 400
 
-    highest_cleared = game.wave - 1
-    net = get_safety_net(highest_cleared)
-    game.rating_result = net
+    game.rating_result = 0
     game.phase = 'gameover'
     game.completed_at = datetime.now(timezone.utc)
 
-    user = User.query.get(game.user_id)
-    refund = ENTRY_COST + net
-    if refund > 0:
-        user.rating += refund
-
     db.session.commit()
-    return jsonify(ok=True, rating_change=net)
+    return jsonify(ok=True, rating_change=0)

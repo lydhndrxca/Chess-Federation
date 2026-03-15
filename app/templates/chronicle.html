@@ -123,7 +123,6 @@
 {% block scripts %}
 <script>
 document.querySelectorAll('.sp-collapse-toggle').forEach(function(toggle) {
-    toggle.style.cursor = 'pointer';
     toggle.addEventListener('click', function() {
         var targetId = toggle.getAttribute('data-target');
         var body = document.getElementById(targetId);

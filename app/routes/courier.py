@@ -215,7 +215,7 @@ def _make_enoch_move(game):
     w_sq = parse_square(game.courier_white_sq) if game.courier_white_sq else None
     b_sq = parse_square(game.courier_black_sq) if game.courier_black_sq else None
 
-    ai_move = pick_move_minimax(game.fen, w_sq, b_sq, game.turn_count, depth=3, time_limit=2.0)
+    ai_move = pick_move_minimax(game.fen, w_sq, b_sq, game.turn_count, depth=4, time_limit=3.0)
     if ai_move is None:
         over, winner, reason = check_game_over(game.fen, w_sq, b_sq, game.turn_count)
         if over:

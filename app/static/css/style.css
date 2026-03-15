@@ -498,8 +498,15 @@ a:hover { text-decoration: underline; }
 .sp-doge-up { color: #2ecc71; }
 .sp-doge-down { color: #e74c3c; }
 .sp-ticker-sep { color: var(--border); margin: 0 0.15rem; }
+.sp-ticker-left, .sp-ticker-right {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1;
+}
+.sp-ticker-right { justify-content: flex-end; }
 .sp-market-btn {
-    margin-left: auto;
+    flex-shrink: 0;
     padding: 0.2rem 0.6rem;
     background: linear-gradient(135deg, #c2a633, #d4b84a);
     color: #1a1a1a;
@@ -516,12 +523,43 @@ a:hover { text-decoration: underline; }
 
 /* ── Collapsible sections ── */
 .sp-collapsible .sp-section-header { user-select: none; }
+.sp-collapse-toggle {
+    cursor: pointer;
+    padding: 0.45rem 0.65rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    transition: background 0.15s, border-color 0.15s;
+}
+.sp-collapse-toggle:hover {
+    background: rgba(194, 166, 51, 0.08);
+    border-color: rgba(194, 166, 51, 0.3);
+}
+.sp-collapse-toggle:active {
+    background: rgba(194, 166, 51, 0.14);
+}
+.sp-collapse-toggle .sp-section-title {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
 .sp-collapse-arrow {
-    display: inline-block;
-    transition: transform 0.2s;
-    font-size: 0.8rem;
-    margin-left: 0.3rem;
-    opacity: 0.5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-left: auto;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.06);
+    transition: transform 0.2s, background 0.15s;
+    font-size: 0.7rem;
+    opacity: 0.7;
+}
+.sp-collapse-toggle:hover .sp-collapse-arrow {
+    opacity: 1;
+    background: rgba(194, 166, 51, 0.15);
 }
 .sp-collapsible.sp-expanded .sp-collapse-arrow { transform: rotate(0deg); }
 .sp-collapsible:not(.sp-expanded) .sp-collapse-arrow { transform: rotate(-90deg); }
@@ -1746,7 +1784,8 @@ a:hover { text-decoration: underline; }
 /* ── Chronicle / Federation Timeline ───────────────── */
 .chronicle-page h1 { margin-bottom: 1rem; padding: 0 0.75rem; }
 .tl-week { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; }
-.tl-week-header { margin-bottom: 0.3rem; }
+.tl-week-header { margin-bottom: 0.3rem; border: none; background: transparent; }
+.tl-week-header:hover { background: rgba(194, 166, 51, 0.06); }
 .tl-week-body.sp-collapsed { display: none; }
 .tl-decree { padding: 0.4rem 0.6rem; background: rgba(227,179,65,0.08); border-radius: var(--radius); font-size: 0.82rem; margin-bottom: 0.5rem; color: #c8b889; }
 .tl-decree-icon { margin-right: 0.3rem; }

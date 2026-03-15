@@ -33,15 +33,18 @@ from datetime import datetime
 
 import chess
 
-sys.path.insert(0, os.path.dirname(__file__))
+_root = os.path.dirname(os.path.abspath(__file__))
+_svc = os.path.join(_root, "app", "services")
+sys.path.insert(0, _svc)
+sys.path.insert(0, _root)
 
-from app.services.courier_engine import (
+from courier_engine import (
     initial_fen, get_legal_moves, make_move, check_game_over,
     get_board_state, parse_square, square_name, PIECE_VALUES,
     courier_distance_to_goal,
 )
-from app.services.courier_ai import (
-    pick_move_minimax, pick_courier_for_ai, evaluate, INF,
+from courier_ai import (
+    pick_move_minimax, pick_courier_for_ai, evaluate, INF, _tt,
 )
 
 try:
@@ -105,6 +108,7 @@ def self_play_game(depth_white=2, depth_black=2, verbose=False):
 
     Returns list of (fen, courier_w, courier_b, turn, result) tuples.
     """
+    _tt.clear()
     fen = initial_fen()
     board = chess.Board(fen)
 

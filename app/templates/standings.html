@@ -15,15 +15,18 @@
 
     {# ── Market Ticker ── #}
     <div class="sp-doge-ticker" id="marketTicker">
-        <span class="sp-doge-icon" style="font-size:1rem;">&#9775;</span>
-        <span class="sp-doge-label">Enoch Market</span>
-        <span class="sp-doge-price" id="tickerBalance">${{ '{:,.0f}'.format(current_user.roman_gold) }}</span>
-        <span class="sp-ticker-sep">|</span>
-        <span class="sp-doge-label">Portfolio</span>
-        <span class="sp-doge-price" id="tickerPnl">--</span>
-        <span class="sp-ticker-sep">|</span>
-        <span class="sp-ticker-rotate" id="tickerRotate"></span>
+        <span class="sp-ticker-left">
+            <span class="sp-doge-icon" style="font-size:1rem;">&#9775;</span>
+            <span class="sp-doge-label">Enoch Market</span>
+            <span class="sp-doge-price" id="tickerBalance">${{ '{:,.0f}'.format(current_user.roman_gold) }}</span>
+            <span class="sp-ticker-sep">|</span>
+            <span class="sp-doge-label">Portfolio</span>
+            <span class="sp-doge-price" id="tickerPnl">--</span>
+        </span>
         <a href="{{ url_for('market.market_page') }}" class="sp-market-btn">Enter Market &rarr;</a>
+        <span class="sp-ticker-right">
+            <span class="sp-ticker-rotate" id="tickerRotate"></span>
+        </span>
     </div>
 
     {# ══════ GAME MODE OF THE WEEK (collapsible) ══════ #}
@@ -508,7 +511,6 @@ Three attempts per day. Come down. If you dare."</p>
 /* ── Collapsible sections ── */
 (function() {
     document.querySelectorAll('.sp-collapse-toggle').forEach(function(toggle) {
-        toggle.style.cursor = 'pointer';
         toggle.addEventListener('click', function() {
             var targetId = toggle.getAttribute('data-target');
             var body = document.getElementById(targetId);

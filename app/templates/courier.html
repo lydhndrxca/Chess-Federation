@@ -167,9 +167,83 @@ var app = {
 
 var enochImg = '{{ url_for("static", filename="img/enoch.png") }}';
 
+/* ── Enoch Audio System ── */
+var audioTextToUrl = null;
+var audioQueue = [];
+var audioPlaying = false;
+var manifestUrl = "{{ url_for('static', filename='audio/enoch/manifest.json') }}";
+var audioBase = "{{ audio_cdn_base }}enoch/";
+var manifestVer = "{{ manifest_version }}";
+
+function loadManifest() {
+    var loader = (window.EnochCache && window.EnochCache.getManifest)
+        ? window.EnochCache.getManifest(manifestUrl, manifestVer)
+        : fetch(manifestUrl).then(function(r){ return r.json(); });
+    loader.then(function(manifest) {
+        audioTextToUrl = {};
+        for (var k in manifest) {
+            if (manifest.hasOwnProperty(k)) {
+                audioTextToUrl[manifest[k].text] = audioBase + manifest[k].file;
+            }
+        }
+    }).catch(function(){});
+}
+loadManifest();
+
+function drainAudio() {
+    if (audioPlaying || !audioQueue.length) return;
+    audioPlaying = true;
+    var url = audioQueue.shift();
+    var getter = (window.EnochCache && window.EnochCache.getAudio)
+        ? window.EnochCache.getAudio(url)
+        : Promise.resolve(new Audio(url));
+    getter.then(function(audio) {
+        audio.volume = 0.8;
+        audio.onended = function(){ audioPlaying = false; drainAudio(); };
+        audio.onerror = function(){ audioPlaying = false; drainAudio(); };
+        audio.play().catch(function(){ audioPlaying = false; drainAudio(); });
+    }).catch(function(){ audioPlaying = false; drainAudio(); });
+}
+
+function playEnochLine(text) {
+    if (!audioTextToUrl || !text) return;
+    var url = audioTextToUrl[text];
+    if (!url) return;
+    audioQueue.push(url);
+    if (audioQueue.length > 2) audioQueue.splice(0, audioQueue.length - 2);
+    drainAudio();
+}
+
+/* ── Chess Piece Sounds ── */
+var chessSounds = {};
+(function() {
+    var base = (window.AUDIO_CDN || (window.STATIC_BASE || '/static/') + 'audio/') + 'chess/';
+    var files = { move: 'Move.mp3', capture: 'Capture.mp3', end: 'Confirmation.mp3', win: 'Win.wav', lose: 'Lose.wav' };
+    for (var key in files) {
+        var a = new Audio(base + files[key]);
+        a.preload = 'auto';
+        chessSounds[key] = a;
+    }
+})();
+
+function playChessSound(key) {
+    var s = chessSounds[key];
+    if (!s) return;
+    try { s.currentTime = 0; } catch(e) {}
+    s.play().catch(function(){});
+}
+
+function playSanSound(san, gameOver) {
+    if (!san) return;
+    if (gameOver) playChessSound('end');
+    else if (san.indexOf('x') >= 0) playChessSound('capture');
+    else playChessSound('move');
+}
+
 function setEnoch(text) {
     var el = document.getElementById('crEnochText');
     if (el) el.textContent = text;
+    playEnochLine(text);
 }
 
 function setStatus(text, cls) {
@@ -254,6 +328,7 @@ function initBoard(fen, dests, interactive) {
 
 function onPlayerMove(orig, dest) {
     var uci = orig + dest;
+    playChessSound('move');
     setStatus('Enoch is thinking...');
     app.ground.set({ movable: { dests: new Map() }, draggable: { enabled: false } });
 
@@ -274,8 +349,8 @@ function onPlayerMove(orig, dest) {
         if (d.enoch) setEnoch(d.enoch);
         updateCounters(d.turn_count, d.move_count);
 
-        // Apply Enoch's move
         if (d.enoch_move) {
+            playSanSound(d.enoch_move.san, false);
             app.fen = d.fen;
             app.courierWhite = d.courier_white || '';
             app.courierBlack = d.courier_black || '';
@@ -310,6 +385,7 @@ function handleGameOver(d) {
     app.courierWhite = d.courier_white || '';
     app.courierBlack = d.courier_black || '';
     if (d.enoch_move) {
+        playSanSound(d.enoch_move.san, true);
         app.ground.set({ fen: d.fen, lastMove: [d.enoch_move.from, d.enoch_move.to] });
     } else if (d.player_from && d.player_to) {
         app.ground.set({ fen: d.fen, lastMove: [d.player_from, d.player_to] });
@@ -337,14 +413,17 @@ function handleGameOver(d) {
         titleEl.textContent = 'Victory!';
         titleEl.style.color = 'var(--green)';
         setStatus('You win!', 'cr-status-win');
+        playChessSound('win');
     } else if (d.winner === 'black') {
         titleEl.textContent = 'Defeat';
         titleEl.style.color = '#e74c3c';
+        playChessSound('lose');
         setStatus('Enoch wins.', 'cr-status-loss');
     } else {
         titleEl.textContent = 'Draw';
         titleEl.style.color = 'var(--text-muted)';
         setStatus('Draw.', 'cr-status-draw');
+        playChessSound('end');
     }
 
     reasonEl.textContent = reasonMap[d.end_reason] || d.end_reason;

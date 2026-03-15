@@ -13,165 +13,222 @@
         </span>
     </div>
 
-    {# ── Dogecoin Ticker ── #}
-    <div class="sp-doge-ticker" id="dogeTicker">
-        <span class="sp-doge-icon">&#208;</span>
-        <span class="sp-doge-label">DOGE</span>
-        <span class="sp-doge-price" id="dogePrice">--</span>
-        <span class="sp-doge-change" id="dogeChange"></span>
+    {# ── Market Ticker ── #}
+    <div class="sp-doge-ticker" id="marketTicker">
+        <span class="sp-doge-icon" style="font-size:1rem;">&#9775;</span>
+        <span class="sp-doge-label">Enoch Market</span>
+        <span class="sp-doge-price" id="tickerBalance">${{ '{:,.0f}'.format(current_user.roman_gold) }}</span>
+        <span class="sp-ticker-sep">|</span>
+        <span class="sp-doge-label">Portfolio</span>
+        <span class="sp-doge-price" id="tickerPnl">--</span>
+        <span class="sp-ticker-sep">|</span>
+        <span class="sp-ticker-rotate" id="tickerRotate"></span>
+        <a href="{{ url_for('market.market_page') }}" class="sp-market-btn">Enter Market &rarr;</a>
     </div>
 
-    {# ══════ WEEKLY MATCHES — "Game of the Week" ══════ #}
-    <div class="sp-section">
-        <div class="sp-section-header">
+    {# ══════ GAME MODE OF THE WEEK (collapsible) ══════ #}
+    {% set weekly_has_turn = my_games|selectattr('is_my_turn')|list|length > 0 %}
+    <div class="sp-section sp-collapsible{% if weekly_has_turn %} sp-expanded{% endif %}" id="sectionWeekly">
+        <div class="sp-section-header sp-collapse-toggle" data-target="sectionWeeklyBody">
             <h3 class="sp-section-title">
-                &#9876; Weekly Matches
+                &#9876; Game Mode of the Week
                 {% if weekly_rule %}
                 <span class="sp-rule-tag">{{ weekly_rule.title }}</span>
                 {% endif %}
+                <span class="sp-collapse-arrow">&#9662;</span>
             </h3>
         </div>
-
-        {% if my_games %}
-        <div class="sp-games">
-            {% for m in my_games %}
-            {% set g = m.game %}
-            {% set opp = m.opponent %}
-            <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="gc{{ ' gc-your-turn' if m.is_my_turn else '' }}">
-                <div class="gc-board">
-                    {{ mini_board(g.fen_current, m.my_color == 'black') }}
-                    {% if g.status in ('completed', 'forfeited') %}
-                    <div class="gc-board-overlay">
-                        <span>{{ g.result }}</span>
-                    </div>
+        <div class="sp-collapse-body{% if not weekly_has_turn %} sp-collapsed{% endif %}" id="sectionWeeklyBody">
+            {# Decree inside this section #}
+            {% if schedule and schedule.power_holder %}
+            <a href="{{ url_for('decree.decree_page') }}" class="sp-decree sp-decree-inline">
+                <div class="sp-decree-icon">&#128081;</div>
+                <div class="sp-decree-body">
+                    <span class="sp-decree-holder">{{ schedule.power_holder.username }}'s Decree</span>
+                    {% if schedule.rule_declaration %}
+                    <span class="sp-decree-text">{{ schedule.rule_declaration|truncate(80) }}</span>
+                    {% else %}
+                    <span class="sp-decree-text text-muted">No decree issued yet</span>
                     {% endif %}
                 </div>
-                <div class="gc-info">
-                    <div class="gc-opponent">
-                        {{ avatar(opp, 'sm', show_online=true) }}
-                        <div class="gc-opp-detail">
-                            <span class="gc-opp-name">{{ opp.username }}</span>
-                            <span class="gc-opp-rating">({{ opp.rating }})</span>
-                        </div>
-                    </div>
-                    <div class="gc-meta">
-                        {% if m.h2h[0] or m.h2h[1] or m.h2h[2] %}
-                        <div class="gc-h2h">
-                            <span class="gc-h2h-w">{{ m.h2h[0] }}W</span>
-                            <span class="gc-h2h-sep">/</span>
-                            <span class="gc-h2h-l">{{ m.h2h[1] }}L</span>
-                            <span class="gc-h2h-sep">/</span>
-                            <span class="gc-h2h-d">{{ m.h2h[2] }}D</span>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="gc-status">
-                        {% if g.custom_rule_name %}
-                        <span class="badge badge-rule" title="{{ g.custom_rule_name }}">{{ g.custom_rule_name }}</span>
-                        {% endif %}
-                        {% if g.status == 'pending' %}
-                            <span class="badge badge-pending">New</span>
-                        {% elif g.status == 'active' %}
-                            {% if m.is_my_turn %}
-                                <span class="badge badge-your-turn">Your turn</span>
-                            {% else %}
-                                <span class="badge badge-active">Their turn</span>
-                            {% endif %}
-                        {% elif g.status == 'completed' %}
-                            <span class="badge badge-completed">{{ g.result_type }}</span>
-                        {% elif g.status == 'forfeited' %}
-                            <span class="badge badge-forfeited">Forfeit</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </a>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="sp-empty">
-            <p class="text-muted">No weekly contests ordained yet.</p>
-        </div>
-        {% endif %}
-
-    </div>
-
-    {# ══════ CASUAL MATCHES — Normal Rules ══════ #}
-    <div class="sp-section">
-        <div class="sp-section-header">
-            <h3 class="sp-section-title">&#9823; Casual Matches</h3>
-        </div>
-
-        {# Incoming challenges #}
-        {% if incoming_challenges %}
-        <div class="sp-challenges-in">
-            {% for ch in incoming_challenges %}
-            <div class="sp-challenge-card" data-challenge-id="{{ ch.id }}">
-                {{ avatar(ch.challenger, 'sm', show_online=true) }}
-                <div class="sp-challenge-info">
-                    <span class="sp-challenge-name">{{ ch.challenger.username }}</span>
-                    <span class="sp-challenge-rating">({{ ch.challenger.rating }})</span>
-                    <span class="sp-challenge-label">challenges you!</span>
-                </div>
-                <div class="sp-challenge-actions">
-                    <button class="btn btn-sm btn-primary sp-ch-accept" data-id="{{ ch.id }}">Accept</button>
-                    <button class="btn btn-sm btn-outline sp-ch-decline" data-id="{{ ch.id }}">Decline</button>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        {# Active casual games #}
-        {% if my_casual_games %}
-        <div class="sp-games">
-            {% for m in my_casual_games %}
-            {% set g = m.game %}
-            {% set opp = m.opponent %}
-            {% if g.status in ('pending', 'active') %}
-            <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="gc{{ ' gc-your-turn' if m.is_my_turn else '' }}">
-                <div class="gc-board">
-                    {{ mini_board(g.fen_current, m.my_color == 'black') }}
-                </div>
-                <div class="gc-info">
-                    <div class="gc-opponent">
-                        {{ avatar(opp, 'sm', show_online=true) }}
-                        <div class="gc-opp-detail">
-                            <span class="gc-opp-name">{{ opp.username }}</span>
-                            <span class="gc-opp-rating">({{ opp.rating }})</span>
-                        </div>
-                    </div>
-                    <div class="gc-status">
-                        <span class="badge badge-casual">Casual</span>
-                        {% if g.status == 'active' %}
-                            {% if m.is_my_turn %}
-                                <span class="badge badge-your-turn">Your turn</span>
-                            {% else %}
-                                <span class="badge badge-active">Their turn</span>
-                            {% endif %}
-                        {% else %}
-                            <span class="badge badge-pending">New</span>
-                        {% endif %}
-                    </div>
-                </div>
+                <svg class="sp-decree-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
             </a>
             {% endif %}
-            {% endfor %}
-        </div>
-        {% endif %}
 
-        {# Challenge a player #}
-        <div class="sp-challenge-bar">
-            <span class="sp-challenge-prompt">Challenge a player:</span>
-            <div class="sp-challenge-players">
-                {% for p in all_players %}
-                <button class="sp-challenge-btn" data-user-id="{{ p.id }}" data-username="{{ p.username }}" title="Challenge {{ p.username }}">
-                    {{ avatar(p, 'xs', show_online=true) }}
-                    <span class="sp-challenge-btn-name">{{ p.username }}</span>
-                </button>
+            {% if my_games %}
+            <div class="sp-games">
+                {% for m in my_games %}
+                {% set g = m.game %}
+                {% set opp = m.opponent %}
+                <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="gc{{ ' gc-your-turn' if m.is_my_turn else '' }}">
+                    <div class="gc-board">
+                        {{ mini_board(g.fen_current, m.my_color == 'black') }}
+                        {% if g.status in ('completed', 'forfeited') %}
+                        <div class="gc-board-overlay">
+                            <span>{{ g.result }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="gc-info">
+                        <div class="gc-opponent">
+                            {{ avatar(opp, 'sm', show_online=true) }}
+                            <div class="gc-opp-detail">
+                                <span class="gc-opp-name">{{ opp.username }}</span>
+                                <span class="gc-opp-rating">({{ opp.rating }})</span>
+                            </div>
+                        </div>
+                        <div class="gc-meta">
+                            {% if m.h2h[0] or m.h2h[1] or m.h2h[2] %}
+                            <div class="gc-h2h">
+                                <span class="gc-h2h-w">{{ m.h2h[0] }}W</span>
+                                <span class="gc-h2h-sep">/</span>
+                                <span class="gc-h2h-l">{{ m.h2h[1] }}L</span>
+                                <span class="gc-h2h-sep">/</span>
+                                <span class="gc-h2h-d">{{ m.h2h[2] }}D</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="gc-status">
+                            {% if g.custom_rule_name %}
+                            <span class="badge badge-rule" title="{{ g.custom_rule_name }}">{{ g.custom_rule_name }}</span>
+                            {% endif %}
+                            {% if g.status == 'pending' %}
+                                <span class="badge badge-pending">New</span>
+                            {% elif g.status == 'active' %}
+                                {% if m.is_my_turn %}
+                                    <span class="badge badge-your-turn">Your turn</span>
+                                {% else %}
+                                    <span class="badge badge-active">Their turn</span>
+                                {% endif %}
+                            {% elif g.status == 'completed' %}
+                                <span class="badge badge-completed">{{ g.result_type }}</span>
+                            {% elif g.status == 'forfeited' %}
+                                <span class="badge badge-forfeited">Forfeit</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="sp-empty">
+                <p class="text-muted">No weekly contests ordained yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ══════ TRADITIONAL RANKED MATCHES (collapsible) ══════ #}
+    {% set casual_has_turn = my_casual_games|selectattr('is_my_turn')|list|length > 0 if my_casual_games else false %}
+    <div class="sp-section sp-collapsible{% if casual_has_turn %} sp-expanded{% endif %}" id="sectionCasual">
+        <div class="sp-section-header sp-collapse-toggle" data-target="sectionCasualBody">
+            <h3 class="sp-section-title">
+                &#9823; Traditional Ranked Matches
+                <span class="sp-collapse-arrow">&#9662;</span>
+            </h3>
+        </div>
+        <div class="sp-collapse-body{% if not casual_has_turn %} sp-collapsed{% endif %}" id="sectionCasualBody">
+            {# Incoming challenges #}
+            {% if incoming_challenges %}
+            <div class="sp-challenges-in">
+                {% for ch in incoming_challenges %}
+                <div class="sp-challenge-card" data-challenge-id="{{ ch.id }}">
+                    {{ avatar(ch.challenger, 'sm', show_online=true) }}
+                    <div class="sp-challenge-info">
+                        <span class="sp-challenge-name">{{ ch.challenger.username }}</span>
+                        <span class="sp-challenge-rating">({{ ch.challenger.rating }})</span>
+                        <span class="sp-challenge-label">challenges you!</span>
+                    </div>
+                    <div class="sp-challenge-actions">
+                        <button class="btn btn-sm btn-primary sp-ch-accept" data-id="{{ ch.id }}">Accept</button>
+                        <button class="btn btn-sm btn-outline sp-ch-decline" data-id="{{ ch.id }}">Decline</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {# Active casual games + empty "Click to Challenge" cards #}
+            <div class="sp-games">
+                {% for m in my_casual_games %}
+                {% set g = m.game %}
+                {% set opp = m.opponent %}
+                {% if g.status in ('pending', 'active') %}
+                <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="gc{{ ' gc-your-turn' if m.is_my_turn else '' }}">
+                    <div class="gc-board">
+                        {{ mini_board(g.fen_current, m.my_color == 'black') }}
+                    </div>
+                    <div class="gc-info">
+                        <div class="gc-opponent">
+                            {{ avatar(opp, 'sm', show_online=true) }}
+                            <div class="gc-opp-detail">
+                                <span class="gc-opp-name">{{ opp.username }}</span>
+                                <span class="gc-opp-rating">({{ opp.rating }})</span>
+                            </div>
+                        </div>
+                        <div class="gc-status">
+                            {% if g.status == 'active' %}
+                                {% if m.is_my_turn %}
+                                    <span class="badge badge-your-turn">Your turn</span>
+                                {% else %}
+                                    <span class="badge badge-active">Their turn</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge badge-pending">New</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+                {% endif %}
+                {% endfor %}
+
+                {# Empty cards for players with no active casual game #}
+                {% for p in challengeable_players %}
+                <div class="gc gc-empty sp-challenge-btn" data-user-id="{{ p.id }}" data-username="{{ p.username }}">
+                    <div class="gc-board gc-board-empty">
+                        <div class="gc-empty-grid"></div>
+                    </div>
+                    <div class="gc-info">
+                        <div class="gc-opponent">
+                            {{ avatar(p, 'sm', show_online=true) }}
+                            <div class="gc-opp-detail">
+                                <span class="gc-opp-name">{{ p.username }}</span>
+                                <span class="gc-opp-rating">({{ p.rating }})</span>
+                            </div>
+                        </div>
+                        <div class="gc-status">
+                            <span class="badge badge-challenge">Click to Challenge</span>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
             </div>
         </div>
     </div>
+
+    {# ── Other Weekly Contests ── #}
+    {% if other_games %}
+    <div class="sp-section">
+        <h4 class="sp-section-title">Other Weekly Contests</h4>
+        {% for g in other_games %}
+        <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="sp-other-row">
+            <span>{{ g.white.username }} vs {{ g.black.username }}</span>
+            {% if g.custom_rule_name %}
+            <span class="badge badge-rule">{{ g.custom_rule_name }}</span>
+            {% endif %}
+            {% if g.status == 'completed' %}
+            <span class="badge badge-completed">{{ g.result }}</span>
+            {% elif g.status == 'active' %}
+            <span class="badge badge-active">In progress</span>
+            {% elif g.status == 'pending' %}
+            <span class="badge badge-pending">Unbegun</span>
+            {% elif g.status == 'forfeited' %}
+            <span class="badge badge-forfeited">Forfeit</span>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     {# ── Compact Chat ── #}
     <div class="sp-section sp-chat-section">
@@ -220,30 +277,6 @@
         </div>
     </div>
 
-    {# ── Other Weekly Contests (moved below chat) ── #}
-    {% if other_games %}
-    <div class="sp-section">
-        <h4 class="sp-section-title">Other Weekly Contests</h4>
-        {% for g in other_games %}
-        <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="sp-other-row">
-            <span>{{ g.white.username }} vs {{ g.black.username }}</span>
-            {% if g.custom_rule_name %}
-            <span class="badge badge-rule">{{ g.custom_rule_name }}</span>
-            {% endif %}
-            {% if g.status == 'completed' %}
-            <span class="badge badge-completed">{{ g.result }}</span>
-            {% elif g.status == 'active' %}
-            <span class="badge badge-active">In progress</span>
-            {% elif g.status == 'pending' %}
-            <span class="badge badge-pending">Unbegun</span>
-            {% elif g.status == 'forfeited' %}
-            <span class="badge badge-forfeited">Forfeit</span>
-            {% endif %}
-        </a>
-        {% endfor %}
-    </div>
-    {% endif %}
-
     {# ── Practice Opponents (Enoch) ── #}
     <div class="sp-section sp-practice">
         <h3 class="sp-section-title">Practice Opponents</h3>
@@ -271,34 +304,31 @@
         </div>
     </div>
 
-    {# ── The Crypt (wave defence) ── #}
+    {# ── Courier Run ── #}
     <div class="sp-section">
-        <h3 class="sp-section-title">The Crypt</h3>
-        <a href="{{ url_for('crypt.crypt_home') }}" class="sp-reckoning-card">
-            <span class="sp-reckoning-icon">&#9760;</span>
+        <h3 class="sp-section-title">The Courier's Errand</h3>
+        <a href="{{ url_for('courier.courier_page') }}" class="sp-reckoning-card">
+            <span class="sp-reckoning-icon">&#9993;</span>
             <div class="sp-reckoning-info">
-                <span class="sp-reckoning-name">The Crypt</span>
-                <span class="sp-reckoning-sub">Wave defence &middot; "They scratch at the grate. Always."</span>
+                <span class="sp-reckoning-name">Courier Run</span>
+                <span class="sp-reckoning-sub">Escort game &middot; Deliver your pawn or capture Enoch's &middot; Win $50</span>
             </div>
-            <span class="sp-reckoning-badge">Enter</span>
+            <span class="sp-reckoning-badge">Play</span>
         </a>
     </div>
 
-    {# ── Decree strip ── #}
-    {% if schedule and schedule.power_holder %}
-    <a href="{{ url_for('decree.decree_page') }}" class="sp-decree">
-        <div class="sp-decree-icon">👑</div>
-        <div class="sp-decree-body">
-            <span class="sp-decree-holder">{{ schedule.power_holder.username }}'s Decree</span>
-            {% if schedule.rule_declaration %}
-            <span class="sp-decree-text">{{ schedule.rule_declaration|truncate(80) }}</span>
-            {% else %}
-            <span class="sp-decree-text text-muted">No decree issued yet</span>
-            {% endif %}
+    {# ── The Crypt (Under Construction) ── #}
+    <div class="sp-section">
+        <h3 class="sp-section-title">The Crypt</h3>
+        <div class="sp-reckoning-card sp-crypt-disabled">
+            <span class="sp-reckoning-icon" style="opacity:.5">&#9760;</span>
+            <div class="sp-reckoning-info">
+                <span class="sp-reckoning-name" style="opacity:.6">The Crypt</span>
+                <span class="sp-reckoning-sub" style="font-style:italic">Under Construction &mdash; Enoch is rummaging through his collection of orchestral instruments and mysterious artifacts. Something new is coming...</span>
+            </div>
+            <span class="sp-reckoning-badge" style="opacity:.3">Closed</span>
         </div>
-        <svg class="sp-decree-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-    </a>
-    {% endif %}
+    </div>
 
     {# ── Standings ── #}
     <div class="sp-section">
@@ -331,16 +361,6 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
             Scrapbook
         </a>
-    </div>
-
-    {# ── Admin controls ── #}
-    <div class="sp-admin">
-        <form action="{{ url_for('admin.generate_week') }}" method="post" style="display:inline">
-            <button class="btn btn-sm">Generate Week</button>
-        </form>
-        <form action="{{ url_for('admin.run_forfeit_check') }}" method="post" style="display:inline">
-            <button class="btn btn-sm btn-outline">Check Forfeits</button>
-        </form>
     </div>
 </div>
 
@@ -485,6 +505,21 @@ Three attempts per day. Come down. If you dare."</p>
 
 {% block scripts %}
 <script>
+/* ── Collapsible sections ── */
+(function() {
+    document.querySelectorAll('.sp-collapse-toggle').forEach(function(toggle) {
+        toggle.style.cursor = 'pointer';
+        toggle.addEventListener('click', function() {
+            var targetId = toggle.getAttribute('data-target');
+            var body = document.getElementById(targetId);
+            if (!body) return;
+            var section = toggle.closest('.sp-collapsible');
+            body.classList.toggle('sp-collapsed');
+            if (section) section.classList.toggle('sp-expanded');
+        });
+    });
+})();
+
 function tickCountdown(deadlineStr, timerEl) {
     if (!deadlineStr || !timerEl) return;
     const deadline = new Date(deadlineStr);
@@ -1069,31 +1104,55 @@ document.addEventListener('DOMContentLoaded', function() {
         }).catch(function() {});
     }
 
-    /* ── Dogecoin ticker ── */
+    /* ── Market ticker ── */
     (function() {
-        var priceEl = document.getElementById('dogePrice');
-        var changeEl = document.getElementById('dogeChange');
-        if (!priceEl) return;
-        function fetchDoge() {
-            fetch('https://api.coingecko.com/api/v3/simple/price?ids=dogecoin&vs_currencies=usd&include_24hr_change=true')
+        var pnlEl = document.getElementById('tickerPnl');
+        var balEl = document.getElementById('tickerBalance');
+        var rotEl = document.getElementById('tickerRotate');
+        if (!pnlEl) return;
+
+        var leaderboard = [];
+        var rotIdx = 0;
+
+        function fetchSummary() {
+            fetch('/market/api/summary')
                 .then(function(r) { return r.json(); })
                 .then(function(d) {
-                    if (d.dogecoin) {
-                        var price = d.dogecoin.usd;
-                        var change = d.dogecoin.usd_24h_change;
-                        priceEl.textContent = '$' + price.toFixed(4);
-                        if (change != null) {
-                            var sign = change >= 0 ? '+' : '';
-                            changeEl.textContent = sign + change.toFixed(2) + '%';
-                            changeEl.className = 'sp-doge-change ' + (change >= 0 ? 'sp-doge-up' : 'sp-doge-down');
-                        }
-                    }
+                    if (balEl) balEl.textContent = '$' + Number(d.denarius).toLocaleString();
+                    var pnl = d.pnl_pct || 0;
+                    var sign = pnl >= 0 ? '+' : '';
+                    pnlEl.textContent = sign + pnl.toFixed(2) + '%';
+                    pnlEl.className = 'sp-doge-change ' + (pnl >= 0 ? 'sp-doge-up' : 'sp-doge-down');
                 }).catch(function() {
-                    priceEl.textContent = '--';
+                    pnlEl.textContent = '--';
                 });
         }
-        fetchDoge();
-        setInterval(fetchDoge, 60000);
+
+        function fetchLeaderboard() {
+            fetch('/market/api/leaderboard')
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    leaderboard = d.players || [];
+                }).catch(function() {});
+        }
+
+        function rotatePlayer() {
+            if (!rotEl || leaderboard.length === 0) return;
+            var p = leaderboard[rotIdx % leaderboard.length];
+            rotIdx++;
+            var sign = p.daily_pnl >= 0 ? '+' : '';
+            var cls = p.daily_pnl >= 0 ? 'sp-doge-up' : 'sp-doge-down';
+            rotEl.innerHTML = '<span class="sp-doge-label">' + p.username + '</span> ' +
+                '<span class="' + cls + '">' + sign + '$' + Math.abs(Math.round(p.daily_pnl)).toLocaleString() + '</span>' +
+                ' <span style="opacity:.6">($' + Math.round(p.total_value).toLocaleString() + ')</span>';
+        }
+
+        fetchSummary();
+        fetchLeaderboard();
+        setInterval(fetchSummary, 60000);
+        setInterval(fetchLeaderboard, 60000);
+        setInterval(rotatePlayer, 5000);
+        setTimeout(rotatePlayer, 1500);
     })();
 });
 </script>

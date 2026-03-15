@@ -17,7 +17,7 @@ from app.services.dialogue import (
     CMD_STANDINGS, CMD_RATING, CMD_DECREE, CMD_HELP,
     CHAT_LATE_NIGHT, CHAT_QUIRKS, CHAT_THESES, CHAT_CASUAL_ANNOUNCE,
     CHAT_CRYPT_REVENGE_ANNOUNCE, CHAT_ZOMBIE_ANNOUNCE,
-    CHAT_RECKONING_AUTOMOVE_ANNOUNCE,
+    CHAT_RECKONING_AUTOMOVE_ANNOUNCE, CHAT_MARKET_ANNOUNCE,
 )
 
 BOT_NAME = 'Enoch'
@@ -258,6 +258,48 @@ def ensure_reckoning_automove_announcement():
         return
     _automove_announced = True
     msg = _post_bot(CHAT_RECKONING_AUTOMOVE_ANNOUNCE)
+    db.session.commit()
+    return msg
+
+
+_market_announced = False
+
+def ensure_market_announcement():
+    """Post a one-time Enoch announcement about the Enoch Exchange."""
+    global _market_announced
+    if _market_announced:
+        return
+    existing = ChatMessage.query.filter(
+        ChatMessage.is_bot == True,
+        (ChatMessage.content.contains('Enoch Exchange') |
+         ChatMessage.content.contains('Denarius Exchange')),
+    ).first()
+    if existing:
+        _market_announced = True
+        return
+    _market_announced = True
+    msg = _post_bot(CHAT_MARKET_ANNOUNCE)
+    db.session.commit()
+    return msg
+
+
+_courier_announced = False
+
+def ensure_courier_announcement():
+    """Post a one-time Enoch announcement about The Courier's Errand."""
+    global _courier_announced
+    if _courier_announced:
+        return
+    existing = ChatMessage.query.filter(
+        ChatMessage.is_bot == True,
+        ChatMessage.content.contains("Courier's Errand"),
+    ).first()
+    if existing:
+        _courier_announced = True
+        return
+    _courier_announced = True
+    from app.services.courier_dialogue import COURIER_ANNOUNCE
+    msg = _post_bot(COURIER_ANNOUNCE)
     db.session.commit()
     return msg
 

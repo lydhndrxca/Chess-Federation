@@ -125,6 +125,14 @@ def standings():
         User.id != current_user.id,
     ).order_by(User.username).all()
 
+    # Players with no active casual game against current user
+    active_casual_opp_ids = set()
+    for g in casual_games_q:
+        if g.status in ('pending', 'active'):
+            opp_id = g.black_id if g.white_id == current_user.id else g.white_id
+            active_casual_opp_ids.add(opp_id)
+    challengeable_players = [p for p in all_players if p.id not in active_casual_opp_ids]
+
     standings_list = User.query.filter_by(
         is_active_player=True
     ).order_by(User.rating.desc()).all()
@@ -184,11 +192,13 @@ def standings():
         pass
 
     try:
-        from app.services.enoch_chat import ensure_casual_announcement, ensure_crypt_revenge_announcement, ensure_zombie_announcement, ensure_reckoning_automove_announcement
+        from app.services.enoch_chat import ensure_casual_announcement, ensure_crypt_revenge_announcement, ensure_zombie_announcement, ensure_reckoning_automove_announcement, ensure_market_announcement, ensure_courier_announcement
         ensure_casual_announcement()
         ensure_crypt_revenge_announcement()
         ensure_zombie_announcement()
         ensure_reckoning_automove_announcement()
+        ensure_market_announcement()
+        ensure_courier_announcement()
     except (ImportError, Exception):
         pass
 
@@ -211,6 +221,7 @@ def standings():
         my_casual_games=my_casual_games,
         incoming_challenges=incoming_challenges,
         all_players=all_players,
+        challengeable_players=challengeable_players,
         standings=standings_list,
         schedule=schedule,
         match_deadline_iso=match_deadline_iso,

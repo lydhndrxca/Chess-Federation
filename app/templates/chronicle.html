@@ -1,60 +1,137 @@
 {% extends "base.html" %}
-{% block title %}Chronicle — Chess Federation{% endblock %}
+{% from "macros.html" import avatar %}
+{% block title %}Federation Timeline — Chess Federation{% endblock %}
 
 {% block content %}
 <div class="chronicle-page">
-    <h1>Chronicle</h1>
+    <h1>Federation Timeline</h1>
 
-    {% if games.items %}
-    <div class="card">
-        <div class="history-list">
-            {% for game in games.items %}
-            <a href="{{ url_for('game.view_game', game_id=game.id) }}" class="history-row">
+    {% if weeks %}
+    {% for wk in weeks %}
+    <div class="tl-week sp-collapsible sp-expanded">
+        <div class="tl-week-header sp-collapse-toggle" data-target="tlWeek{{ loop.index }}">
+            <h3 class="sp-section-title">
+                {{ wk.label }}
+                <span class="sp-collapse-arrow">&#9662;</span>
+            </h3>
+        </div>
+        <div class="tl-week-body" id="tlWeek{{ loop.index }}">
+            {% if wk.decree %}
+            <div class="tl-decree">
+                <span class="tl-decree-icon">&#128081;</span>
+                <strong>{{ wk.decree_holder or 'Unknown' }}'s Decree:</strong>
+                {{ wk.decree }}
+            </div>
+            {% endif %}
+
+            {% if wk.weekly_games %}
+            <h4 class="tl-category">Game Mode of the Week</h4>
+            {% for g in wk.weekly_games %}
+            <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="history-row">
                 <div class="history-players">
-                    <span class="history-color-badge history-white-dot" title="White"></span>
-                    <span class="{{ 'winner' if game.result == '1-0' else '' }}">
-                        {{ game.white.username }} ({{ game.white.rating }})
-                    </span>
-                    <span class="history-result">{{ game.result }}</span>
-                    <span class="{{ 'winner' if game.result == '0-1' else '' }}">
-                        {{ game.black.username }} ({{ game.black.rating }})
-                    </span>
-                    <span class="history-color-badge history-black-dot" title="Black"></span>
+                    <span class="history-color-badge history-white-dot"></span>
+                    <span class="{{ 'winner' if g.result == '1-0' else '' }}">{{ g.white.username }}</span>
+                    <span class="history-result">{{ g.result }}</span>
+                    <span class="{{ 'winner' if g.result == '0-1' else '' }}">{{ g.black.username }}</span>
+                    <span class="history-color-badge history-black-dot"></span>
                 </div>
                 <div class="history-meta">
-                    <span class="badge badge-sm">{{ game.result_type }}</span>
-                    {% if game.custom_rule_name %}
-                    <span class="badge badge-sm badge-rule" title="{{ game.custom_rule_name }}">{{ game.custom_rule_name }}</span>
-                    {% endif %}
-                    <span class="text-muted">Wk {{ game.week_number }} · {{ game.move_count }} moves</span>
-                    {% if game.rating_change_white is not none %}
+                    <span class="badge badge-sm badge-rule">{{ g.custom_rule_name or 'Weekly' }}</span>
+                    <span class="text-muted">{{ g.move_count }} moves</span>
+                    {% if g.rating_change_white is not none %}
                     <span class="rating-delta">
-                        {{ game.white.username }}: {{ '%+.1f'|format(game.rating_change_white) }}
-                        / {{ game.black.username }}: {{ '%+.1f'|format(game.rating_change_black) }}
+                        {{ g.white.username }}: {{ '%+.1f'|format(g.rating_change_white) }}
+                        / {{ g.black.username }}: {{ '%+.1f'|format(g.rating_change_black) }}
                     </span>
                     {% endif %}
                 </div>
             </a>
             {% endfor %}
+            {% endif %}
+
+            {% if wk.casual_games %}
+            <h4 class="tl-category">Traditional Ranked Matches</h4>
+            {% for g in wk.casual_games %}
+            <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="history-row">
+                <div class="history-players">
+                    <span class="history-color-badge history-white-dot"></span>
+                    <span class="{{ 'winner' if g.result == '1-0' else '' }}">{{ g.white.username }}</span>
+                    <span class="history-result">{{ g.result }}</span>
+                    <span class="{{ 'winner' if g.result == '0-1' else '' }}">{{ g.black.username }}</span>
+                    <span class="history-color-badge history-black-dot"></span>
+                </div>
+                <div class="history-meta">
+                    <span class="badge badge-sm badge-casual">Ranked</span>
+                    <span class="text-muted">{{ g.move_count }} moves</span>
+                    {% if g.rating_change_white is not none %}
+                    <span class="rating-delta">
+                        {{ g.white.username }}: {{ '%+.1f'|format(g.rating_change_white) }}
+                        / {{ g.black.username }}: {{ '%+.1f'|format(g.rating_change_black) }}
+                    </span>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+            {% endif %}
+
+            {% if wk.enoch_games %}
+            <h4 class="tl-category">Enoch Matches</h4>
+            {% for g in wk.enoch_games %}
+            <a href="{{ url_for('game.view_game', game_id=g.id) }}" class="history-row">
+                <div class="history-players">
+                    <span>{{ g.white.username if g.white and not g.white.is_bot else g.black.username }} vs Enoch</span>
+                    <span class="history-result">{{ g.result }}</span>
+                </div>
+                <div class="history-meta">
+                    <span class="badge badge-sm">Enoch</span>
+                    <span class="text-muted">{{ g.move_count }} moves</span>
+                    {% if g.rating_change_white is not none %}
+                    {% set human_change = g.rating_change_white if (g.white and not g.white.is_bot) else g.rating_change_black %}
+                    <span class="rating-delta {{ 'rating-up' if human_change >= 0 else 'rating-down' }}">
+                        {{ '%+.1f'|format(human_change) }} pts
+                    </span>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+            {% endif %}
+
+            {% if wk.market_events %}
+            <h4 class="tl-category">Notable Market Activity</h4>
+            {% for ev in wk.market_events %}
+            <div class="tl-market-event">
+                <span class="tl-market-user">{{ ev.user }}</span>
+                <span>{{ ev.text }}</span>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% if not wk.weekly_games and not wk.casual_games and not wk.enoch_games and not wk.market_events %}
+            <p class="text-muted" style="padding: 0.5rem 0;">No recorded activity this week.</p>
+            {% endif %}
         </div>
     </div>
-
-    {% if games.pages > 1 %}
-    <div class="pagination">
-        {% if games.has_prev %}
-        <a href="{{ url_for('players.chronicle', page=games.prev_num) }}" class="btn btn-sm">&laquo; Prev</a>
-        {% endif %}
-        <span class="page-info">Page {{ games.page }} of {{ games.pages }}</span>
-        {% if games.has_next %}
-        <a href="{{ url_for('players.chronicle', page=games.next_num) }}" class="btn btn-sm">Next &raquo;</a>
-        {% endif %}
-    </div>
-    {% endif %}
-
+    {% endfor %}
     {% else %}
     <div class="card">
-        <p class="text-muted">No completed games in the federation yet.</p>
+        <p class="text-muted">No recorded federation history yet.</p>
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.sp-collapse-toggle').forEach(function(toggle) {
+    toggle.style.cursor = 'pointer';
+    toggle.addEventListener('click', function() {
+        var targetId = toggle.getAttribute('data-target');
+        var body = document.getElementById(targetId);
+        if (!body) return;
+        var section = toggle.closest('.sp-collapsible');
+        body.classList.toggle('sp-collapsed');
+        if (section) section.classList.toggle('sp-expanded');
+    });
+});
+</script>
 {% endblock %}

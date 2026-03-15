@@ -50,6 +50,18 @@
                     {% endif %}
                 </div>
                 <p class="decree-entry-text">{{ entry.rule_declaration }}</p>
+                {% if decree_games.get(entry.id) %}
+                <div class="decree-results">
+                    {% for g in decree_games[entry.id] %}
+                    <div class="decree-result-row">
+                        <span class="{{ 'winner' if g.result == '1-0' else '' }}">{{ g.white.username }}</span>
+                        <span class="history-result">{{ g.result }}</span>
+                        <span class="{{ 'winner' if g.result == '0-1' else '' }}">{{ g.black.username }}</span>
+                        <span class="text-muted" style="margin-left:0.5rem;font-size:0.75rem">{{ g.result_type }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>

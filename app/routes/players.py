@@ -162,7 +162,48 @@ def _build_match_stats(player, all_games, fed_games, practice_games):
 @players_bp.route('/account')
 @login_required
 def my_account():
-    return render_template('account.html')
+    rival = _get_rival(current_user.id)
+    progression = get_progression(current_user.rating)
+    return render_template('account.html', rival=rival, progression=progression)
+
+
+def _get_rival(user_id):
+    """Find the player with the most games played against this user."""
+    games = Game.query.filter(
+        (Game.white_id == user_id) | (Game.black_id == user_id),
+        Game.status.in_(['completed', 'forfeited']),
+        Game.is_practice == False,
+    ).all()
+
+    opp_stats = {}
+    for g in games:
+        opp_id = g.black_id if g.white_id == user_id else g.white_id
+        if opp_id not in opp_stats:
+            opp_stats[opp_id] = {'wins': 0, 'losses': 0, 'draws': 0, 'total': 0}
+        opp_stats[opp_id]['total'] += 1
+        r = _player_result(g, user_id)
+        if r == 'win':
+            opp_stats[opp_id]['wins'] += 1
+        elif r == 'loss':
+            opp_stats[opp_id]['losses'] += 1
+        elif r == 'draw':
+            opp_stats[opp_id]['draws'] += 1
+
+    if not opp_stats:
+        return None
+
+    rival_id = max(opp_stats, key=lambda k: opp_stats[k]['total'])
+    rival_user = db.session.get(User, rival_id)
+    if not rival_user:
+        return None
+    s = opp_stats[rival_id]
+    return {
+        'user': rival_user,
+        'wins': s['wins'],
+        'losses': s['losses'],
+        'draws': s['draws'],
+        'total': s['total'],
+    }
 
 
 @players_bp.route('/account/avatar', methods=['POST'])
@@ -214,11 +255,62 @@ def toggle_naming():
 @players_bp.route('/chronicle')
 @login_required
 def chronicle():
-    page = request.args.get('page', 1, type=int)
+    from app.models import MarketTransaction, WeeklySchedule
+    from app.services.matchmaking import get_current_week, get_current_season
+    from collections import OrderedDict
+    import calendar
+
     games = Game.query.filter(
         Game.status.in_(['completed', 'forfeited'])
-    ).order_by(Game.completed_at.desc()).paginate(page=page, per_page=20)
-    return render_template('chronicle.html', games=games)
+    ).order_by(Game.completed_at.desc()).all()
+
+    weeks = OrderedDict()
+    for g in games:
+        key = (g.season, g.week_number)
+        if key not in weeks:
+            season_year = g.season // 100
+            season_month = g.season % 100
+            month_name = calendar.month_name[season_month] if 1 <= season_month <= 12 else str(season_month)
+            sched = WeeklySchedule.query.filter_by(
+                week_number=g.week_number, season=g.season
+            ).first()
+            weeks[key] = {
+                'week': g.week_number,
+                'season': g.season,
+                'label': f"Week {g.week_number} — {month_name} {season_year}",
+                'decree': sched.rule_declaration if sched and sched.rule_declaration else None,
+                'decree_holder': sched.power_holder.username if sched and sched.power_holder else None,
+                'weekly_games': [],
+                'casual_games': [],
+                'enoch_games': [],
+                'market_events': [],
+            }
+        entry = weeks[key]
+        if g.is_practice:
+            entry['enoch_games'].append(g)
+        elif g.game_type == 'casual':
+            entry['casual_games'].append(g)
+        else:
+            entry['weekly_games'].append(g)
+
+    big_txs = MarketTransaction.query.filter(
+        MarketTransaction.denarius_amount >= 500
+    ).order_by(MarketTransaction.created_at.desc()).limit(50).all()
+    for tx in big_txs:
+        key = None
+        for wk in weeks:
+            if weeks[wk]['season'] == tx.created_at.year * 100 + tx.created_at.month:
+                key = wk
+                break
+        if key:
+            action = 'bought' if tx.tx_type == 'buy' else 'sold'
+            weeks[key]['market_events'].append({
+                'user': tx.user.username if tx.user else '???',
+                'text': f"{action} {tx.coin_symbol.upper()} for ${int(tx.denarius_amount):,}",
+                'date': tx.created_at,
+            })
+
+    return render_template('chronicle.html', weeks=list(weeks.values()))
 
 
 @players_bp.route('/api/drawer/<int:user_id>')

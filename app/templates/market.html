@@ -1,0 +1,568 @@
+{% extends "base.html" %}
+{% from "macros.html" import avatar %}
+{% block title %}Enoch Exchange — Chess Federation{% endblock %}
+
+{% block content %}
+<div class="mx">
+    {# ── Header: Balance + Portfolio Summary ── #}
+    <div class="mx-header">
+        <div class="mx-brand">
+            <img src="{{ url_for('static', filename='img/enoch.png') }}" class="mx-enoch-icon" alt="Enoch">
+            <div>
+                <h2 class="mx-title">Enoch Exchange</h2>
+                <span class="mx-subtitle">Enoch's Crypto Market</span>
+            </div>
+        </div>
+        <div class="mx-balance">
+            <div class="mx-bal-row">
+                <span class="mx-bal-label">Cash</span>
+                <span class="mx-bal-value" id="mxDenarius">${{ '{:,.0f}'.format(denarius) }}</span>
+            </div>
+            <div class="mx-bal-row">
+                <span class="mx-bal-label">Portfolio</span>
+                <span class="mx-bal-value" id="mxPortfolio">--</span>
+                <span class="mx-bal-pnl" id="mxPnl"></span>
+            </div>
+        </div>
+    </div>
+
+    {# ── Enoch Commentary Bar ── #}
+    <div class="mx-enoch-bar" id="mxEnochBar">
+        <img src="{{ url_for('static', filename='img/enoch.png') }}" class="mx-enoch-sm" alt="">
+        <span class="mx-enoch-text" id="mxEnochText">Loading the ledger...</span>
+    </div>
+
+    {# ── Tabs ── #}
+    <div class="mx-tabs">
+        <button class="mx-tab active" data-tab="market">Market</button>
+        <button class="mx-tab" data-tab="portfolio">Portfolio</button>
+        <button class="mx-tab" data-tab="orders">Orders</button>
+        <button class="mx-tab" data-tab="history">History</button>
+    </div>
+
+    {# ── Market Tab ── #}
+    <div class="mx-panel" id="panelMarket">
+        <div class="mx-search-row">
+            <input type="text" class="mx-search" id="mxSearch" placeholder="Search coins..." autocomplete="off">
+        </div>
+        <div class="mx-coin-list" id="mxCoinList">
+            <div class="mx-loading">Fetching prices...</div>
+        </div>
+    </div>
+
+    {# ── Portfolio Tab ── #}
+    <div class="mx-panel mx-hidden" id="panelPortfolio">
+        <div class="mx-port-list" id="mxPortList">
+            <div class="mx-loading">Loading portfolio...</div>
+        </div>
+    </div>
+
+    {# ── Orders Tab ── #}
+    <div class="mx-panel mx-hidden" id="panelOrders">
+        <div class="mx-order-list" id="mxOrderList">
+            <div class="mx-loading">Loading orders...</div>
+        </div>
+    </div>
+
+    {# ── History Tab ── #}
+    <div class="mx-panel mx-hidden" id="panelHistory">
+        <div class="mx-history-list" id="mxHistoryList">
+            <div class="mx-loading">Loading history...</div>
+        </div>
+    </div>
+
+    {# ── Trade Modal ── #}
+    <div class="mx-modal" id="mxTradeModal">
+        <div class="mx-modal-overlay"></div>
+        <div class="mx-modal-body">
+            <div class="mx-modal-header">
+                <img id="mxModalImg" class="mx-modal-coin-img" src="" alt="">
+                <div>
+                    <h3 id="mxModalName" class="mx-modal-coin-name"></h3>
+                    <span id="mxModalSymbol" class="mx-modal-coin-sym"></span>
+                </div>
+                <button class="mx-modal-close" id="mxModalClose">&times;</button>
+            </div>
+            <div class="mx-modal-price-row">
+                <span class="mx-modal-price" id="mxModalPrice"></span>
+                <span class="mx-modal-change" id="mxModalChange"></span>
+            </div>
+
+            {# ── Enoch says ── #}
+            <div class="mx-modal-enoch" id="mxModalEnoch"></div>
+
+            {# ── Trade type toggle ── #}
+            <div class="mx-trade-toggle">
+                <button class="mx-tt-btn active" id="mxBtnMarketBuy" data-action="buy">Buy</button>
+                <button class="mx-tt-btn" id="mxBtnMarketSell" data-action="sell">Sell</button>
+                <button class="mx-tt-btn" id="mxBtnLimitBuy" data-action="limit-buy">Limit Buy</button>
+                <button class="mx-tt-btn" id="mxBtnLimitSell" data-action="limit-sell">Limit Sell</button>
+            </div>
+
+            {# ── Buy form ── #}
+            <div class="mx-trade-form" id="mxFormBuy">
+                <label class="mx-form-label">Spend ($)
+                    <input type="number" id="mxBuyDenarius" min="1" step="1" class="mx-form-input" placeholder="0">
+                </label>
+                <div class="mx-form-preview">
+                    You'll receive ≈ <strong id="mxBuyPreview">0</strong> <span id="mxBuySym"></span>
+                </div>
+                <button class="mx-form-submit mx-btn-buy" id="mxSubmitBuy">Buy Now</button>
+            </div>
+
+            {# ── Sell form ── #}
+            <div class="mx-trade-form mx-hidden" id="mxFormSell">
+                <label class="mx-form-label">Sell Amount
+                    <input type="number" id="mxSellAmount" min="0" step="any" class="mx-form-input" placeholder="0">
+                </label>
+                <div class="mx-form-info">You hold: <strong id="mxSellHolding">0</strong></div>
+                <div class="mx-form-preview">
+                    You'll receive ≈ $<strong id="mxSellPreview">0</strong>
+                </div>
+                <button class="mx-form-submit mx-btn-sell" id="mxSubmitSell">Sell Now</button>
+            </div>
+
+            {# ── Limit buy form ── #}
+            <div class="mx-trade-form mx-hidden" id="mxFormLimitBuy">
+                <label class="mx-form-label">When price drops to ($)
+                    <input type="number" id="mxLBPrice" min="0" step="any" class="mx-form-input" placeholder="0.00">
+                </label>
+                <label class="mx-form-label">Spend ($)
+                    <input type="number" id="mxLBDenarius" min="1" step="1" class="mx-form-input" placeholder="0">
+                </label>
+                <button class="mx-form-submit mx-btn-buy" id="mxSubmitLimitBuy">Place Buy Order</button>
+            </div>
+
+            {# ── Limit sell form ── #}
+            <div class="mx-trade-form mx-hidden" id="mxFormLimitSell">
+                <label class="mx-form-label">When price rises to ($)
+                    <input type="number" id="mxLSPrice" min="0" step="any" class="mx-form-input" placeholder="0.00">
+                </label>
+                <label class="mx-form-label">Sell Amount
+                    <input type="number" id="mxLSSellAmt" min="0" step="any" class="mx-form-input" placeholder="0">
+                </label>
+                <div class="mx-form-info">You hold: <strong id="mxLSHolding">0</strong></div>
+                <button class="mx-form-submit mx-btn-sell" id="mxSubmitLimitSell">Place Sell Order</button>
+            </div>
+
+            <div class="mx-modal-feedback" id="mxFeedback"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    var DUSD = {{ denarius_usd }};
+    var coins = [];
+    var portfolio = {};
+    var selectedCoin = null;
+
+    /* ── Enoch Audio ── */
+    var audioTextToUrl = null;
+    var audioQueue = [];
+    var audioPlaying = false;
+    var manifestUrl = "{{ url_for('static', filename='audio/enoch/manifest.json') }}";
+    var audioBase = "{{ audio_cdn_base }}enoch/";
+    var manifestVer = "{{ manifest_version }}";
+
+    function loadManifest() {
+        var loader = (window.EnochCache && window.EnochCache.getManifest)
+            ? window.EnochCache.getManifest(manifestUrl, manifestVer)
+            : fetch(manifestUrl).then(function(r){return r.json();});
+        loader.then(function(manifest) {
+            audioTextToUrl = {};
+            for (var k in manifest) {
+                if (manifest.hasOwnProperty(k)) {
+                    audioTextToUrl[manifest[k].text] = audioBase + manifest[k].file;
+                }
+            }
+        }).catch(function(){});
+    }
+    loadManifest();
+
+    function drainAudio() {
+        if (audioPlaying || !audioQueue.length) return;
+        audioPlaying = true;
+        var url = audioQueue.shift();
+        var getter = (window.EnochCache && window.EnochCache.getAudio)
+            ? window.EnochCache.getAudio(url)
+            : Promise.resolve(new Audio(url));
+        getter.then(function(audio) {
+            audio.volume = 0.8;
+            audio.onended = function(){ audioPlaying = false; drainAudio(); };
+            audio.onerror = function(){ audioPlaying = false; drainAudio(); };
+            audio.play().catch(function(){ audioPlaying = false; drainAudio(); });
+        }).catch(function(){ audioPlaying = false; drainAudio(); });
+    }
+
+    function playEnochLine(text) {
+        if (!audioTextToUrl || !text) return;
+        var url = audioTextToUrl[text];
+        if (!url) return;
+        audioQueue.push(url);
+        if (audioQueue.length > 2) audioQueue.splice(0, audioQueue.length - 2);
+        drainAudio();
+    }
+
+    /* ── Helpers ── */
+    function $(id) { return document.getElementById(id); }
+    function fmt(n, d) { return Number(n).toLocaleString(undefined, {minimumFractionDigits: d||0, maximumFractionDigits: d||0}); }
+    function fmtPrice(n) {
+        if (n >= 1) return '$' + fmt(n, 2);
+        if (n >= 0.01) return '$' + Number(n).toFixed(4);
+        return '$' + Number(n).toFixed(8);
+    }
+    function fmtPct(n) {
+        var s = n >= 0 ? '+' : '';
+        return s + Number(n).toFixed(2) + '%';
+    }
+    function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    /* ── Tabs ── */
+    document.querySelectorAll('.mx-tab').forEach(function(t) {
+        t.addEventListener('click', function() {
+            document.querySelectorAll('.mx-tab').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('.mx-panel').forEach(function(p) { p.classList.add('mx-hidden'); });
+            t.classList.add('active');
+            var panel = $('panel' + t.dataset.tab.charAt(0).toUpperCase() + t.dataset.tab.slice(1));
+            if (panel) panel.classList.remove('mx-hidden');
+            if (t.dataset.tab === 'portfolio') loadPortfolio();
+            if (t.dataset.tab === 'orders') loadOrders();
+            if (t.dataset.tab === 'history') loadHistory();
+        });
+    });
+
+    /* ── Enoch bar ── */
+    function setEnoch(text) {
+        $('mxEnochText').textContent = text;
+        playEnochLine(text);
+    }
+
+    /* ── Load Market ── */
+    function loadMarket() {
+        fetch('/market/api/prices').then(function(r) { return r.json(); }).then(function(d) {
+            coins = d.coins || [];
+            if (d.enoch) setEnoch(d.enoch);
+            renderCoins(coins);
+        }).catch(function() {
+            $('mxCoinList').innerHTML = '<div class="mx-empty">Failed to load market data.</div>';
+        });
+    }
+
+    function renderCoins(list) {
+        var el = $('mxCoinList');
+        if (!list.length) { el.innerHTML = '<div class="mx-empty">No coins found.</div>'; return; }
+        var html = '<table class="mx-table"><thead><tr><th>#</th><th>Coin</th><th>Price</th><th>24h</th><th>Market Cap</th><th></th></tr></thead><tbody>';
+        for (var i = 0; i < list.length; i++) {
+            var c = list[i];
+            var cls = (c.change_24h||0) >= 0 ? 'mx-up' : 'mx-down';
+            html += '<tr class="mx-row" data-coin="' + c.id + '">' +
+                '<td>' + (i+1) + '</td>' +
+                '<td class="mx-coin-cell"><img src="' + c.image + '" class="mx-coin-icon">' + esc(c.name) + ' <span class="mx-sym">' + (c.symbol||'').toUpperCase() + '</span></td>' +
+                '<td class="mx-price-cell">' + fmtPrice(c.price) + '</td>' +
+                '<td class="' + cls + '">' + fmtPct(c.change_24h||0) + '</td>' +
+                '<td>$' + fmt(c.market_cap||0) + '</td>' +
+                '<td><button class="mx-trade-btn">Trade</button></td>' +
+                '</tr>';
+        }
+        html += '</tbody></table>';
+        el.innerHTML = html;
+
+        el.querySelectorAll('.mx-row').forEach(function(row) {
+            row.addEventListener('click', function() { openTrade(row.dataset.coin); });
+        });
+    }
+
+    /* ── Search ── */
+    $('mxSearch').addEventListener('input', function() {
+        var q = this.value.toLowerCase();
+        var filtered = coins.filter(function(c) {
+            return (c.name||'').toLowerCase().indexOf(q) > -1 || (c.symbol||'').toLowerCase().indexOf(q) > -1;
+        });
+        renderCoins(filtered);
+    });
+
+    /* ── Trade Modal ── */
+    function getCoin(id) {
+        for (var i = 0; i < coins.length; i++) { if (coins[i].id === id) return coins[i]; }
+        return null;
+    }
+
+    function openTrade(coinId) {
+        var c = getCoin(coinId);
+        if (!c && portfolio[coinId]) {
+            var p = portfolio[coinId];
+            c = {id: coinId, name: p.name, symbol: p.symbol, image: '', price: p.current_price, change_24h: 0};
+        }
+        if (!c) return;
+        selectedCoin = c;
+        $('mxModalImg').src = c.image;
+        $('mxModalName').textContent = c.name;
+        $('mxModalSymbol').textContent = (c.symbol||'').toUpperCase();
+        $('mxModalPrice').textContent = fmtPrice(c.price);
+        var cls = (c.change_24h||0) >= 0 ? 'mx-up' : 'mx-down';
+        $('mxModalChange').textContent = fmtPct(c.change_24h||0);
+        $('mxModalChange').className = 'mx-modal-change ' + cls;
+        $('mxBuySym').textContent = (c.symbol||'').toUpperCase();
+
+        $('mxBuyDenarius').value = '';
+        $('mxBuyPreview').textContent = '0';
+        $('mxSellAmount').value = '';
+        $('mxSellPreview').textContent = '0';
+        $('mxLBPrice').value = '';
+        $('mxLBDenarius').value = '';
+        $('mxLSPrice').value = '';
+        $('mxLSSellAmt').value = '';
+        $('mxFeedback').textContent = '';
+        $('mxFeedback').className = 'mx-modal-feedback';
+
+        var h = portfolio[coinId];
+        $('mxSellHolding').textContent = h ? Number(h.amount).toFixed(8) : '0';
+        $('mxLSHolding').textContent = h ? Number(h.amount).toFixed(8) : '0';
+
+        switchForm('buy');
+        $('mxTradeModal').classList.add('open');
+
+        fetch('/market/api/enoch?ctx=coin').then(function(r){return r.json();}).then(function(d){
+            var line = d.line || '';
+            $('mxModalEnoch').textContent = line;
+            playEnochLine(line);
+        });
+    }
+
+    function closeTrade() {
+        $('mxTradeModal').classList.remove('open');
+        selectedCoin = null;
+    }
+    $('mxModalClose').addEventListener('click', closeTrade);
+    $('mxTradeModal').querySelector('.mx-modal-overlay').addEventListener('click', closeTrade);
+
+    /* ── Form switching ── */
+    var formMap = {
+        'buy': 'mxFormBuy', 'sell': 'mxFormSell',
+        'limit-buy': 'mxFormLimitBuy', 'limit-sell': 'mxFormLimitSell'
+    };
+    function switchForm(action) {
+        Object.values(formMap).forEach(function(id) { $(id).classList.add('mx-hidden'); });
+        $(formMap[action]).classList.remove('mx-hidden');
+        document.querySelectorAll('.mx-tt-btn').forEach(function(b) {
+            b.classList.toggle('active', b.dataset.action === action);
+        });
+    }
+    document.querySelectorAll('.mx-tt-btn').forEach(function(b) {
+        b.addEventListener('click', function() { switchForm(b.dataset.action); });
+    });
+
+    /* ── Buy preview ── */
+    $('mxBuyDenarius').addEventListener('input', function() {
+        if (!selectedCoin || !selectedCoin.price) return;
+        var d = parseFloat(this.value) || 0;
+        var amt = (d * DUSD) / selectedCoin.price;
+        $('mxBuyPreview').textContent = amt.toFixed(8);
+    });
+
+    /* ── Sell preview ── */
+    $('mxSellAmount').addEventListener('input', function() {
+        if (!selectedCoin || !selectedCoin.price) return;
+        var a = parseFloat(this.value) || 0;
+        var d = (a * selectedCoin.price) / DUSD;
+        $('mxSellPreview').textContent = Math.floor(d);
+    });
+
+    /* ── Feedback helper ── */
+    function feedback(text, type) {
+        var el = $('mxFeedback');
+        el.textContent = text;
+        el.className = 'mx-modal-feedback mx-fb-' + (type||'info');
+    }
+
+    /* ── Submit buy ── */
+    $('mxSubmitBuy').addEventListener('click', function() {
+        if (!selectedCoin) return;
+        var d = parseInt($('mxBuyDenarius').value) || 0;
+        if (d <= 0) { feedback('Enter a dollar amount.', 'err'); return; }
+        this.disabled = true;
+        var btn = this;
+        fetch('/market/api/buy', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({coin_id: selectedCoin.id, denarius: d})
+        }).then(function(r){return r.json();}).then(function(res) {
+            btn.disabled = false;
+            if (res.error) { feedback(res.error, 'err'); return; }
+            feedback('Bought ' + Number(res.crypto_amount).toFixed(8) + ' ' + (selectedCoin.symbol||'').toUpperCase() + '!', 'ok');
+            updateBalance(res.denarius_remaining);
+            if (res.enoch) setEnoch(res.enoch);
+            loadPortfolio();
+        }).catch(function() { btn.disabled = false; feedback('Network error.', 'err'); });
+    });
+
+    /* ── Submit sell ── */
+    $('mxSubmitSell').addEventListener('click', function() {
+        if (!selectedCoin) return;
+        var a = parseFloat($('mxSellAmount').value) || 0;
+        if (a <= 0) { feedback('Enter an amount to sell.', 'err'); return; }
+        this.disabled = true;
+        var btn = this;
+        fetch('/market/api/sell', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({coin_id: selectedCoin.id, amount: a})
+        }).then(function(r){return r.json();}).then(function(res) {
+            btn.disabled = false;
+            if (res.error) { feedback(res.error, 'err'); return; }
+            feedback('Sold! Received $' + res.denarius_received + '.', 'ok');
+            updateBalance(res.denarius_remaining);
+            if (res.enoch) setEnoch(res.enoch);
+            loadPortfolio();
+        }).catch(function() { btn.disabled = false; feedback('Network error.', 'err'); });
+    });
+
+    /* ── Submit limit buy ── */
+    $('mxSubmitLimitBuy').addEventListener('click', function() {
+        if (!selectedCoin) return;
+        var p = parseFloat($('mxLBPrice').value) || 0;
+        var d = parseInt($('mxLBDenarius').value) || 0;
+        if (p <= 0 || d <= 0) { feedback('Fill in price and amount.', 'err'); return; }
+        this.disabled = true;
+        var btn = this;
+        fetch('/market/api/order', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({order_type:'buy', coin_id: selectedCoin.id, target_price: p, denarius: d})
+        }).then(function(r){return r.json();}).then(function(res) {
+            btn.disabled = false;
+            if (res.error) { feedback(res.error, 'err'); return; }
+            feedback('Limit buy order placed!', 'ok');
+            if (res.enoch) setEnoch(res.enoch);
+        }).catch(function() { btn.disabled = false; feedback('Network error.', 'err'); });
+    });
+
+    /* ── Submit limit sell ── */
+    $('mxSubmitLimitSell').addEventListener('click', function() {
+        if (!selectedCoin) return;
+        var p = parseFloat($('mxLSPrice').value) || 0;
+        var a = parseFloat($('mxLSSellAmt').value) || 0;
+        if (p <= 0 || a <= 0) { feedback('Fill in price and amount.', 'err'); return; }
+        this.disabled = true;
+        var btn = this;
+        fetch('/market/api/order', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({order_type:'sell', coin_id: selectedCoin.id, target_price: p, amount: a})
+        }).then(function(r){return r.json();}).then(function(res) {
+            btn.disabled = false;
+            if (res.error) { feedback(res.error, 'err'); return; }
+            feedback('Limit sell order placed!', 'ok');
+            if (res.enoch) setEnoch(res.enoch);
+        }).catch(function() { btn.disabled = false; feedback('Network error.', 'err'); });
+    });
+
+    /* ── Balance update ── */
+    function updateBalance(d) {
+        $('mxDenarius').textContent = '$' + fmt(d);
+    }
+
+    /* ── Portfolio ── */
+    function loadPortfolio() {
+        fetch('/market/api/portfolio').then(function(r){return r.json();}).then(function(d) {
+            updateBalance(d.denarius);
+            var pUsd = d.portfolio_usd || 0;
+            $('mxPortfolio').textContent = '$' + fmt(pUsd);
+            var pnl = d.pnl_usd || 0;
+            var pnlPct = d.pnl_pct || 0;
+            var cls = pnl >= 0 ? 'mx-up' : 'mx-down';
+            $('mxPnl').textContent = fmtPct(pnlPct);
+            $('mxPnl').className = 'mx-bal-pnl ' + cls;
+            if (d.enoch) setEnoch(d.enoch);
+
+            portfolio = {};
+            var items = d.holdings || [];
+            var el = $('mxPortList');
+            if (!items.length) { el.innerHTML = '<div class="mx-empty">No holdings yet. Start trading!</div>'; return; }
+
+            var html = '<table class="mx-table"><thead><tr><th>Coin</th><th>Amount</th><th>Avg Buy</th><th>Current</th><th>Value (dn)</th><th>P&L</th></tr></thead><tbody>';
+            for (var i = 0; i < items.length; i++) {
+                var h = items[i];
+                portfolio[h.coin_id] = h;
+                var pcls = h.pnl_usd >= 0 ? 'mx-up' : 'mx-down';
+                html += '<tr class="mx-row" data-coin="' + h.coin_id + '">' +
+                    '<td>' + esc(h.name) + ' <span class="mx-sym">' + (h.symbol||'').toUpperCase() + '</span></td>' +
+                    '<td>' + Number(h.amount).toFixed(6) + '</td>' +
+                    '<td>' + fmtPrice(h.avg_buy) + '</td>' +
+                    '<td>' + fmtPrice(h.current_price) + '</td>' +
+                    '<td>$' + fmt(h.value_denarius, 0) + '</td>' +
+                    '<td class="' + pcls + '">' + fmtPct(h.pnl_pct) + '</td>' +
+                    '</tr>';
+            }
+            html += '</tbody></table>';
+            el.innerHTML = html;
+
+            el.querySelectorAll('.mx-row').forEach(function(row) {
+                row.addEventListener('click', function() { openTrade(row.dataset.coin); });
+            });
+        });
+    }
+
+    /* ── Orders ── */
+    function loadOrders() {
+        fetch('/market/api/orders').then(function(r){return r.json();}).then(function(d) {
+            var items = d.orders || [];
+            var el = $('mxOrderList');
+            if (!items.length) { el.innerHTML = '<div class="mx-empty">No orders.</div>'; return; }
+            var html = '<table class="mx-table"><thead><tr><th>Type</th><th>Coin</th><th>Target</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>';
+            for (var i = 0; i < items.length; i++) {
+                var o = items[i];
+                var canCancel = o.status === 'pending';
+                html += '<tr>' +
+                    '<td class="' + (o.type==='buy'?'mx-up':'mx-down') + '">' + o.type.toUpperCase() + '</td>' +
+                    '<td>' + (o.symbol||'').toUpperCase() + '</td>' +
+                    '<td>' + fmtPrice(o.target_price) + '</td>' +
+                    '<td>$' + fmt(o.denarius) + '</td>' +
+                    '<td>' + o.status + '</td>' +
+                    '<td>' + (canCancel ? '<button class="mx-cancel-btn" data-oid="' + o.id + '">Cancel</button>' : '') + '</td>' +
+                    '</tr>';
+            }
+            html += '</tbody></table>';
+            el.innerHTML = html;
+            el.querySelectorAll('.mx-cancel-btn').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    fetch('/market/api/order/' + btn.dataset.oid, {method:'DELETE'})
+                        .then(function(r){return r.json();})
+                        .then(function() { loadOrders(); })
+                        .catch(function() {});
+                });
+            });
+        });
+    }
+
+    /* ── History ── */
+    function loadHistory() {
+        fetch('/market/api/history').then(function(r){return r.json();}).then(function(d) {
+            var items = d.transactions || [];
+            var el = $('mxHistoryList');
+            if (!items.length) { el.innerHTML = '<div class="mx-empty">No transactions yet.</div>'; return; }
+            var html = '<table class="mx-table"><thead><tr><th>Type</th><th>Coin</th><th>Amount</th><th>Price</th><th>Value</th><th>Date</th></tr></thead><tbody>';
+            for (var i = 0; i < items.length; i++) {
+                var t = items[i];
+                html += '<tr>' +
+                    '<td class="' + (t.type==='buy'?'mx-up':'mx-down') + '">' + t.type.toUpperCase() + '</td>' +
+                    '<td>' + (t.symbol||'').toUpperCase() + '</td>' +
+                    '<td>' + Number(t.crypto).toFixed(6) + '</td>' +
+                    '<td>' + fmtPrice(t.price) + '</td>' +
+                    '<td>$' + fmt(t.denarius) + '</td>' +
+                    '<td>' + (t.created||'').slice(0,10) + '</td>' +
+                    '</tr>';
+            }
+            html += '</tbody></table>';
+            el.innerHTML = html;
+        });
+    }
+
+    /* ── Init ── */
+    loadMarket();
+    loadPortfolio();
+    setInterval(loadMarket, 60000);
+    setInterval(function(){ loadPortfolio(); }, 60000);
+})();
+</script>
+{% endblock %}

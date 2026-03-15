@@ -327,3 +327,86 @@ class EnochWager(db.Model):
 
     user = db.relationship('User', foreign_keys=[user_id])
     game = db.relationship('Game', foreign_keys=[game_id])
+
+
+class MarketHolding(db.Model):
+    """User's crypto holdings in the Denarius Exchange."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    coin_id = db.Column(db.String(50), nullable=False)
+    coin_symbol = db.Column(db.String(10), nullable=False)
+    coin_name = db.Column(db.String(80), nullable=False)
+    amount = db.Column(db.Float, default=0)
+    avg_buy_price = db.Column(db.Float, default=0)
+
+    user = db.relationship('User', foreign_keys=[user_id])
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'coin_id', name='uq_holding'),
+    )
+
+
+class MarketOrder(db.Model):
+    """Pending limit orders (buy or sell)."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    coin_id = db.Column(db.String(50), nullable=False)
+    coin_symbol = db.Column(db.String(10), nullable=False)
+    order_type = db.Column(db.String(4), nullable=False)
+    target_price = db.Column(db.Float, nullable=False)
+    denarius_amount = db.Column(db.Float, nullable=False)
+    crypto_amount = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(10), default='pending')
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    filled_at = db.Column(db.DateTime)
+
+    user = db.relationship('User', foreign_keys=[user_id])
+
+
+class MarketTransaction(db.Model):
+    """Completed buy/sell transactions."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    coin_id = db.Column(db.String(50), nullable=False)
+    coin_symbol = db.Column(db.String(10), nullable=False)
+    tx_type = db.Column(db.String(4), nullable=False)
+    crypto_amount = db.Column(db.Float, nullable=False)
+    price_usd = db.Column(db.Float, nullable=False)
+    denarius_amount = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = db.relationship('User', foreign_keys=[user_id])
+
+
+class GameChat(db.Model):
+    """Per-game chat messages visible during active games."""
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    content = db.Column(db.Text, nullable=False)
+    is_bot = db.Column(db.Boolean, default=False)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    game = db.relationship('Game', foreign_keys=[game_id])
+    user = db.relationship('User', foreign_keys=[user_id])
+
+
+class CourierGame(db.Model):
+    """Courier Run — escort game mode against Enoch."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    status = db.Column(db.String(20), default='selecting')  # selecting, active, completed
+    fen = db.Column(db.String(100), default='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')
+    courier_white_sq = db.Column(db.String(4), nullable=True)  # algebraic square name
+    courier_black_sq = db.Column(db.String(4), nullable=True)
+    turn = db.Column(db.String(5), default='white')
+    turn_count = db.Column(db.Integer, default=0)
+    move_count = db.Column(db.Integer, default=0)
+    winner = db.Column(db.String(5), nullable=True)  # white, black, draw
+    end_reason = db.Column(db.String(30), nullable=True)
+    reward_paid = db.Column(db.Boolean, default=False)
+    move_history = db.Column(db.Text, default='')  # comma-separated UCI moves
+    started_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    completed_at = db.Column(db.DateTime, nullable=True)
+
+    user = db.relationship('User', foreign_keys=[user_id])

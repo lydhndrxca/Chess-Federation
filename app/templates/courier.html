@@ -1,0 +1,457 @@
+{% extends "base.html" %}
+{% from "macros.html" import avatar %}
+{% block title %}Courier Run — Chess Federation{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.1.0/assets/chessground.base.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chessground-theme.css') }}">
+<style>
+.cr { max-width: 520px; margin: 0 auto; padding: 0.5rem; }
+.cr-header { display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem; }
+.cr-header img { width:40px; height:40px; border-radius:50%; border:2px solid #c2a633; }
+.cr-title { font-size:1.1rem; font-weight:700; }
+.cr-subtitle { font-size:0.75rem; color:var(--text-muted); }
+.cr-info-bar { display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; color:var(--text-muted); margin-bottom:0.5rem; padding:0.3rem 0.6rem; background:var(--bg-surface); border-radius:var(--radius); border:1px solid var(--border); }
+.cr-info-bar strong { color:var(--text); }
+.cr-enoch { display:flex; align-items:center; gap:0.5rem; padding:0.5rem 0.7rem; background:rgba(194,166,51,0.08); border:1px solid rgba(194,166,51,0.2); border-radius:var(--radius); font-size:0.8rem; color:#c8b889; margin-bottom:0.5rem; min-height:2.5rem; }
+.cr-enoch img { width:28px; height:28px; border-radius:50%; flex-shrink:0; }
+.cr-board-wrap { position:relative; width:100%; aspect-ratio:1; margin-bottom:0.4rem; }
+.cr-board-wrap cg-board { width:100% !important; height:100% !important; }
+.cr-status { text-align:center; font-size:0.85rem; padding:0.4rem 0; font-weight:600; }
+.cr-status-win { color:var(--green); }
+.cr-status-loss { color:#e74c3c; }
+.cr-status-draw { color:var(--text-muted); }
+.cr-actions { display:flex; gap:0.5rem; justify-content:center; margin-top:0.5rem; }
+/* Courier selection overlay */
+.cr-select-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10; border-radius:var(--radius); }
+.cr-select-title { color:#fff; font-size:1rem; font-weight:700; margin-bottom:0.5rem; }
+.cr-select-hint { color:rgba(255,255,255,0.7); font-size:0.78rem; margin-bottom:0.7rem; }
+.cr-pawn-grid { display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:center; }
+.cr-pawn-btn { width:50px; height:50px; border:2px solid rgba(255,255,255,0.3); border-radius:8px; background:rgba(255,255,255,0.1); color:#fff; font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+.cr-pawn-btn:hover { background:rgba(194,166,51,0.3); border-color:#c2a633; }
+.cr-pawn-btn .cr-pawn-label { font-size:0.6rem; position:absolute; margin-top:2.2rem; color:rgba(255,255,255,0.6); }
+/* Courier marker (ring around the piece) */
+.cr-courier-marker {
+    position: absolute;
+    width: 12.5%;
+    height: 12.5%;
+    border: 3px solid #c2a633;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 5;
+    box-shadow: 0 0 8px rgba(194,166,51,0.6);
+    transition: left 0.15s, bottom 0.15s;
+}
+.cr-courier-marker.enemy { border-color: #e74c3c; box-shadow: 0 0 8px rgba(231,76,60,0.6); }
+/* Landing page */
+.cr-landing { text-align:center; padding:2rem 1rem; }
+.cr-landing p { color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem; }
+.cr-reward-info { font-size:0.82rem; color:var(--text-muted); margin-top:0.5rem; }
+.cr-reward-info strong { color:var(--green); }
+/* Result modal */
+.cr-result-modal { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:100; display:none; align-items:center; justify-content:center; }
+.cr-result-modal.open { display:flex; }
+.cr-result-content { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; text-align:center; max-width:360px; width:90%; }
+.cr-result-content h2 { font-size:1.2rem; margin-bottom:0.5rem; }
+.cr-result-content .cr-result-reward { color:var(--green); font-size:1rem; font-weight:700; margin:0.5rem 0; }
+.cr-result-content .cr-result-reason { font-size:0.82rem; color:var(--text-muted); margin-bottom:0.75rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cr" id="courierApp">
+    <div class="cr-header">
+        <img src="{{ url_for('static', filename='img/enoch.png') }}" alt="Enoch">
+        <div>
+            <div class="cr-title">The Courier's Errand</div>
+            <div class="cr-subtitle">Enoch's Escort Game</div>
+        </div>
+    </div>
+
+    <div class="cr-enoch" id="crEnoch">
+        <img src="{{ url_for('static', filename='img/enoch.png') }}" alt="">
+        <span id="crEnochText">Awaiting orders...</span>
+    </div>
+
+    {% if active_game and active_game.status in ('selecting', 'active') %}
+    {# Resume active game #}
+    <div class="cr-info-bar">
+        <span>Turn: <strong id="crTurnCount">{{ active_game.turn_count }}</strong> / 80</span>
+        <span>Moves: <strong id="crMoveCount">{{ active_game.move_count }}</strong></span>
+        <span>Reward: <strong style="color:var(--green)">${{ reward }}</strong></span>
+    </div>
+    <div class="cr-board-wrap" id="crBoardWrap">
+        <div id="crBoard"></div>
+        {% if active_game.status == 'selecting' %}
+        <div class="cr-select-overlay" id="crSelectOverlay">
+            <div class="cr-select-title">Choose Your Courier</div>
+            <div class="cr-select-hint">Select one of your pawns to be the Courier</div>
+            <div class="cr-pawn-grid" id="crPawnGrid"></div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="cr-status" id="crStatus">
+        {% if active_game.status == 'selecting' %}
+        Select your Courier pawn to begin.
+        {% elif active_game.turn == 'white' %}
+        Your turn
+        {% else %}
+        Enoch is thinking...
+        {% endif %}
+    </div>
+
+    {% else %}
+    {# Landing page #}
+    <div class="cr-landing">
+        <p>Pick a pawn as your Courier. Deliver it to Enoch's back rank — or capture his.
+        No check, no checkmate, no king obligations. Pure escort warfare.</p>
+        <div class="cr-info-bar" style="justify-content:center;gap:1.5rem;">
+            <span>Games today: <strong>{{ daily_count }}</strong> / {{ max_daily }}</span>
+            <span>Win reward: <strong style="color:var(--green)">${{ reward }}</strong></span>
+        </div>
+        {% if can_play %}
+        <button class="btn btn-primary" id="crStartBtn" style="margin-top:1rem;">Begin the Errand</button>
+        {% else %}
+        <p class="cr-reward-info">You've used all 3 attempts today. Return tomorrow.</p>
+        {% endif %}
+    </div>
+    <div class="cr-board-wrap" id="crBoardWrap" style="display:none;">
+        <div id="crBoard"></div>
+        <div class="cr-select-overlay" id="crSelectOverlay" style="display:none;">
+            <div class="cr-select-title">Choose Your Courier</div>
+            <div class="cr-select-hint">Select one of your pawns to be the Courier</div>
+            <div class="cr-pawn-grid" id="crPawnGrid"></div>
+        </div>
+    </div>
+    <div class="cr-info-bar" id="crInfoBar" style="display:none;">
+        <span>Turn: <strong id="crTurnCount">0</strong> / 80</span>
+        <span>Moves: <strong id="crMoveCount">0</strong></span>
+        <span>Reward: <strong style="color:var(--green)">${{ reward }}</strong></span>
+    </div>
+    <div class="cr-status" id="crStatus" style="display:none;"></div>
+    {% endif %}
+
+    <div class="cr-actions">
+        <a href="{{ url_for('main.standings') }}" class="btn btn-sm btn-outline">Back to Home</a>
+    </div>
+</div>
+
+{# Result modal #}
+<div class="cr-result-modal" id="crResultModal">
+    <div class="cr-result-content">
+        <img src="{{ url_for('static', filename='img/enoch.png') }}" style="width:50px;height:50px;border-radius:50%;margin-bottom:0.5rem;border:2px solid #c2a633;">
+        <h2 id="crResultTitle"></h2>
+        <div class="cr-result-reason" id="crResultReason"></div>
+        <div class="cr-result-reward" id="crResultReward"></div>
+        <div class="cr-enoch" style="margin:0.5rem 0;">
+            <span id="crResultEnoch"></span>
+        </div>
+        <button class="btn btn-primary" onclick="document.getElementById('crResultModal').classList.remove('open'); location.reload();">Continue</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module">
+import { Chessground } from 'https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.1.0/+esm';
+
+var app = {
+    gameId: {{ (active_game.id if active_game else 0) | tojson }},
+    status: {{ (active_game.status if active_game else 'none') | tojson }},
+    fen: {{ (active_game.fen if active_game else 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1') | tojson }},
+    courierWhite: {{ (active_game.courier_white_sq if active_game else '') | tojson }},
+    courierBlack: {{ (active_game.courier_black_sq if active_game else '') | tojson }},
+    ground: null,
+    markers: [],
+};
+
+var enochImg = '{{ url_for("static", filename="img/enoch.png") }}';
+
+function setEnoch(text) {
+    var el = document.getElementById('crEnochText');
+    if (el) el.textContent = text;
+}
+
+function setStatus(text, cls) {
+    var el = document.getElementById('crStatus');
+    if (el) { el.textContent = text; el.className = 'cr-status' + (cls ? ' ' + cls : ''); }
+}
+
+function updateCounters(turnCount, moveCount) {
+    var tc = document.getElementById('crTurnCount');
+    var mc = document.getElementById('crMoveCount');
+    if (tc) tc.textContent = turnCount;
+    if (mc) mc.textContent = moveCount;
+}
+
+function sqToPos(sq) {
+    var file = sq.charCodeAt(0) - 97;
+    var rank = parseInt(sq[1]) - 1;
+    return { left: (file * 12.5) + '%', bottom: (rank * 12.5) + '%' };
+}
+
+function updateCourierMarkers() {
+    app.markers.forEach(function(m) { m.remove(); });
+    app.markers = [];
+    var wrap = document.getElementById('crBoardWrap');
+    if (!wrap) return;
+
+    if (app.courierWhite) {
+        var m = document.createElement('div');
+        m.className = 'cr-courier-marker';
+        var pos = sqToPos(app.courierWhite);
+        m.style.left = pos.left;
+        m.style.bottom = pos.bottom;
+        wrap.appendChild(m);
+        app.markers.push(m);
+    }
+    if (app.courierBlack) {
+        var m = document.createElement('div');
+        m.className = 'cr-courier-marker enemy';
+        var pos = sqToPos(app.courierBlack);
+        m.style.left = pos.left;
+        m.style.bottom = pos.bottom;
+        wrap.appendChild(m);
+        app.markers.push(m);
+    }
+}
+
+function buildDests(destsObj) {
+    var d = new Map();
+    for (var k in destsObj) {
+        d.set(k, destsObj[k]);
+    }
+    return d;
+}
+
+function initBoard(fen, dests, interactive) {
+    var el = document.getElementById('crBoard');
+    if (!el) return;
+    el.style.width = '100%';
+    el.style.height = '100%';
+
+    var config = {
+        fen: fen,
+        orientation: 'white',
+        turnColor: 'white',
+        movable: {
+            free: false,
+            color: interactive ? 'white' : undefined,
+            dests: interactive && dests ? buildDests(dests) : new Map(),
+            events: { after: onPlayerMove },
+        },
+        draggable: { enabled: interactive },
+        selectable: { enabled: interactive },
+        animation: { enabled: true, duration: 200 },
+    };
+
+    if (app.ground) {
+        app.ground.set(config);
+    } else {
+        app.ground = Chessground(el, config);
+    }
+}
+
+function onPlayerMove(orig, dest) {
+    var uci = orig + dest;
+    setStatus('Enoch is thinking...');
+    app.ground.set({ movable: { dests: new Map() }, draggable: { enabled: false } });
+
+    fetch('/courier/api/' + app.gameId + '/move', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uci: uci }),
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.error) { setStatus(d.error); return; }
+
+        if (d.game_over) {
+            handleGameOver(d);
+            return;
+        }
+
+        if (d.enoch) setEnoch(d.enoch);
+        updateCounters(d.turn_count, d.move_count);
+
+        // Apply Enoch's move
+        if (d.enoch_move) {
+            app.fen = d.fen;
+            app.courierWhite = d.courier_white || '';
+            app.courierBlack = d.courier_black || '';
+            app.ground.set({
+                fen: d.fen,
+                lastMove: [d.enoch_move.from, d.enoch_move.to],
+                turnColor: 'white',
+                movable: { color: 'white', dests: buildDests(d.dests) },
+                draggable: { enabled: true },
+            });
+            updateCourierMarkers();
+            setStatus('Your turn');
+        } else {
+            app.fen = d.fen;
+            app.courierWhite = d.courier_white || '';
+            app.courierBlack = d.courier_black || '';
+            app.ground.set({
+                fen: d.fen,
+                turnColor: 'white',
+                movable: { color: 'white', dests: buildDests(d.dests) },
+                draggable: { enabled: true },
+            });
+            updateCourierMarkers();
+            setStatus('Your turn');
+        }
+    })
+    .catch(function(e) { setStatus('Error: ' + e.message); });
+}
+
+function handleGameOver(d) {
+    app.fen = d.fen;
+    app.courierWhite = d.courier_white || '';
+    app.courierBlack = d.courier_black || '';
+    if (d.enoch_move) {
+        app.ground.set({ fen: d.fen, lastMove: [d.enoch_move.from, d.enoch_move.to] });
+    } else if (d.player_from && d.player_to) {
+        app.ground.set({ fen: d.fen, lastMove: [d.player_from, d.player_to] });
+    } else {
+        app.ground.set({ fen: d.fen });
+    }
+    app.ground.set({ movable: { dests: new Map() }, draggable: { enabled: false } });
+    updateCourierMarkers();
+
+    var modal = document.getElementById('crResultModal');
+    var titleEl = document.getElementById('crResultTitle');
+    var reasonEl = document.getElementById('crResultReason');
+    var rewardEl = document.getElementById('crResultReward');
+    var enochEl = document.getElementById('crResultEnoch');
+
+    var reasonMap = {
+        courier_delivered: 'Courier delivered to the back rank',
+        courier_captured: 'Courier was captured',
+        tiebreak_distance: 'Tiebreak: Courier closer to goal',
+        tiebreak_material: 'Tiebreak: Higher material count',
+        draw: 'Draw — no advantage to either side',
+    };
+
+    if (d.winner === 'white') {
+        titleEl.textContent = 'Victory!';
+        titleEl.style.color = 'var(--green)';
+        setStatus('You win!', 'cr-status-win');
+    } else if (d.winner === 'black') {
+        titleEl.textContent = 'Defeat';
+        titleEl.style.color = '#e74c3c';
+        setStatus('Enoch wins.', 'cr-status-loss');
+    } else {
+        titleEl.textContent = 'Draw';
+        titleEl.style.color = 'var(--text-muted)';
+        setStatus('Draw.', 'cr-status-draw');
+    }
+
+    reasonEl.textContent = reasonMap[d.end_reason] || d.end_reason;
+    rewardEl.textContent = d.reward > 0 ? '+$' + d.reward : '';
+    enochEl.textContent = d.enoch || '';
+    if (d.enoch) setEnoch(d.enoch);
+
+    modal.classList.add('open');
+}
+
+// ── Start Game ──
+var startBtn = document.getElementById('crStartBtn');
+if (startBtn) {
+    startBtn.addEventListener('click', function() {
+        startBtn.disabled = true;
+        fetch('/courier/api/new', { method: 'POST' })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.error) { alert(d.error); startBtn.disabled = false; return; }
+            app.gameId = d.game_id;
+            app.status = 'selecting';
+            app.fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+            setEnoch(d.enoch);
+
+            document.querySelector('.cr-landing').style.display = 'none';
+            var boardWrap = document.getElementById('crBoardWrap');
+            boardWrap.style.display = '';
+            document.getElementById('crInfoBar').style.display = '';
+            document.getElementById('crStatus').style.display = '';
+            setStatus('Select your Courier pawn to begin.');
+
+            initBoard(app.fen, null, false);
+
+            var overlay = document.getElementById('crSelectOverlay');
+            overlay.style.display = '';
+            var grid = document.getElementById('crPawnGrid');
+            grid.innerHTML = '';
+            d.pawns.forEach(function(sq) {
+                var btn = document.createElement('button');
+                btn.className = 'cr-pawn-btn';
+                btn.innerHTML = '&#9817;<br><small>' + sq + '</small>';
+                btn.addEventListener('click', function() { selectCourier(sq); });
+                grid.appendChild(btn);
+            });
+        })
+        .catch(function(e) { alert('Error: ' + e.message); startBtn.disabled = false; });
+    });
+}
+
+function selectCourier(sq) {
+    fetch('/courier/api/' + app.gameId + '/select', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ square: sq }),
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.error) { alert(d.error); return; }
+        app.status = 'active';
+        app.courierWhite = d.courier_white;
+        app.courierBlack = d.courier_black;
+        setEnoch(d.enoch);
+        setStatus('Your turn');
+
+        document.getElementById('crSelectOverlay').style.display = 'none';
+
+        initBoard(app.fen, d.dests, true);
+        updateCourierMarkers();
+    })
+    .catch(function(e) { alert('Error: ' + e.message); });
+}
+
+// ── Resume active game ──
+if (app.status === 'active') {
+    fetch('/courier/api/' + app.gameId + '/state')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        app.fen = d.fen;
+        app.courierWhite = d.courier_white || '';
+        app.courierBlack = d.courier_black || '';
+        initBoard(d.fen, d.dests, d.turn === 'white');
+        updateCourierMarkers();
+        updateCounters(d.turn_count, d.move_count);
+        if (d.turn === 'white') setStatus('Your turn');
+        else setStatus('Enoch is thinking...');
+    });
+} else if (app.status === 'selecting') {
+    fetch('/courier/api/new', { method: 'POST' })
+    .then(function() {})
+    .catch(function() {});
+    initBoard(app.fen, null, false);
+    // Load pawns for selection
+    fetch('/courier/api/' + app.gameId + '/state')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        var grid = document.getElementById('crPawnGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        var pawns = ['a2','b2','c2','d2','e2','f2','g2','h2'];
+        pawns.forEach(function(sq) {
+            var btn = document.createElement('button');
+            btn.className = 'cr-pawn-btn';
+            btn.innerHTML = '&#9817;<br><small>' + sq + '</small>';
+            btn.addEventListener('click', function() { selectCourier(sq); });
+            grid.appendChild(btn);
+        });
+    });
+}
+</script>
+{% endblock %}

@@ -17,11 +17,11 @@
                 <span></span><span></span><span></span>
             </button>
             <div class="nav-links" id="navLinks">
-                <a href="{{ url_for('main.board_redirect') }}">Play</a>
-                <a href="{{ url_for('main.standings') }}">Standings</a>
-                <a href="{{ url_for('main.rankings') }}">Rankings</a>
-                <a href="{{ url_for('players.chronicle') }}">Players</a>
-                <a href="{{ url_for('decree.decree_page') }}">Rules</a>
+                <a href="{{ url_for('main.standings') }}">Home</a>
+                <a href="{{ url_for('main.rankings') }}">Standings &amp; Rankings</a>
+                <a href="{{ url_for('market.market_page') }}">Market</a>
+                <a href="{{ url_for('players.chronicle') }}">Federation Timeline</a>
+                <a href="{{ url_for('decree.decree_page') }}">Weekly Decree</a>
                 <a href="{{ url_for('hall.federation_hall') }}" id="navChatLink">Chat<span class="chat-badge" id="chatBadge"></span></a>
                 <a href="{{ url_for('players.my_account') }}" class="nav-user-link">
                     {{ avatar(current_user, 'xs') }}

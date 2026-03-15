@@ -4,75 +4,81 @@
 
 {% block content %}
 <div class="account-page">
-    <h1>My Account</h1>
-
-    <div class="account-grid">
-        <div class="card account-avatar-card">
-            <h2>Avatar</h2>
-            <div class="account-avatar-section">
-                {{ avatar(current_user, 'xl') }}
+    <div class="acct-profile-card card">
+        <div class="acct-top">
+            <div class="acct-avatar-compact">
+                {{ avatar(current_user, 'lg') }}
                 <form action="{{ url_for('players.upload_avatar') }}"
-                      method="post" enctype="multipart/form-data" class="avatar-form">
-                    <label class="btn btn-sm avatar-choose-btn">
-                        Choose Photo
-                        <input type="file" name="avatar" accept="image/*" hidden>
+                      method="post" enctype="multipart/form-data" class="acct-avatar-form">
+                    <label class="btn btn-xs acct-change-btn">
+                        Change
+                        <input type="file" name="avatar" accept="image/*" hidden
+                               onchange="this.closest('form').submit()">
                     </label>
-                    <p class="text-muted avatar-hint">PNG, JPG, GIF, or WebP — 2 MB max</p>
                 </form>
+            </div>
+            <div class="acct-headline">
+                <h1 class="acct-name">{{ current_user.username }}</h1>
+                <div class="acct-stats-row">
+                    <span class="acct-stat"><strong>{{ current_user.rating }}</strong> rating</span>
+                    <span class="acct-stat-sep">&middot;</span>
+                    <span class="acct-stat">{{ current_user.tier.name }}</span>
+                    <span class="acct-stat-sep">&middot;</span>
+                    <span class="acct-stat">Tier {{ current_user.tier.tier }}</span>
+                </div>
+                <div class="acct-stats-row">
+                    <span class="acct-stat">{{ current_user.wins }}W – {{ current_user.losses }}L – {{ current_user.draws }}D</span>
+                    <span class="acct-stat-sep">&middot;</span>
+                    <span class="acct-stat">Ordained {{ current_user.created_at.strftime('%b %d, %Y') }}</span>
+                </div>
+                {% if progression and not progression.at_max %}
+                <div class="acct-progress">
+                    <div class="acct-progress-bar">
+                        <div class="acct-progress-fill" style="width:{{ progression.pct }}%"></div>
+                    </div>
+                    <span class="acct-progress-label">{{ progression.pct|round|int }}% to {{ progression.next.name }}</span>
+                </div>
+                {% elif progression and progression.at_max %}
+                <div class="acct-progress">
+                    <span class="acct-progress-label">Max tier reached</span>
+                </div>
+                {% endif %}
             </div>
         </div>
 
-        <div class="card">
-            <h2>Standing</h2>
-            <div class="account-info">
-                <div class="info-row">
-                    <span class="info-label">Name</span>
-                    <span class="info-value">{{ current_user.username }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Rating</span>
-                    <span class="info-value">{{ current_user.rating }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Title</span>
-                    <span class="info-value pcard-title-inline">{{ current_user.tier.name }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Rank</span>
-                    <span class="info-value"><span class="tier-badge">{{ current_user.tier.tier }}</span></span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Record</span>
-                    <span class="info-value">{{ current_user.wins }}W – {{ current_user.losses }}L – {{ current_user.draws }}D</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Ordained</span>
-                    <span class="info-value">{{ current_user.created_at.strftime('%b %d, %Y') }}</span>
-                </div>
+        {% if rival %}
+        <div class="acct-rival">
+            <span class="acct-rival-label">Rival:</span>
+            {{ avatar(rival.user, 'xs') }}
+            <strong>{{ rival.user.username }}</strong>
+            <span class="text-muted">({{ rival.wins }}W – {{ rival.losses }}L – {{ rival.draws }}D in {{ rival.total }} games)</span>
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('players.update_bio') }}" method="post" class="acct-bio-form">
+            <label class="info-label" for="bioInput">Bio</label>
+            <textarea id="bioInput" name="bio" class="form-textarea" rows="2"
+                      maxlength="300" placeholder="A brief declaration...">{{ current_user.bio or '' }}</textarea>
+            <button type="submit" class="btn btn-sm" style="margin-top:0.4rem;">Save Bio</button>
+        </form>
+
+        <div class="acct-actions">
+            <a href="{{ url_for('players.player_profile', username=current_user.username) }}" class="btn btn-sm btn-outline">View Public Profile</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Preferences</h2>
+        <div class="account-pref-row">
+            <div class="account-pref-info">
+                <span class="account-pref-label">Name Openings &amp; Variations</span>
+                <span class="account-pref-desc">When a never-before-seen sequence is played, you may inscribe its name into the Federation record.</span>
             </div>
-            <p class="account-tier-desc">{{ current_user.tier.desc }}</p>
-            <form action="{{ url_for('players.update_bio') }}" method="post" class="account-bio-form">
-                <label class="info-label" for="bioInput">Bio</label>
-                <textarea id="bioInput" name="bio" class="form-textarea" rows="3"
-                          maxlength="300" placeholder="A brief declaration of who you are…">{{ current_user.bio or '' }}</textarea>
-                <button type="submit" class="btn btn-sm" style="margin-top:0.5rem;">Save Bio</button>
+            <form action="{{ url_for('players.toggle_naming') }}" method="post" class="account-pref-toggle">
+                <button type="submit" class="toggle-btn {% if current_user.can_name_openings %}toggle-on{% endif %}">
+                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                </button>
             </form>
-            <a href="{{ url_for('players.player_profile', username=current_user.username) }}" class="btn btn-sm btn-outline" style="margin-top: 1rem;">View Public Profile</a>
-        </div>
-
-        <div class="card">
-            <h2>Preferences</h2>
-            <div class="account-pref-row">
-                <div class="account-pref-info">
-                    <span class="account-pref-label">Name Openings &amp; Variations</span>
-                    <span class="account-pref-desc">When a never-before-seen sequence is played, you may inscribe its name into the Federation record.</span>
-                </div>
-                <form action="{{ url_for('players.toggle_naming') }}" method="post" class="account-pref-toggle">
-                    <button type="submit" class="toggle-btn {% if current_user.can_name_openings %}toggle-on{% endif %}">
-                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
-                    </button>
-                </form>
-            </div>
         </div>
     </div>
 </div>

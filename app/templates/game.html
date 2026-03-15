@@ -45,22 +45,8 @@
     </div>
     {% endif %}
 
-    {# ── Weekly Rule Reminder (PvP only) ── #}
-    {% if weekly_rule %}
-    <div class="gv-rule-banner" id="ruleBanner" role="button" tabindex="0" title="Click for details">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-        <span><strong>{{ weekly_rule.title }}:</strong> {{ weekly_rule.reminder }}</span>
-        <svg class="gv-rule-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-    </div>
-    <div class="gv-rule-detail" id="ruleDetail">
-        <h4>{{ weekly_rule.title }}</h4>
-        <p>{{ weekly_rule.explanation }}</p>
-        <button class="btn btn-sm gv-rule-close" id="ruleDetailClose">Got it</button>
-    </div>
-    {% endif %}
-
-    {# ── Move notation strip ── #}
-    <div class="gv-moves-strip" id="movesStrip">
+    {# ── Move notation strip (hidden, accessible via toggle) ── #}
+    <div class="gv-moves-strip" id="movesStrip" style="display:none">
         {% for move in moves %}
             {% if move.color == 'white' %}
                 <span class="gv-mn">{{ move.move_number }}.</span>
@@ -71,6 +57,19 @@
         {% endfor %}
         {% if not moves %}<span class="gv-ms-empty">No moves yet</span>{% endif %}
     </div>
+
+    {# ── Per-Game Chat Panel ── #}
+    {% if not is_practice %}
+    <div class="gv-game-chat" id="gameChatPanel">
+        <div class="gv-gchat-messages" id="gameChatMessages"></div>
+        <div class="gv-gchat-composer" id="gameChatComposer">
+            <input type="text" id="gameChatInput" class="gv-gchat-input" placeholder="Say something..." maxlength="500" autocomplete="off">
+            <button class="gv-gchat-send" id="gameChatSend">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+        </div>
+    </div>
+    {% endif %}
 
     {# ── Opponent bar (top) ── #}
     {% set top_player = opponent if is_participant else game.white %}
@@ -169,6 +168,20 @@
             {% endif %}
         </div>
     </div>
+
+    {# ── Weekly Rule Reminder (moved below board) ── #}
+    {% if weekly_rule %}
+    <div class="gv-rule-banner" id="ruleBanner" role="button" tabindex="0" title="Click for details">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        <span><strong>{{ weekly_rule.title }}:</strong> {{ weekly_rule.reminder }}</span>
+        <svg class="gv-rule-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="gv-rule-detail" id="ruleDetail">
+        <h4>{{ weekly_rule.title }}</h4>
+        <p>{{ weekly_rule.explanation }}</p>
+        <button class="btn btn-sm gv-rule-close" id="ruleDetailClose">Got it</button>
+    </div>
+    {% endif %}
 
     {# ── Enoch commentary ── #}
     <div class="gv-enoch" id="enochBar" {% if not enoch_line %}style="display:none"{% endif %}>
@@ -364,6 +377,66 @@
         banner.addEventListener('click', function() { detail.classList.toggle('open'); });
         if (close) close.addEventListener('click', function() { detail.classList.remove('open'); });
     }
+})();
+
+/* ── Per-Game Chat ── */
+(function() {
+    var panel = document.getElementById('gameChatPanel');
+    if (!panel) return;
+    var msgBox = document.getElementById('gameChatMessages');
+    var input = document.getElementById('gameChatInput');
+    var sendBtn = document.getElementById('gameChatSend');
+    var composer = document.getElementById('gameChatComposer');
+    var gameId = window.GAME_DATA ? window.GAME_DATA.gameId : null;
+    if (!gameId) return;
+
+    var lastMsgId = 0;
+    var autoScroll = true;
+
+    function pollChat() {
+        fetch('/game/' + gameId + '/chat/poll?after=' + lastMsgId)
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (!d.show_composer && composer) composer.style.display = 'none';
+                if (d.messages && d.messages.length > 0) {
+                    d.messages.forEach(function(m) {
+                        var div = document.createElement('div');
+                        div.className = 'gv-gchat-msg';
+                        var avatarHtml = '';
+                        if (m.avatar) {
+                            avatarHtml = '<img src="' + m.avatar + '" class="gv-gchat-avatar">';
+                        } else {
+                            avatarHtml = '<span class="gv-gchat-avatar-letter">' + (m.user || 'E').charAt(0).toUpperCase() + '</span>';
+                        }
+                        div.innerHTML = avatarHtml +
+                            '<span class="gv-gchat-user">' + (m.user || 'Enoch') + '</span>' +
+                            '<span class="gv-gchat-text">' + m.content + '</span>';
+                        msgBox.appendChild(div);
+                        lastMsgId = m.id;
+                    });
+                    if (autoScroll) msgBox.scrollTop = msgBox.scrollHeight;
+                }
+            }).catch(function() {});
+    }
+
+    function sendMessage() {
+        var text = (input.value || '').trim();
+        if (!text) return;
+        input.value = '';
+        fetch('/game/' + gameId + '/chat/send', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content: text})
+        }).then(function() { pollChat(); }).catch(function() {});
+    }
+
+    if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+    if (input) input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); sendMessage(); }
+    });
+
+    pollChat();
+    setInterval(pollChat, 4000);
 })();
 </script>
 {% endblock %}

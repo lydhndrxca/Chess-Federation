@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, redirect, render_template, request, url_fo
 from flask_login import current_user, login_required
 
 from app.models import (
-    Commendation, EnochWager, Game, Move, PlayerCollectible, User, db,
+    Commendation, EnochWager, Game, GameChat, Move, PlayerCollectible, User, db,
 )
 from app.services.chess_engine import ChessEngine
 from app.services.enoch import get_move_commentary, comment_game_start, get_title
@@ -930,3 +930,57 @@ def scrapbook():
         enoch=enoch,
         enoch_mood=get_current_mood(),
     )
+
+
+# ── Per-game chat ──
+
+@game_bp.route('/game/<int:game_id>/chat/poll')
+@login_required
+def game_chat_poll(game_id):
+    game = Game.query.get_or_404(game_id)
+    after = request.args.get('after', 0, type=int)
+    msgs = GameChat.query.filter(
+        GameChat.game_id == game_id,
+        GameChat.id > after,
+    ).order_by(GameChat.id.asc()).limit(100).all()
+
+    items = []
+    for m in msgs:
+        username = m.user.username if m.user else 'Enoch'
+        avatar_url = ''
+        if m.user and m.user.avatar_filename:
+            avatar_url = '/static/uploads/' + m.user.avatar_filename
+        items.append({
+            'id': m.id,
+            'user': username,
+            'avatar': avatar_url,
+            'content': m.content,
+            'is_bot': m.is_bot,
+            'ts': m.timestamp.isoformat() if m.timestamp else '',
+        })
+
+    show_composer = game.status in ('pending', 'active')
+    return jsonify(messages=items, show_composer=show_composer)
+
+
+@game_bp.route('/game/<int:game_id>/chat/send', methods=['POST'])
+@login_required
+def game_chat_send(game_id):
+    game = Game.query.get_or_404(game_id)
+    if game.status not in ('pending', 'active'):
+        return jsonify(error='Game has ended.'), 400
+
+    data = request.get_json(force=True)
+    content = (data.get('content') or '').strip()
+    if not content or len(content) > 500:
+        return jsonify(error='Invalid message.'), 400
+
+    msg = GameChat(
+        game_id=game_id,
+        user_id=current_user.id,
+        content=content,
+    )
+    db.session.add(msg)
+    db.session.commit()
+
+    return jsonify(ok=True, id=msg.id)

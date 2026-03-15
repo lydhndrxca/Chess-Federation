@@ -13,6 +13,8 @@ login_manager = LoginManager()
 
 MIGRATION_FLAG = 'v2_rating_reset_done'
 ANDREW_REFUND_FLAG = 'v3_andrew_sap_refund'
+DENARIUS_SEED_FLAG = 'v4_denarius_seed'
+USD_RESTRUCTURE_FLAG = 'v5_currency_to_usd'
 
 
 def _migrate_db(app):
@@ -285,6 +287,105 @@ def _migrate_db(app):
         )
         cur.execute("INSERT INTO _migration_flags(flag) VALUES(?)", (ANDREW_REFUND_FLAG,))
 
+    # Market tables
+    if 'market_holding' not in tables:
+        cur.execute('''CREATE TABLE market_holding (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            coin_id VARCHAR(50) NOT NULL,
+            coin_symbol VARCHAR(10) NOT NULL,
+            coin_name VARCHAR(80) NOT NULL,
+            amount REAL DEFAULT 0,
+            avg_buy_price REAL DEFAULT 0,
+            FOREIGN KEY(user_id) REFERENCES user(id),
+            UNIQUE(user_id, coin_id)
+        )''')
+
+    if 'market_order' not in tables:
+        cur.execute('''CREATE TABLE market_order (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            coin_id VARCHAR(50) NOT NULL,
+            coin_symbol VARCHAR(10) NOT NULL,
+            order_type VARCHAR(4) NOT NULL,
+            target_price REAL NOT NULL,
+            denarius_amount REAL NOT NULL,
+            crypto_amount REAL NOT NULL,
+            status VARCHAR(10) DEFAULT 'pending',
+            created_at DATETIME,
+            filled_at DATETIME,
+            FOREIGN KEY(user_id) REFERENCES user(id)
+        )''')
+
+    if 'market_transaction' not in tables:
+        cur.execute('''CREATE TABLE market_transaction (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            coin_id VARCHAR(50) NOT NULL,
+            coin_symbol VARCHAR(10) NOT NULL,
+            tx_type VARCHAR(4) NOT NULL,
+            crypto_amount REAL NOT NULL,
+            price_usd REAL NOT NULL,
+            denarius_amount REAL NOT NULL,
+            created_at DATETIME,
+            FOREIGN KEY(user_id) REFERENCES user(id)
+        )''')
+
+    # Seed all human players with 100 denarius if not already done
+    seed_done = cur.execute(
+        "SELECT 1 FROM _migration_flags WHERE flag=?", (DENARIUS_SEED_FLAG,)
+    ).fetchone()
+    if not seed_done:
+        cur.execute(
+            "UPDATE user SET roman_gold = roman_gold + 100 WHERE is_bot = 0"
+        )
+        cur.execute("INSERT INTO _migration_flags(flag) VALUES(?)", (DENARIUS_SEED_FLAG,))
+
+    # Convert denarius to USD: multiply all balances by 50 (1 denarius = $50)
+    usd_done = cur.execute(
+        "SELECT 1 FROM _migration_flags WHERE flag=?", (USD_RESTRUCTURE_FLAG,)
+    ).fetchone()
+    if not usd_done:
+        cur.execute("UPDATE user SET roman_gold = roman_gold * 50 WHERE roman_gold > 0")
+        if 'market_order' in tables:
+            cur.execute("UPDATE market_order SET denarius_amount = denarius_amount * 50")
+        if 'market_transaction' in tables:
+            cur.execute("UPDATE market_transaction SET denarius_amount = denarius_amount * 50")
+        cur.execute("INSERT INTO _migration_flags(flag) VALUES(?)", (USD_RESTRUCTURE_FLAG,))
+
+    # Game chat table
+    if 'game_chat' not in tables:
+        cur.execute('''CREATE TABLE game_chat (
+            id INTEGER PRIMARY KEY,
+            game_id INTEGER NOT NULL,
+            user_id INTEGER,
+            content TEXT NOT NULL,
+            is_bot BOOLEAN DEFAULT 0,
+            timestamp DATETIME,
+            FOREIGN KEY(game_id) REFERENCES game(id),
+            FOREIGN KEY(user_id) REFERENCES user(id)
+        )''')
+
+    if 'courier_game' not in tables:
+        cur.execute('''CREATE TABLE courier_game (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            status VARCHAR(20) DEFAULT 'selecting',
+            fen VARCHAR(100),
+            courier_white_sq VARCHAR(4),
+            courier_black_sq VARCHAR(4),
+            turn VARCHAR(5) DEFAULT 'white',
+            turn_count INTEGER DEFAULT 0,
+            move_count INTEGER DEFAULT 0,
+            winner VARCHAR(5),
+            end_reason VARCHAR(30),
+            reward_paid BOOLEAN DEFAULT 0,
+            move_history TEXT DEFAULT '',
+            started_at DATETIME,
+            completed_at DATETIME,
+            FOREIGN KEY(user_id) REFERENCES user(id)
+        )''')
+
     conn.commit()
     conn.close()
 
@@ -315,6 +416,7 @@ def create_app():
     from app.routes.hall import hall_bp
     from app.routes.four_player import fp_bp
     from app.routes.crypt import crypt_bp
+    from app.routes.market import market_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -325,9 +427,13 @@ def create_app():
     app.register_blueprint(hall_bp)
     app.register_blueprint(fp_bp)
     app.register_blueprint(crypt_bp)
+    app.register_blueprint(market_bp)
 
     from app.routes.challenge import challenge_bp
     app.register_blueprint(challenge_bp)
+
+    from app.routes.courier import courier_bp
+    app.register_blueprint(courier_bp)
 
 
     _migrate_db(app)

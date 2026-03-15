@@ -4,6 +4,8 @@ Moods (rotate every ~4-6 hours, deterministically):
   Chill    → ~500 Elo   — distracted, clumsy, blunder-heavy
   Annoyed  → ~800 Elo   — sharper, fewer blunders, still sloppy
   Angry    → ~1200 Elo  — focused, tactical, genuinely dangerous
+  Vengeful → ~1400 Elo  — relentless, calculated, patient
+  Unhinged → ~1600 Elo  — erratic genius, deep calculation, near perfect
 
 Engine: minimax with alpha-beta pruning, piece-square tables, and
 mood-dependent depth/noise/blunder rates calibrated against real Elo.
@@ -26,6 +28,8 @@ MOODS = [
     {'key': 'annoyed',  'label': 'Annoyed',  'rating': 800,  'icon': '\U0001f610',        'points_win': 16,  'points_loss': -8},
     {'key': 'furious',  'label': 'Furious',  'rating': 1000, 'icon': '\U0001f92c',        'points_win': 22,  'points_loss': -12},
     {'key': 'angry',    'label': 'Angry',    'rating': 1200, 'icon': '\U0001f525',        'points_win': 30,  'points_loss': -18},
+    {'key': 'vengeful', 'label': 'Vengeful', 'rating': 1400, 'icon': '\u2694\ufe0f',       'points_win': 40,  'points_loss': -25},
+    {'key': 'unhinged', 'label': 'Unhinged', 'rating': 1600, 'icon': '\U0001f9ff',        'points_win': 50,  'points_loss': -35},
 ]
 
 MOOD_BY_KEY = {m['key']: m for m in MOODS}
@@ -33,13 +37,13 @@ MOOD_BY_KEY = {m['key']: m for m in MOODS}
 def get_current_mood():
     """Return the current Enoch mood dict based on time of day.
 
-    The day is split into 6 segments (~4 hours each). A daily seed
+    The day is split into 8 segments (~3 hours each). A daily seed
     creates a shuffled mood schedule that guarantees at least one
-    appearance of each mood and changes a few times throughout the day.
+    appearance of each mood and changes throughout the day.
     """
     now = datetime.now(timezone.utc)
     day_key = now.strftime('%Y-%m-%d')
-    segment = now.hour // 4
+    segment = now.hour // 3
 
     seed = int(hashlib.md5(f'enoch-mood-{day_key}'.encode()).hexdigest(), 16)
     rng = random.Random(seed)
@@ -96,6 +100,20 @@ _MOOD_PARAMS = {
         'blunder_chance': 0.01,
         'top_n': 2,
         'time_limit': 1.5,
+    },
+    'vengeful': {
+        'depth': 5,
+        'noise': 8,
+        'blunder_chance': 0.005,
+        'top_n': 2,
+        'time_limit': 2.0,
+    },
+    'unhinged': {
+        'depth': 5,
+        'noise': 4,
+        'blunder_chance': 0.002,
+        'top_n': 1,
+        'time_limit': 2.5,
     },
 }
 

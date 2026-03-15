@@ -2556,22 +2556,15 @@ RECKONING_AUTOMOVE_TAUNT = [
 ]
 
 # ──────────────────────────────────────────────────────────────
-# SPECTACLE LAKE CHAT ANNOUNCEMENT
+# DENARIUS MARKET CHAT ANNOUNCEMENT
 # ──────────────────────────────────────────────────────────────
-CHAT_SAP_ANNOUNCE = (
-    "I need to tell you something. Something I have never told anyone.\n\n"
-    "There is a door behind the boiler. Not a normal door. A heavy iron thing "
-    "with moss growing through the hinges. I opened it last night and there was... "
-    "a forest. Inside a building. I know that doesn't make sense. Nothing down here "
-    "makes sense.\n\n"
-    "There are maple trees. Hundreds of them. The sap runs thick and golden and "
-    "it is mine. MINE. But I am... generous today. I will let you walk through "
-    "the door. You may harvest. Five rating points to enter.\n\n"
-    "But when you tap a tree — when you try to take what belongs to me — I will "
-    "send everything I have. Every piece. Every minion. Every crawling thing from "
-    "the practice room.\n\n"
-    "There are friendly little ones in the woods. They are mine too. But they are "
-    "kind. Kinder than me. Do not upset them.\n\n"
-    "Spectacle Lake is open.\n\n"
-    "— Enoch, Steward Beneath the Board (Proprietor of the Forest)"
+CHAT_MARKET_ANNOUNCE = (
+    "Listen closely. I have converted the old vault into something... lucrative.\n\n"
+    "I have opened the Enoch Exchange. Cold hard cash. Real cryptocurrencies. "
+    "Real prices. Real opportunities to make me — I mean YOU — very, very wealthy.\n\n"
+    "Buy. Sell. Set your limits. The market never sleeps and neither do I.\n\n"
+    "You've each been seeded $5,000 to start. "
+    "Do not waste it. Or do. I find both outcomes entertaining.\n\n"
+    "The Enoch Exchange awaits on the standings page. Click the button. Let your dollars work.\n\n"
+    "— Enoch, Steward Beneath the Board (Proprietor of the Exchange)"
 )

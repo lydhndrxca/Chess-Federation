@@ -181,6 +181,39 @@ def maybe_idle_interjection():
     return _post_bot(random.choice(CHAT_IDLE))
 
 
+_master_welcome_announced = False
+
+
+def ensure_master_welcome():
+    """Post Enoch's comprehensive welcome letter covering all Federation features."""
+    global _master_welcome_announced
+    if _master_welcome_announced:
+        return
+    existing = ChatMessage.query.filter(
+        ChatMessage.is_bot == True,
+        ChatMessage.content.contains('STATE OF THE FEDERATION'),
+    ).first()
+    if existing:
+        _master_welcome_announced = True
+        return
+    _master_welcome_announced = True
+    msg = _post_bot(
+        "STATE OF THE FEDERATION — TLDR\n\n"
+        "Weekly Decree: Knights frozen (Lame Knees). Dark board = decree game.\n"
+        "NEW — Courier's Errand: Escort your pawn to the back rank vs me. $50/win, 3x daily.\n"
+        "Enoch Market: Crypto trading. THIS WEEK IS 3X — gains and losses tripled.\n"
+        "NEW — Complaints box in the menu. I will respond. I will not be nice.\n"
+        "Crypt: Closed. Don't ask.\n"
+        "Money next to your name = cash + portfolio. The ledger does not lie.\n"
+        "Check indicator: Red banner when your king is in check.\n"
+        "News ticker: Headlines, crypto, player stats, and my commentary.\n\n"
+        "Play. Trade. Complain. I'm watching.\n"
+        "— Enoch"
+    )
+    db.session.commit()
+    return msg
+
+
 _casual_announced = False
 _crypt_revenge_announced = False
 
@@ -334,18 +367,56 @@ def ensure_market_3x_announcement():
         return
     existing = ChatMessage.query.filter(
         ChatMessage.is_bot == True,
-        ChatMessage.content.contains("TRIPLE the effect"),
+        ChatMessage.content.contains("3X EXTREME WEEK"),
     ).first()
     if existing:
         _market_3x_announced = True
         return
     _market_3x_announced = True
     msg = _post_bot(
-        "ATTENTION. This week, I have amplified the Enoch Exchange.\n\n"
-        "All market gains and losses now carry TRIPLE the effect. "
-        "3x on everything. Your portfolio swings three times harder.\n\n"
-        "If you were cautious before, be terrified now. "
-        "If you were reckless, well... good luck.\n\n"
+        "FEDERATION — 3X EXTREME WEEK IS LIVE.\n\n"
+        "I have done something reckless. The Enoch Market is running at "
+        "THREE TIMES normal intensity. Every gain is tripled. Every loss "
+        "is tripled. Your portfolio will move three times harder than "
+        "usual in either direction.\n\n"
+        "This is not a drill. This is not a suggestion. This is happening "
+        "RIGHT NOW.\n\n"
+        "If you are in the market, brace yourself. If you are not in the "
+        "market, this might be the most exciting — or most catastrophic — "
+        "week to start.\n\n"
+        "Go to the Enoch Market (button in the top nav bar) and make your "
+        "moves. Or don't. I will be watching either way.\n\n"
+        "3x gains. 3x losses. No mercy.\n\n"
+        "— Enoch"
+    )
+    db.session.commit()
+    return msg
+
+
+_complaints_announced = False
+
+def ensure_complaints_announcement():
+    """Post a one-time Enoch announcement about the Complaints & Suggestions box."""
+    global _complaints_announced
+    if _complaints_announced:
+        return
+    existing = ChatMessage.query.filter(
+        ChatMessage.is_bot == True,
+        ChatMessage.content.contains('Complaints & Suggestions'),
+    ).first()
+    if existing:
+        _complaints_announced = True
+        return
+    _complaints_announced = True
+    msg = _post_bot(
+        "ATTENTION, Federation.\n\n"
+        "I have, against my better judgment, installed a Complaints & Suggestions box. "
+        "You will find it in the menu under your name — top right corner. "
+        "Click it. Type your grievance. Hit submit.\n\n"
+        "I will read every single one. I will respond to every single one. "
+        "I will enjoy none of it.\n\n"
+        "Do not expect sympathy. Do not expect change. Do expect a reply.\n\n"
+        "If you have nothing to complain about, I find that suspicious.\n\n"
         "— Enoch"
     )
     db.session.commit()

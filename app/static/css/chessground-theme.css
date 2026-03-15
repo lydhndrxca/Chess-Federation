@@ -3,13 +3,13 @@ cg-board {
     background: repeating-conic-gradient(#eeeed2 0% 25%, #769656 0% 50%) 0 / 25% 25%;
 }
 
-/* Decree board — dark tiles with white grid lines */
+/* Decree board — dark grey / charcoal alternating tiles with white grid */
 .gv-decree-board cg-board {
-    background: #1a1a1a;
-    background-image:
-        linear-gradient(rgba(255,255,255,0.18) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px);
-    background-size: 12.5% 12.5%;
+    background:
+        linear-gradient(rgba(255,255,255,0.25) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.25) 1px, transparent 1px),
+        repeating-conic-gradient(#2a2a2a 0% 25%, #3d3d3d 0% 50%) 0 / 25% 25%;
+    background-size: 12.5% 12.5%, 12.5% 12.5%, 25% 25%;
 }
 .gv-decree-board cg-board square.last-move {
     background-color: rgba(255, 255, 255, 0.08);
@@ -29,7 +29,7 @@ cg-board {
 }
 /* Black pieces get white outline via drop-shadow */
 .gv-decree-board piece.black {
-    filter: drop-shadow(0 0 1px rgba(255,255,255,0.6)) drop-shadow(0 0 0.5px rgba(255,255,255,0.4));
+    filter: drop-shadow(0 0 1.5px rgba(255,255,255,0.8)) drop-shadow(0 0 1px rgba(255,255,255,0.5));
 }
 
 /* Last-move highlight */

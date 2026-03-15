@@ -396,6 +396,12 @@ def _migrate_db(app):
             FOREIGN KEY(user_id) REFERENCES user(id)
         )''')
 
+    cur.execute(
+        "UPDATE game SET custom_rule_name = 'Lame Knees' "
+        "WHERE custom_rule_name = 'Extended Knight' "
+        "AND status IN ('pending', 'active')"
+    )
+
     conn.commit()
     conn.close()
 

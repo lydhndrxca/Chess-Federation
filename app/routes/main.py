@@ -620,19 +620,28 @@ def _build_enoch_quips():
 @main_bp.route('/api/ticker')
 @login_required
 def api_ticker():
-    """Return scrolling ticker items: news, crypto, federation stats, Enoch quips."""
+    """Return scrolling ticker items: news, crypto, federation, geology, maple syrup, history, Enoch quips."""
     now = time.time()
     if now - _news_cache['ts'] > _NEWS_TTL or not _news_cache['items']:
+        from app.services.ticker_content import (
+            get_geology_facts, get_maple_syrup_tips, get_on_this_day,
+        )
         news = _fetch_world_headlines()
         crypto = _fetch_crypto_headlines()
         federation = _build_federation_items()
         quips = _build_enoch_quips()
+        geology = get_geology_facts(3)
+        maple = get_maple_syrup_tips(2)
+        history = get_on_this_day(2)
 
         all_items = []
         all_items.extend(news[:8])
         all_items.extend(crypto[:8])
         all_items.extend(federation)
         all_items.extend(quips)
+        all_items.extend(geology)
+        all_items.extend(maple)
+        all_items.extend(history)
         random.shuffle(all_items)
         _news_cache['items'] = all_items
         _news_cache['ts'] = now

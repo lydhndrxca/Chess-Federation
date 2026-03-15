@@ -96,6 +96,8 @@ a:hover { text-decoration: underline; }
     margin-right: 0.5rem;
 }
 .nav-market-btn:hover { filter: brightness(1.15); text-decoration: none; }
+.page-game .nav-3x-badge,
+.page-game .nav-market-btn { display: none; }
 .nav-links { display: flex; align-items: center; gap: 1rem; }
 .nav-links a {
     color: var(--text-muted);

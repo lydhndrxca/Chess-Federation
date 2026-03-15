@@ -4,6 +4,15 @@
 
 {% block content %}
 <div class="mx">
+    {# ── 3x Amplifier Banner ── #}
+    <div style="background:linear-gradient(90deg,rgba(245,166,35,0.15),rgba(231,76,76,0.15));border:1px solid rgba(245,166,35,0.4);border-radius:8px;padding:.6rem 1rem;margin-bottom:.8rem;display:flex;align-items:center;gap:.8rem;">
+        <span style="font-size:1.5rem;font-weight:900;color:#f5a623;">3&times;</span>
+        <div>
+            <div style="font-weight:700;font-size:.85rem;color:#f5a623;">AMPLIFIED WEEK</div>
+            <div style="font-size:.72rem;color:var(--text-muted);">All market gains and losses are tripled this week by decree.</div>
+        </div>
+    </div>
+
     {# ── Header: Balance + Portfolio Summary ── #}
     <div class="mx-header">
         <div class="mx-brand">
@@ -244,6 +253,7 @@
     function loadMarket() {
         fetch('/market/api/prices').then(function(r) { return r.json(); }).then(function(d) {
             coins = d.coins || [];
+            if (d.multiplier) mxMultiplier = d.multiplier;
             if (d.enoch) setEnoch(d.enoch);
             renderCoins(coins);
         }).catch(function() {
@@ -251,16 +261,36 @@
         });
     }
 
+    function drawSparkline(canvas, data, up) {
+        if (!data || data.length < 2) return;
+        var ctx = canvas.getContext('2d');
+        var w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        var min = Math.min.apply(null, data), max = Math.max.apply(null, data);
+        var range = max - min || 1;
+        ctx.strokeStyle = up ? '#4ecb71' : '#e74c4c';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (var i = 0; i < data.length; i++) {
+            var x = (i / (data.length - 1)) * w;
+            var y = h - ((data[i] - min) / range) * (h - 4) - 2;
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
     function renderCoins(list) {
         var el = $('mxCoinList');
         if (!list.length) { el.innerHTML = '<div class="mx-empty">No coins found.</div>'; return; }
-        var html = '<table class="mx-table"><thead><tr><th>#</th><th>Coin</th><th>Price</th><th>24h</th><th>Market Cap</th><th></th></tr></thead><tbody>';
+        var mxNote = mxMultiplier > 1 ? ' <span style="color:#f5a623;font-size:.7rem;">' + mxMultiplier + 'x AMPLIFIED</span>' : '';
+        var html = '<table class="mx-table"><thead><tr><th>#</th><th>Coin</th><th>7d' + mxNote + '</th><th>Price</th><th>24h</th><th>Market Cap</th><th></th></tr></thead><tbody>';
         for (var i = 0; i < list.length; i++) {
             var c = list[i];
             var cls = (c.change_24h||0) >= 0 ? 'mx-up' : 'mx-down';
-            html += '<tr class="mx-row" data-coin="' + c.id + '">' +
+            html += '<tr class="mx-row" data-coin="' + c.id + '" data-idx="' + i + '">' +
                 '<td>' + (i+1) + '</td>' +
                 '<td class="mx-coin-cell"><img src="' + c.image + '" class="mx-coin-icon">' + esc(c.name) + ' <span class="mx-sym">' + (c.symbol||'').toUpperCase() + '</span></td>' +
+                '<td><canvas class="mx-spark" data-idx="' + i + '" width="80" height="28"></canvas></td>' +
                 '<td class="mx-price-cell">' + fmtPrice(c.price) + '</td>' +
                 '<td class="' + cls + '">' + fmtPct(c.change_24h||0) + '</td>' +
                 '<td>$' + fmt(c.market_cap||0) + '</td>' +
@@ -270,10 +300,98 @@
         html += '</tbody></table>';
         el.innerHTML = html;
 
+        el.querySelectorAll('canvas.mx-spark').forEach(function(cvs) {
+            var idx = parseInt(cvs.dataset.idx);
+            var c = list[idx];
+            if (c && c.sparkline && c.sparkline.length > 1) {
+                drawSparkline(cvs, c.sparkline, (c.change_24h||0) >= 0);
+            }
+        });
+
         el.querySelectorAll('.mx-row').forEach(function(row) {
-            row.addEventListener('click', function() { openTrade(row.dataset.coin); });
+            row.addEventListener('click', function(e) {
+                if (e.target.classList.contains('mx-trade-btn')) {
+                    openTrade(row.dataset.coin);
+                } else {
+                    showCoinDetail(row.dataset.coin);
+                }
+            });
         });
     }
+
+    function showCoinDetail(coinId) {
+        var c = null;
+        for (var i = 0; i < coins.length; i++) {
+            if (coins[i].id === coinId) { c = coins[i]; break; }
+        }
+        if (!c) return;
+
+        var modal = document.getElementById('mxCoinDetailModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'mxCoinDetailModal';
+            modal.className = 'mx-modal-overlay';
+            modal.innerHTML = '<div class="mx-modal mx-detail-modal"><div class="mx-modal-header"><h3 id="mxDetailTitle"></h3><button class="mx-close" id="mxDetailClose">&times;</button></div><div id="mxDetailBody"></div></div>';
+            document.body.appendChild(modal);
+            document.getElementById('mxDetailClose').addEventListener('click', function() { modal.classList.remove('mx-visible'); });
+            modal.addEventListener('click', function(e) { if (e.target === modal) modal.classList.remove('mx-visible'); });
+        }
+
+        document.getElementById('mxDetailTitle').innerHTML = '<img src="' + c.image + '" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;">' + esc(c.name) + ' <span class="mx-sym">' + (c.symbol||'').toUpperCase() + '</span>';
+        var cls24 = (c.change_24h||0) >= 0 ? 'mx-up' : 'mx-down';
+        var body = '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">' +
+            '<span style="font-size:1.5rem;font-weight:700;">' + fmtPrice(c.price) + '</span>' +
+            '<span class="' + cls24 + '" style="font-size:1rem;">' + fmtPct(c.change_24h||0) + ' (24h)</span>' +
+            '</div>' +
+            '<canvas id="mxDetailChart" width="500" height="180" style="width:100%;height:180px;"></canvas>' +
+            '<div style="display:flex;justify-content:space-between;margin-top:1rem;font-size:.8rem;color:var(--text-muted);">' +
+            '<span>Market Cap: $' + fmt(c.market_cap||0) + '</span>' +
+            '<span>Volume: $' + fmt(c.volume||0) + '</span>' +
+            '</div>' +
+            '<div style="text-align:center;margin-top:1rem;"><button class="mx-trade-btn" onclick="openTrade(\'' + c.id + '\');document.getElementById(\'mxCoinDetailModal\').classList.remove(\'mx-visible\');">Trade ' + (c.symbol||'').toUpperCase() + '</button></div>';
+        document.getElementById('mxDetailBody').innerHTML = body;
+        modal.classList.add('mx-visible');
+
+        setTimeout(function() {
+            var canvas = document.getElementById('mxDetailChart');
+            if (canvas && c.sparkline && c.sparkline.length > 1) {
+                canvas.width = canvas.offsetWidth * 2;
+                canvas.height = 360;
+                var ctx = canvas.getContext('2d');
+                var data = c.sparkline;
+                var min = Math.min.apply(null, data), max = Math.max.apply(null, data);
+                var range = max - min || 1;
+                var w = canvas.width, h = canvas.height;
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(0, 0, w, h);
+                var up = (c.change_24h||0) >= 0;
+                var grad = ctx.createLinearGradient(0, 0, 0, h);
+                grad.addColorStop(0, up ? 'rgba(78,203,113,0.3)' : 'rgba(231,76,76,0.3)');
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.beginPath();
+                ctx.moveTo(0, h);
+                for (var i = 0; i < data.length; i++) {
+                    var x = (i / (data.length - 1)) * w;
+                    var y = h - ((data[i] - min) / range) * (h - 20) - 10;
+                    ctx.lineTo(x, y);
+                }
+                ctx.lineTo(w, h);
+                ctx.fillStyle = grad;
+                ctx.fill();
+                ctx.beginPath();
+                for (var j = 0; j < data.length; j++) {
+                    var px = (j / (data.length - 1)) * w;
+                    var py = h - ((data[j] - min) / range) * (h - 20) - 10;
+                    if (j === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                }
+                ctx.strokeStyle = up ? '#4ecb71' : '#e74c4c';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }, 50);
+    }
+
+    var mxMultiplier = 1;
 
     /* ── Search ── */
     $('mxSearch').addEventListener('input', function() {

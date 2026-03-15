@@ -5,7 +5,7 @@ To change or disable the weekly rule:
   - Update RULE_TITLE / RULE_DESCRIPTION for announcements
   - Replace get_custom_legal_moves / make_custom_move / is_custom_game_over
 
-Current rule: Knights move 3+2 (extended L-shape) instead of standard 2+1.
+Current rule: Knights are frozen — they cannot move at all.
 Only applies to player-vs-player Federation matches, NOT Enoch practice.
 ═══════════════════════════════════════════════════════
 """
@@ -16,30 +16,30 @@ import chess
 
 RULE_ACTIVE = True
 
-RULE_TITLE = "The Extended Knight"
+RULE_TITLE = "Lame Knees"
 
 RULE_DESCRIPTION = (
-    "This week, knights ride with longer strides — three squares forward "
-    "and two to the side, in any direction, replacing the standard 2+1."
+    "Knights have lame knees — now the horses cannot move. "
+    "They remain on the board but are completely frozen in place."
 )
 
 RULE_ENOCH_ANNOUNCEMENT = (
-    "A decree echoes through the vaults. The knights have been fed. They now "
-    "leap three squares forward and two to the side — any direction they "
-    "choose. The old two-and-one is suspended. I have amended the ledger."
+    "A new decree from the seat of power. The horses have gone lame. "
+    "The knights cannot move. They sit on the board like statues — "
+    "blocking squares, absorbing captures, contributing nothing. "
+    "Play around them. Or through them. The decree is absolute."
 )
 
 RULE_REMINDER = (
-    "Knights move 3 forward + 2 to the side (any direction) this week."
+    "Knights cannot move this week. They are frozen in place."
 )
 
 RULE_EXPLANATION = (
-    "This week's custom rule changes how knights move. Instead of the "
-    "standard L-shape (2 squares in one direction, 1 to the side), "
-    "knights now move 3 squares in any cardinal direction and 2 to the "
-    "side. Same L-shape concept, just one extra square on each leg. "
-    "This applies to all player-vs-player Federation matches. Enoch "
-    "practice matches use standard rules."
+    "This week's decree freezes all knights. They cannot move at all — "
+    "no L-shapes, no jumps, nothing. They still occupy their square "
+    "and can be captured by the opponent, but they cannot be moved by "
+    "their owner. Plan accordingly. This applies to all player-vs-player "
+    "Federation matches. Enoch practice matches use standard rules."
 )
 
 _CHAT_ANNOUNCED = False
@@ -55,7 +55,7 @@ def ensure_chat_announcement():
         from app.models import ChatMessage, db
         already = ChatMessage.query.filter(
             ChatMessage.is_bot == True,
-            ChatMessage.content.contains('knights have been fed'),
+            ChatMessage.content.contains('horses have gone lame'),
         ).first()
         if already:
             return
@@ -71,48 +71,21 @@ def ensure_chat_announcement():
         pass
 
 
-# ── Custom knight offsets (3+2 replaces standard 2+1) ──
-
-CUSTOM_KNIGHT_OFFSETS = [
-    (3, 2), (3, -2), (-3, 2), (-3, -2),
-    (2, 3), (2, -3), (-2, 3), (-2, -3),
-]
-
-
-def _custom_knight_targets(square):
-    """Squares a custom knight on `square` can reach."""
-    f = chess.square_file(square)
-    r = chess.square_rank(square)
-    targets = []
-    for df, dr in CUSTOM_KNIGHT_OFFSETS:
-        nf, nr = f + df, r + dr
-        if 0 <= nf <= 7 and 0 <= nr <= 7:
-            targets.append(chess.square(nf, nr))
-    return targets
-
-
-def _attacked_by_custom_knight(board, color, square):
-    """True if any `color` knight attacks `square` via 3+2."""
-    for nsq in board.pieces(chess.KNIGHT, color):
-        if square in _custom_knight_targets(nsq):
-            return True
-    return False
+# ── Frozen knights: simply remove all knight moves ──
 
 
 def _king_in_danger(board, king_color):
-    """True if `king_color`'s king is in check under custom knight rules."""
+    """True if king is in check. Knights are frozen so they cannot attack."""
     king_sq = board.king(king_color)
     if king_sq is None:
         return True
     opponent = not king_color
     non_knight_attackers = board.attackers(opponent, king_sq) & ~board.knights
-    if non_knight_attackers:
-        return True
-    return _attacked_by_custom_knight(board, opponent, king_sq)
+    return bool(non_knight_attackers)
 
 
 def _king_safe_after(board, move):
-    """True if after `move`, the mover's king is safe (custom rules)."""
+    """True if after `move`, the mover's king is safe (frozen knight rules)."""
     board.push(move)
     mover = not board.turn
     safe = not _king_in_danger(board, mover)
@@ -120,48 +93,8 @@ def _king_safe_after(board, move):
     return safe
 
 
-def _san_for_custom_move(board, move):
-    """Generate SAN-style notation for a custom knight move."""
-    piece = board.piece_at(move.from_square)
-    if piece is None:
-        return move.uci()
-    target_piece = board.piece_at(move.to_square)
-    is_capture = target_piece is not None
-
-    san = 'N'
-    same_type = [
-        sq for sq in board.pieces(chess.KNIGHT, board.turn)
-        if sq != move.from_square
-        and move.to_square in _custom_knight_targets(sq)
-    ]
-    if same_type:
-        from_f = chess.square_file(move.from_square)
-        from_r = chess.square_rank(move.from_square)
-        other_files = [chess.square_file(s) for s in same_type]
-        if from_f not in other_files:
-            san += chess.FILE_NAMES[from_f]
-        else:
-            san += str(from_r + 1)
-
-    if is_capture:
-        san += 'x'
-    san += chess.square_name(move.to_square)
-
-    board.push(move)
-    opponent = board.turn
-    opp_king = board.king(opponent)
-    if opp_king is not None and _king_in_danger(board, opponent):
-        has_escape = False
-        for m in _generate_custom_legal_moves(board):
-            has_escape = True
-            break
-        san += '#' if not has_escape else '+'
-    board.pop()
-    return san
-
-
 def _generate_custom_legal_moves(board):
-    """Yield all legal moves under custom knight rules."""
+    """Yield all legal moves — knights excluded entirely."""
     for move in board.pseudo_legal_moves:
         piece = board.piece_at(move.from_square)
         if piece and piece.piece_type == chess.KNIGHT:
@@ -169,20 +102,11 @@ def _generate_custom_legal_moves(board):
         if _king_safe_after(board, move):
             yield move
 
-    for sq in board.pieces(chess.KNIGHT, board.turn):
-        for target in _custom_knight_targets(sq):
-            tp = board.piece_at(target)
-            if tp and tp.color == board.turn:
-                continue
-            move = chess.Move(sq, target)
-            if _king_safe_after(board, move):
-                yield move
-
 
 # ── Public API (mirrors ChessEngine interface) ──────
 
 def get_custom_legal_moves(fen):
-    """Return list of legal-move dicts with custom knight rules."""
+    """Return list of legal-move dicts with frozen knight rules."""
     if not RULE_ACTIVE:
         from app.services.chess_engine import ChessEngine
         return ChessEngine.get_legal_moves(fen)
@@ -190,11 +114,7 @@ def get_custom_legal_moves(fen):
     board = chess.Board(fen)
     moves = []
     for move in _generate_custom_legal_moves(board):
-        piece = board.piece_at(move.from_square)
-        if piece and piece.piece_type == chess.KNIGHT:
-            san = _san_for_custom_move(board, move)
-        else:
-            san = board.san(move)
+        san = board.san(move)
         moves.append({
             'uci': move.uci(),
             'san': san,
@@ -206,7 +126,7 @@ def get_custom_legal_moves(fen):
 
 
 def make_custom_move(fen, uci_move):
-    """Validate and apply a move under custom knight rules.
+    """Validate and apply a move under frozen knight rules.
     Returns same dict shape as ChessEngine.make_move."""
     if not RULE_ACTIVE:
         from app.services.chess_engine import ChessEngine
@@ -219,12 +139,7 @@ def make_custom_move(fen, uci_move):
     if move not in legal:
         raise ValueError(f'Illegal move: {uci_move}')
 
-    piece = board.piece_at(move.from_square)
-    if piece and piece.piece_type == chess.KNIGHT:
-        san = _san_for_custom_move(board, move)
-    else:
-        san = board.san(move)
-
+    san = board.san(move)
     board.push(move)
 
     if board.turn == chess.WHITE:
@@ -241,7 +156,7 @@ def make_custom_move(fen, uci_move):
 
 
 def is_custom_game_over(fen):
-    """Check game-over under custom knight rules.
+    """Check game-over under frozen knight rules.
     Returns (is_over, result_type) same as ChessEngine.is_game_over."""
     if not RULE_ACTIVE:
         from app.services.chess_engine import ChessEngine

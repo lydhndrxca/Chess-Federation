@@ -322,7 +322,65 @@
         </div>
         {% endif %}
 
-        {# ── 6. Enoch's Drawer (always last) ── #}
+        {# ── 6. Market History ── #}
+        <div class="card">
+            <h2>Market History</h2>
+            <div style="display:flex;gap:1.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+                <div>
+                    <span style="font-size:.7rem;color:var(--text-muted);">Cash</span>
+                    <div style="font-size:1.2rem;font-weight:700;color:#4ecb71;">${{ '{:,.0f}'.format(player.roman_gold) }}</div>
+                </div>
+                <div>
+                    <span style="font-size:.7rem;color:var(--text-muted);">Invested</span>
+                    <div style="font-size:1.2rem;font-weight:700;">${{ '{:,.0f}'.format(market_total_invested) }}</div>
+                </div>
+                <div>
+                    <span style="font-size:.7rem;color:var(--text-muted);">Holdings</span>
+                    <div style="font-size:1.2rem;font-weight:700;">{{ market_holdings|length }}</div>
+                </div>
+            </div>
+            {% if market_holdings %}
+            <h3 style="font-size:.85rem;margin-bottom:.5rem;">Current Holdings</h3>
+            <table style="width:100%;font-size:.78rem;border-collapse:collapse;">
+                <tr style="color:var(--text-muted);font-size:.65rem;text-transform:uppercase;letter-spacing:.04em;">
+                    <th style="text-align:left;padding:.3rem;">Coin</th>
+                    <th style="text-align:right;padding:.3rem;">Amount</th>
+                    <th style="text-align:right;padding:.3rem;">Avg Buy</th>
+                </tr>
+                {% for h in market_holdings %}
+                <tr style="border-top:1px solid rgba(255,255,255,0.05);">
+                    <td style="padding:.3rem;">{{ h.coin_symbol.upper() }}</td>
+                    <td style="text-align:right;padding:.3rem;font-family:monospace;">{{ '%.4f'|format(h.amount) }}</td>
+                    <td style="text-align:right;padding:.3rem;font-family:monospace;">${{ '%.2f'|format(h.avg_buy_price) }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+            {% if market_txs %}
+            <h3 style="font-size:.85rem;margin:.8rem 0 .5rem;">Recent Transactions</h3>
+            <table style="width:100%;font-size:.78rem;border-collapse:collapse;">
+                <tr style="color:var(--text-muted);font-size:.65rem;text-transform:uppercase;letter-spacing:.04em;">
+                    <th style="text-align:left;padding:.3rem;">Type</th>
+                    <th style="text-align:left;padding:.3rem;">Coin</th>
+                    <th style="text-align:right;padding:.3rem;">Amount</th>
+                    <th style="text-align:right;padding:.3rem;">$</th>
+                </tr>
+                {% for tx in market_txs %}
+                <tr style="border-top:1px solid rgba(255,255,255,0.05);">
+                    <td style="padding:.3rem;color:{{ '#4ecb71' if tx.tx_type == 'buy' else '#e74c4c' }};">{{ tx.tx_type.upper() }}</td>
+                    <td style="padding:.3rem;">{{ tx.coin_symbol.upper() }}</td>
+                    <td style="text-align:right;padding:.3rem;font-family:monospace;">{{ '%.4f'|format(tx.crypto_amount) }}</td>
+                    <td style="text-align:right;padding:.3rem;font-family:monospace;">${{ '{:,.0f}'.format(tx.denarius_amount) }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+            {% if not market_txs and not market_holdings %}
+            <p style="color:var(--text-muted);font-size:.8rem;">No market activity yet.</p>
+            {% endif %}
+        </div>
+
+        {# ── 7. Enoch's Drawer (always last) ── #}
         <div class="card drawer-card">
             <h2>Enoch's Drawer</h2>
             <p class="drawer-subtitle">Items recovered from the sub-basement</p>

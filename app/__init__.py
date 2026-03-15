@@ -386,6 +386,16 @@ def _migrate_db(app):
             FOREIGN KEY(user_id) REFERENCES user(id)
         )''')
 
+    if 'complaint' not in tables:
+        cur.execute('''CREATE TABLE complaint (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            content TEXT NOT NULL,
+            enoch_response TEXT,
+            created_at DATETIME,
+            FOREIGN KEY(user_id) REFERENCES user(id)
+        )''')
+
     conn.commit()
     conn.close()
 
@@ -434,6 +444,9 @@ def create_app():
 
     from app.routes.courier import courier_bp
     app.register_blueprint(courier_bp)
+
+    from app.routes.complaints import complaints_bp
+    app.register_blueprint(complaints_bp)
 
 
     _migrate_db(app)

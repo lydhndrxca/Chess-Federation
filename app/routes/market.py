@@ -15,10 +15,14 @@ from app.models import (
 market_bp = Blueprint('market', __name__)
 
 DENARIUS_USD = 1
+
+# 3x market amplifier for this week's decree
+MARKET_MULTIPLIER = 3
+
 COINGECKO_MARKETS = (
     'https://api.coingecko.com/api/v3/coins/markets'
-    '?vs_currency=usd&order=market_cap_desc&per_page=100&page=1'
-    '&sparkline=false&price_change_percentage=24h'
+    '?vs_currency=usd&order=market_cap_desc&per_page=250&page=1'
+    '&sparkline=true&price_change_percentage=24h'
 )
 COINGECKO_SIMPLE = 'https://api.coingecko.com/api/v3/simple/price'
 
@@ -195,6 +199,7 @@ def api_prices():
     data = _fetch_markets()
     coins = []
     for c in data:
+        sparkline = c.get('sparkline_in_7d', {}).get('price', [])
         coins.append({
             'id': c['id'],
             'symbol': c.get('symbol', ''),
@@ -204,8 +209,9 @@ def api_prices():
             'change_24h': c.get('price_change_percentage_24h', 0),
             'market_cap': c.get('market_cap', 0),
             'volume': c.get('total_volume', 0),
+            'sparkline': sparkline[-48:] if sparkline else [],
         })
-    return jsonify(coins=coins, enoch=_enoch_line('idle'))
+    return jsonify(coins=coins, multiplier=MARKET_MULTIPLIER, enoch=_enoch_line('idle'))
 
 
 # ── API: portfolio ──
@@ -239,8 +245,14 @@ def api_portfolio():
             'pnl_pct': ((current_val / invested_val - 1) * 100) if invested_val > 0 else 0,
         })
 
-    pnl = total_current - total_invested
+    raw_pnl = total_current - total_invested
+    pnl = raw_pnl * MARKET_MULTIPLIER
+    raw_pct = ((total_current / total_invested - 1) * 100) if total_invested > 0 else 0
     category = 'profit' if pnl >= 0 else 'loss'
+
+    for item in items:
+        item['pnl_usd'] = item['pnl_usd'] * MARKET_MULTIPLIER
+        item['pnl_pct'] = item['pnl_pct'] * MARKET_MULTIPLIER
 
     return jsonify(
         denarius=current_user.roman_gold,
@@ -249,7 +261,8 @@ def api_portfolio():
         portfolio_denarius=total_current / DENARIUS_USD,
         invested_usd=total_invested,
         pnl_usd=pnl,
-        pnl_pct=((total_current / total_invested - 1) * 100) if total_invested > 0 else 0,
+        pnl_pct=raw_pct * MARKET_MULTIPLIER,
+        multiplier=MARKET_MULTIPLIER,
         holdings=items,
         enoch=_enoch_line(category) if items else _enoch_line('enter'),
     )
@@ -480,12 +493,14 @@ def api_summary():
     prices = _price_map({h.coin_id for h in holdings})
     total_current = sum(h.amount * prices.get(h.coin_id, 0) for h in holdings)
     total_invested = sum(h.amount * h.avg_buy_price for h in holdings)
-    pnl = total_current - total_invested
+    raw_pnl = total_current - total_invested
+    raw_pct = ((total_current / total_invested - 1) * 100) if total_invested > 0 else 0
     return jsonify(
         denarius=current_user.roman_gold,
         portfolio_usd=total_current,
-        pnl_usd=pnl,
-        pnl_pct=((total_current / total_invested - 1) * 100) if total_invested > 0 else 0,
+        pnl_usd=raw_pnl * MARKET_MULTIPLIER,
+        pnl_pct=raw_pct * MARKET_MULTIPLIER,
+        multiplier=MARKET_MULTIPLIER,
     )
 
 
@@ -524,7 +539,7 @@ def api_leaderboard():
         players.append({
             'username': u.username,
             'total_value': round(total_value, 2),
-            'daily_pnl': round(daily, 2),
+            'daily_pnl': round(daily * MARKET_MULTIPLIER, 2),
         })
     players.sort(key=lambda p: p['total_value'], reverse=True)
-    return jsonify(players=players)
+    return jsonify(players=players, multiplier=MARKET_MULTIPLIER)

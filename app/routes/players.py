@@ -62,6 +62,13 @@ def player_profile(username):
     crypt_rating_net = sum(c.rating_result for c in crypt_completed
                           if c.rating_result is not None)
 
+    from app.models import MarketTransaction, MarketHolding
+    market_txs = MarketTransaction.query.filter_by(
+        user_id=player.id
+    ).order_by(MarketTransaction.created_at.desc()).limit(30).all()
+    market_holdings = MarketHolding.query.filter_by(user_id=player.id).all()
+    market_total_invested = sum(h.amount * h.avg_buy_price for h in market_holdings)
+
     return render_template(
         'profile.html', player=player,
         all_games=all_games, fed_games=fed_games,
@@ -72,6 +79,8 @@ def player_profile(username):
         crypt_best_wave=crypt_best_wave, crypt_best_score=crypt_best_score,
         crypt_total_kills=crypt_total_kills, crypt_runs=crypt_runs,
         crypt_rating_net=crypt_rating_net,
+        market_txs=market_txs, market_holdings=market_holdings,
+        market_total_invested=market_total_invested,
     )
 
 

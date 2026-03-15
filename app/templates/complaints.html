@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% from "macros.html" import avatar %}
+{% block title %}Complaints & Suggestions — Chess Federation{% endblock %}
+
+{% block content %}
+<div class="complaints-page">
+    <div class="complaints-header">
+        <h2>Complaints &amp; Suggestions</h2>
+        <p class="complaints-subtitle">Voice your grievances. Enoch is listening. Sort of.</p>
+    </div>
+
+    <div class="complaints-form-card">
+        <textarea id="complaintText" class="complaints-input" placeholder="Type your complaint or suggestion here..." maxlength="2000" rows="4"></textarea>
+        <div class="complaints-form-footer">
+            <span class="complaints-char-count" id="charCount">0 / 2000</span>
+            <button class="btn btn-primary complaints-submit" id="submitBtn">Submit</button>
+        </div>
+    </div>
+
+    <div class="complaints-list" id="complaintsList">
+        {% for c in complaints %}
+        <div class="complaint-item">
+            <div class="complaint-header">
+                {% if c.user %}
+                {{ avatar(c.user, 'xs') }}
+                <strong>{{ c.user.username }}</strong>
+                {% endif %}
+                <span class="complaint-date">{{ c.created_at.strftime('%b %d, %Y %I:%M %p') if c.created_at else '' }}</span>
+            </div>
+            <div class="complaint-body">{{ c.content }}</div>
+            {% if c.enoch_response %}
+            <div class="complaint-enoch">
+                <span class="complaint-enoch-label">Enoch:</span>
+                {{ c.enoch_response }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% if not complaints %}
+        <div class="complaints-empty">No complaints yet. That can't last.</div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.complaints-page { max-width: 640px; margin: 0 auto; padding: 1rem; }
+.complaints-header { margin-bottom: 1rem; }
+.complaints-header h2 { font-size: 1.2rem; margin: 0 0 .3rem; }
+.complaints-subtitle { font-size: .78rem; color: var(--text-muted); margin: 0; }
+.complaints-form-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1rem; margin-bottom: 1.2rem;
+}
+.complaints-input {
+    width: 100%; background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: .7rem; font-size: .85rem; resize: vertical;
+    font-family: inherit;
+}
+.complaints-input:focus { outline: none; border-color: var(--yellow); }
+.complaints-form-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: .5rem;
+}
+.complaints-char-count { font-size: .7rem; color: var(--text-muted); }
+.complaints-submit {
+    padding: .4rem 1.2rem; font-size: .82rem; cursor: pointer;
+}
+.complaint-item {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: .8rem; margin-bottom: .6rem;
+}
+.complaint-header {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: .82rem; margin-bottom: .4rem;
+}
+.complaint-date { margin-left: auto; font-size: .65rem; color: var(--text-muted); }
+.complaint-body { font-size: .85rem; line-height: 1.45; margin-bottom: .5rem; }
+.complaint-enoch {
+    font-size: .78rem; color: var(--yellow); font-style: italic;
+    padding: .5rem .7rem; background: rgba(194,166,51,0.06);
+    border-radius: 6px; border-left: 3px solid var(--yellow);
+}
+.complaint-enoch-label { font-weight: 700; margin-right: .3rem; }
+.complaints-empty {
+    text-align: center; color: var(--text-muted);
+    font-size: .85rem; padding: 2rem;
+}
+</style>
+
+<script>
+(function() {
+    var input = document.getElementById('complaintText');
+    var btn = document.getElementById('submitBtn');
+    var count = document.getElementById('charCount');
+    var list = document.getElementById('complaintsList');
+
+    input.addEventListener('input', function() {
+        count.textContent = input.value.length + ' / 2000';
+    });
+
+    btn.addEventListener('click', function() {
+        var text = (input.value || '').trim();
+        if (!text) return;
+        btn.disabled = true;
+        btn.textContent = 'Submitting...';
+
+        fetch('/complaints/submit', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content: text})
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            btn.disabled = false;
+            btn.textContent = 'Submit';
+            if (d.error) { alert(d.error); return; }
+            input.value = '';
+            count.textContent = '0 / 2000';
+
+            var c = d.complaint;
+            var html = '<div class="complaint-item">' +
+                '<div class="complaint-header">' +
+                (c.avatar ? '<img src="' + c.avatar + '" style="width:20px;height:20px;border-radius:50%;">' :
+                '<span style="width:20px;height:20px;border-radius:50%;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;">' + c.user.charAt(0).toUpperCase() + '</span>') +
+                '<strong>' + c.user + '</strong>' +
+                '<span class="complaint-date">Just now</span>' +
+                '</div>' +
+                '<div class="complaint-body">' + c.content.replace(/</g, '&lt;') + '</div>';
+            if (c.enoch) {
+                html += '<div class="complaint-enoch"><span class="complaint-enoch-label">Enoch:</span>' + c.enoch + '</div>';
+            }
+            html += '</div>';
+
+            var empty = list.querySelector('.complaints-empty');
+            if (empty) empty.remove();
+            list.insertAdjacentHTML('afterbegin', html);
+        })
+        .catch(function() {
+            btn.disabled = false;
+            btn.textContent = 'Submit';
+            alert('Failed to submit. Try again.');
+        });
+    });
+})();
+</script>
+{% endblock %}

@@ -107,15 +107,17 @@ def generate_weekly_pairings(week=None, season=None):
         )
         db.session.add(schedule)
 
-    decree_text = schedule.rule_declaration or ''
-
     active_rule = None
     try:
-        from app.services.weekly_rule import RULE_ACTIVE, RULE_TITLE
+        from app.services.weekly_rule import RULE_ACTIVE, RULE_TITLE, RULE_DESCRIPTION
         if RULE_ACTIVE:
             active_rule = RULE_TITLE
+            if not schedule.rule_declaration:
+                schedule.rule_declaration = RULE_DESCRIPTION
     except ImportError:
         pass
+
+    decree_text = schedule.rule_declaration or ''
 
     for pa, pb in combinations(players, 2):
         white, black = _assign_colors(pa, pb)

@@ -325,6 +325,130 @@ def ensure_courier_brain_announcement():
     return msg
 
 
+_market_3x_announced = False
+
+def ensure_market_3x_announcement():
+    """Post a one-time Enoch announcement about the 3x market amplifier."""
+    global _market_3x_announced
+    if _market_3x_announced:
+        return
+    existing = ChatMessage.query.filter(
+        ChatMessage.is_bot == True,
+        ChatMessage.content.contains("TRIPLE the effect"),
+    ).first()
+    if existing:
+        _market_3x_announced = True
+        return
+    _market_3x_announced = True
+    msg = _post_bot(
+        "ATTENTION. This week, I have amplified the Enoch Exchange.\n\n"
+        "All market gains and losses now carry TRIPLE the effect. "
+        "3x on everything. Your portfolio swings three times harder.\n\n"
+        "If you were cautious before, be terrified now. "
+        "If you were reckless, well... good luck.\n\n"
+        "— Enoch"
+    )
+    db.session.commit()
+    return msg
+
+
+_weekly_summary_announced = False
+
+def ensure_weekly_summary():
+    """Post a one-time weekly summary of what happened last week."""
+    global _weekly_summary_announced
+    if _weekly_summary_announced:
+        return
+    try:
+        from app.models import Game, User, MarketTransaction
+        from app.services.matchmaking import get_current_week, get_current_season
+
+        week = get_current_week()
+        year, month = get_current_season()
+        season = year * 100 + month
+        prev_week = week - 1
+
+        tag = f"Week {prev_week} Summary"
+        existing = ChatMessage.query.filter(
+            ChatMessage.is_bot == True,
+            ChatMessage.content.contains(tag),
+        ).first()
+        if existing:
+            _weekly_summary_announced = True
+            return
+        _weekly_summary_announced = True
+
+        games = Game.query.filter_by(week_number=prev_week, season=season).all()
+        completed = [g for g in games if g.status == 'completed']
+        users = {u.id: u for u in User.query.filter_by(is_bot=False).all()}
+
+        lines = [f"THE WEEKLY LEDGER — Week {prev_week} Summary\n"]
+
+        if completed:
+            for g in completed:
+                w_name = users.get(g.white_id, None)
+                b_name = users.get(g.black_id, None)
+                if not w_name or not b_name:
+                    continue
+                if g.result == '1-0':
+                    lines.append(f"  {w_name.username} defeated {b_name.username}")
+                elif g.result == '0-1':
+                    lines.append(f"  {b_name.username} defeated {w_name.username}")
+                elif g.result == '1/2-1/2':
+                    lines.append(f"  {w_name.username} drew with {b_name.username}")
+                else:
+                    lines.append(f"  {w_name.username} vs {b_name.username} — {g.result or 'pending'}")
+        else:
+            lines.append("  No completed matches last week.")
+
+        top_earners = sorted(users.values(), key=lambda u: u.roman_gold, reverse=True)[:3]
+        if top_earners:
+            lines.append("\nRichest players:")
+            for u in top_earners:
+                lines.append(f"  {u.username}: ${u.roman_gold:,}")
+
+        lines.append("\nThe new decree is in effect. Play accordingly.")
+        lines.append("\n— Enoch")
+
+        msg = _post_bot('\n'.join(lines))
+        db.session.commit()
+        return msg
+    except Exception:
+        pass
+
+
+_last_cash_update_ts = 0.0
+CASH_UPDATE_COOLDOWN = 43200  # 12 hours
+
+def maybe_cash_update():
+    """Periodically post all player cash balances to chat (~twice per day)."""
+    global _last_cash_update_ts
+    now = time.time()
+
+    if now - _last_cash_update_ts < CASH_UPDATE_COOLDOWN:
+        return None
+
+    if random.random() > 0.25:
+        return None
+
+    _last_cash_update_ts = now
+
+    try:
+        from app.models import User
+        users = User.query.filter_by(is_bot=False).order_by(User.roman_gold.desc()).all()
+        if not users:
+            return None
+
+        lines = ["TREASURY UPDATE —\n"]
+        for u in users:
+            lines.append(f"  {u.username}: ${u.roman_gold:,}")
+        lines.append("\nThe ledger does not lie. — Enoch")
+
+        return _post_bot('\n'.join(lines))
+    except Exception:
+        return None
+
+
 def maybe_quirk_interjection():
     """Occasional creepy Enoch quirks — late-night murmurings and accidental DMs.
 

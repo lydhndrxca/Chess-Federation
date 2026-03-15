@@ -391,6 +391,17 @@ class GameChat(db.Model):
     user = db.relationship('User', foreign_keys=[user_id])
 
 
+class Complaint(db.Model):
+    """Player complaints and suggestions."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    enoch_response = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = db.relationship('User', foreign_keys=[user_id])
+
+
 class CourierGame(db.Model):
     """Courier Run — escort game mode against Enoch."""
     id = db.Column(db.Integer, primary_key=True)

@@ -13,16 +13,17 @@
         <div class="nav-inner">
             <a href="{{ url_for('main.index') }}" class="nav-brand">Chess Federation</a>
             {% if current_user.is_authenticated %}
+            <a href="{{ url_for('market.market_page') }}" class="nav-market-btn">Enoch Market</a>
             <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
                 <span></span><span></span><span></span>
             </button>
             <div class="nav-links" id="navLinks">
                 <a href="{{ url_for('main.standings') }}">Home</a>
                 <a href="{{ url_for('main.rankings') }}">Standings &amp; Rankings</a>
-                <a href="{{ url_for('market.market_page') }}">Market</a>
                 <a href="{{ url_for('players.chronicle') }}">Federation Timeline</a>
                 <a href="{{ url_for('decree.decree_page') }}">Weekly Decree</a>
                 <a href="{{ url_for('hall.federation_hall') }}" id="navChatLink">Chat<span class="chat-badge" id="chatBadge"></span></a>
+                <a href="{{ url_for('complaints.complaints_page') }}">Complaints</a>
                 <a href="{{ url_for('players.my_account') }}" class="nav-user-link">
                     {{ avatar(current_user, 'xs') }}
                     Account

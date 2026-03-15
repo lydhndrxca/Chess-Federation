@@ -806,16 +806,16 @@ BLUNDER = [
 # MATCH RESULT — WIN
 # ──────────────────────────────────────────────────────────────
 MATCH_RESULT_WIN = [
-    'The dirt is shoveled. {winner} walks away the victor.',
-    'The ledger records a triumph for {winner}.',
+    'The dirt is shoveled. {winner} walks away the victor over {loser}.',
+    'The ledger records: {winner} defeats {loser}.',
     '{loser} collapses under the weight of their own mind.',
     '{winner} claws their way up the damp rungs.',
-    'The standings tremble. {winner} ascends.',
+    'The standings tremble. {winner} ascends over {loser}.',
     '{loser} slips further into the dark.',
-    '{winner} prevails. The archive marks the victory.',
+    '{winner} prevails over {loser}. The archive marks the victory.',
     'The contest concludes. {winner} stands. {loser} does not.',
     '{winner} has earned the ink of triumph in the ledger.',
-    'The match ends in favor of {winner}. The record is updated.',
+    '{winner} defeats {loser}. The record is updated.',
     '{loser} departs the board in silence. {winner} remains.',
     'A decisive victory for {winner}. The vault takes note.',
     '{winner} emerges from the wreckage. {loser} is the wreckage.',
@@ -2340,35 +2340,30 @@ CHAT_LURKING = [
 ]
 
 # ──────────────────────────────────────────────────────────────
-# CUSTOM KNIGHT RULE — Extended Knight (3+2)
-# PvP only. Replaces normal knight commentary when the rule is active.
+# CUSTOM KNIGHT RULE — Lame Knees (Frozen Knights)
+# PvP only. Commentary when knights are frozen in place.
 # ──────────────────────────────────────────────────────────────
 CUSTOM_KNIGHT_RULE = [
-    "The knights ride longer this week. Three forward, two to the side. The old step is gone.",
-    "An extended gallop across the board. The horses have been fed well.",
-    "Three squares forward, two to the side. The geometry of this week's decree.",
-    "The knight leaps far. Farther than it should. The decree allows it.",
-    "A longer stride from the cavalry. The board feels smaller now.",
-    "The extended knight lands with authority. The position trembles.",
-    "That knight covers ground like a horse that has tasted open field.",
-    "Three and two. The old two-and-one gathers dust in the sub-basement.",
-    "A wide arc from the steed. The decree reshapes the battlefield.",
-    "The knight stretches its legs. The enemy must recalculate everything.",
-    "An ambitious leap. The extended knight knows no modesty this week.",
-    "The cavalry charge covers more ground than expected. As decreed.",
-    "The knight crashes down three squares away. A heavy, deliberate landing.",
-    "Longer strides mean deeper threats. The knight proves it.",
-    "The extended reach of that knight changes the texture of the position.",
-    "A knight reborn under new law. Its shadow falls across distant squares.",
-    "Three forward. Two sideways. The knight obeys the decree without question.",
-    "The board groans under the weight of extended cavalry movement.",
-    "That knight moved like something unshackled. The decree is generous to the horses.",
-    "A leap of unusual proportion. The decree has made the knights bold.",
-    "The extended knight finds a square that should have been safe. Nothing is safe this week.",
-    "The old L-shape, stretched. One extra square on each leg. Simple. Devastating.",
-    "I watch the knight soar across the board. The decree has given it wings.",
-    "The knight lands on a square the opponent forgot to guard. The new geometry is cruel.",
-    "Every knight move this week rewrites the tactical vocabulary. Three and two. Remember it.",
+    "The horses sit there. Useless. Lame. The decree has spoken.",
+    "A knight on the board and not a single square it can reach. Tragic.",
+    "The cavalry is grounded. Play without them.",
+    "Those knights are ornamental now. Expensive paperweights.",
+    "The horses have lame knees. They watch the battle from their squares.",
+    "No L-shapes this week. The knights are frozen solid.",
+    "I almost pity the knights. Almost.",
+    "The board feels different without cavalry. More honest, somehow.",
+    "Frozen knights. Frozen options. The decree reshapes everything.",
+    "The knight sits there, watching pieces move around it. A statue.",
+    "Without the horses, the bishops become kings of the board.",
+    "Plan around the dead weight. The knights aren't helping anyone.",
+    "A frozen knight is a captured knight that hasn't been taken yet.",
+    "No jumps. No forks. The decree is merciless to the cavalry.",
+    "The horses refuse to move. Something about their knees.",
+    "The knight on that square will stay on that square. Forever.",
+    "Without cavalry, every position becomes a siege.",
+    "The decree has turned knights into blockers. Nothing more.",
+    "Lame knees. Lame strategy, if you relied on those horses.",
+    "The board is quieter without the knights leaping about. I prefer it.",
 ]
 
 

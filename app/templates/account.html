@@ -27,6 +27,8 @@
                     <span class="acct-stat">Tier {{ current_user.tier.tier }}</span>
                 </div>
                 <div class="acct-stats-row">
+                    <span class="acct-stat" style="color:#4ecb71;font-weight:700;">${{ '{:,.0f}'.format(current_user.roman_gold) }}</span>
+                    <span class="acct-stat-sep">&middot;</span>
                     <span class="acct-stat">{{ current_user.wins }}W – {{ current_user.losses }}L – {{ current_user.draws }}D</span>
                     <span class="acct-stat-sep">&middot;</span>
                     <span class="acct-stat">Ordained {{ current_user.created_at.strftime('%b %d, %Y') }}</span>

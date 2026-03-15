@@ -13,20 +13,11 @@
         </span>
     </div>
 
-    {# ── Market Ticker ── #}
-    <div class="sp-doge-ticker" id="marketTicker">
-        <span class="sp-ticker-left">
-            <span class="sp-doge-icon" style="font-size:1rem;">&#9775;</span>
-            <span class="sp-doge-label">Enoch Market</span>
-            <span class="sp-doge-price" id="tickerBalance">${{ '{:,.0f}'.format(current_user.roman_gold) }}</span>
-            <span class="sp-ticker-sep">|</span>
-            <span class="sp-doge-label">Portfolio</span>
-            <span class="sp-doge-price" id="tickerPnl">--</span>
-        </span>
-        <a href="{{ url_for('market.market_page') }}" class="sp-market-btn">Enter Market &rarr;</a>
-        <span class="sp-ticker-right">
-            <span class="sp-ticker-rotate" id="tickerRotate"></span>
-        </span>
+    {# ── Scrolling News Ticker ── #}
+    <div class="sp-news-ticker" id="newsTicker">
+        <div class="sp-news-ticker-track" id="newsTickerTrack">
+            <span class="sp-news-ticker-item">Loading headlines&hellip;</span>
+        </div>
     </div>
 
     {# ══════ GAME MODE OF THE WEEK (collapsible) ══════ #}
@@ -346,6 +337,7 @@
                     <span class="sp-rank-title">{{ player.tier.name }}</span>
                 </div>
                 <div class="sp-rank-right">
+                    <span class="sp-rank-cash">${{ '{:,.0f}'.format(player.roman_gold) }}</span>
                     <span class="sp-rank-rating">{{ player.rating }}</span>
                     <span class="sp-rank-record">{{ player.wins }}W {{ player.losses }}L {{ player.draws }}D</span>
                 </div>
@@ -1106,55 +1098,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }).catch(function() {});
     }
 
-    /* ── Market ticker ── */
+    /* ── Scrolling news ticker ── */
     (function() {
-        var pnlEl = document.getElementById('tickerPnl');
-        var balEl = document.getElementById('tickerBalance');
-        var rotEl = document.getElementById('tickerRotate');
-        if (!pnlEl) return;
+        var track = document.getElementById('newsTickerTrack');
+        if (!track) return;
 
-        var leaderboard = [];
-        var rotIdx = 0;
+        function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
-        function fetchSummary() {
-            fetch('/market/api/summary')
+        function buildTickerHTML(items) {
+            var html = '';
+            var srcColors = {
+                'News': '#2ecc71', 'Crypto': '#f5a623', 'Federation': '#c2a633',
+                'Market': '#9b59b6', 'Match': '#e74c3c', 'Courier': '#3498db',
+                'Enoch': '#e6c84b'
+            };
+            for (var i = 0; i < items.length; i++) {
+                var it = items[i];
+                var color = srcColors[it.source] || '#c2a633';
+                html += '<span class="sp-news-ticker-item">' +
+                    '<span class="sp-news-ticker-src" style="color:' + color + ';">' + esc(it.source || '') + '</span> ' +
+                    esc(it.text || '') +
+                    '</span>';
+                html += '<span class="sp-news-ticker-dot">&bull;</span>';
+            }
+            return html + html;
+        }
+
+        function loadTicker() {
+            fetch('/api/ticker')
                 .then(function(r) { return r.json(); })
                 .then(function(d) {
-                    if (balEl) balEl.textContent = '$' + Number(d.denarius).toLocaleString();
-                    var pnl = d.pnl_pct || 0;
-                    var sign = pnl >= 0 ? '+' : '';
-                    pnlEl.textContent = sign + pnl.toFixed(2) + '%';
-                    pnlEl.className = 'sp-doge-change ' + (pnl >= 0 ? 'sp-doge-up' : 'sp-doge-down');
-                }).catch(function() {
-                    pnlEl.textContent = '--';
+                    var items = d.items || [];
+                    if (items.length === 0) {
+                        track.innerHTML = '<span class="sp-news-ticker-item">No headlines available.</span>';
+                        return;
+                    }
+                    track.innerHTML = buildTickerHTML(items);
+                    var totalWidth = track.scrollWidth / 2;
+                    track.style.animationDuration = Math.max(items.length * 4, 60) + 's';
+                })
+                .catch(function() {
+                    track.innerHTML = '<span class="sp-news-ticker-item">Headlines unavailable.</span>';
                 });
         }
 
-        function fetchLeaderboard() {
-            fetch('/market/api/leaderboard')
-                .then(function(r) { return r.json(); })
-                .then(function(d) {
-                    leaderboard = d.players || [];
-                }).catch(function() {});
-        }
-
-        function rotatePlayer() {
-            if (!rotEl || leaderboard.length === 0) return;
-            var p = leaderboard[rotIdx % leaderboard.length];
-            rotIdx++;
-            var sign = p.daily_pnl >= 0 ? '+' : '';
-            var cls = p.daily_pnl >= 0 ? 'sp-doge-up' : 'sp-doge-down';
-            rotEl.innerHTML = '<span class="sp-doge-label">' + p.username + '</span> ' +
-                '<span class="' + cls + '">' + sign + '$' + Math.abs(Math.round(p.daily_pnl)).toLocaleString() + '</span>' +
-                ' <span style="opacity:.6">($' + Math.round(p.total_value).toLocaleString() + ')</span>';
-        }
-
-        fetchSummary();
-        fetchLeaderboard();
-        setInterval(fetchSummary, 60000);
-        setInterval(fetchLeaderboard, 60000);
-        setInterval(rotatePlayer, 5000);
-        setTimeout(rotatePlayer, 1500);
+        loadTicker();
+        setInterval(loadTicker, 900000);
     })();
 });
 </script>

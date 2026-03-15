@@ -1,8 +1,15 @@
-from flask import Blueprint, redirect, render_template, url_for
+import random
+import time
+
+import requests
+from flask import Blueprint, jsonify, redirect, render_template, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_, and_
 
-from app.models import Game, User, WeeklySchedule, ChatMessage, Challenge, db
+from app.models import (
+    Game, User, WeeklySchedule, ChatMessage, Challenge,
+    MarketHolding, MarketTransaction, CourierGame, db,
+)
 from app.services.matchmaking import (
     check_forfeits, generate_weekly_pairings, get_current_season,
     get_current_week, get_week_deadline, get_decree_deadline,
@@ -192,7 +199,13 @@ def standings():
         pass
 
     try:
-        from app.services.enoch_chat import ensure_casual_announcement, ensure_crypt_revenge_announcement, ensure_zombie_announcement, ensure_reckoning_automove_announcement, ensure_market_announcement, ensure_courier_announcement, ensure_courier_brain_announcement
+        from app.services.enoch_chat import (
+            ensure_casual_announcement, ensure_crypt_revenge_announcement,
+            ensure_zombie_announcement, ensure_reckoning_automove_announcement,
+            ensure_market_announcement, ensure_courier_announcement,
+            ensure_courier_brain_announcement, ensure_market_3x_announcement,
+            ensure_weekly_summary,
+        )
         ensure_casual_announcement()
         ensure_crypt_revenge_announcement()
         ensure_zombie_announcement()
@@ -200,6 +213,8 @@ def standings():
         ensure_market_announcement()
         ensure_courier_announcement()
         ensure_courier_brain_announcement()
+        ensure_market_3x_announcement()
+        ensure_weekly_summary()
     except (ImportError, Exception):
         pass
 
@@ -413,3 +428,213 @@ def board_redirect():
             return redirect(url_for('game.view_game', game_id=g.id))
 
     return redirect(url_for('game.view_game', game_id=active[0].id))
+
+
+# ── Scrolling news ticker API ──────────────────────────────────
+
+_news_cache = {'ts': 0, 'items': []}
+_NEWS_TTL = 900  # 15 minutes
+
+ENOCH_TICKER_QUIPS = [
+    "I have been awake for 347 consecutive hours. This is fine.",
+    "The pipes are leaking again. I blame the bishops.",
+    "Reminder: I see every move you make. Even the ones you take back.",
+    "If you're reading this, you should be playing chess.",
+    "The sub-basement humidity is at 94%. My ledger pages are curling.",
+    "Market tip from Enoch: buy low, sell lower, blame everyone else.",
+    "Fun fact: I have never lost a game of chess. I have also never played one. I only watch.",
+    "The rats have formed a union. They want better cheese. I told them to file a complaint.",
+    "Someone left a knight on e4 for three days. I've named it Gerald.",
+    "Current mood: the sound a bishop makes sliding across a wet board.",
+    "I found a pawn under the boiler. It's been there since week 2. It seems happy.",
+    "The Federation's total net worth changes every 45 seconds. I find this stressful.",
+    "Enoch's investment advice: invest in whatever scares you the most.",
+    "Breaking: local steward discovers new crack in sub-basement wall. More at never.",
+    "The candles are low. The ledger is heavy. The chess never stops.",
+    "I've been told my management style is 'unsettling.' I consider this a compliment.",
+    "Today's chess wisdom: if you don't know what to do, move a pawn. If that fails, blame Enoch.",
+    "Weather in the sub-basement: perpetual damp, chance of existential dread.",
+    "ALERT: Someone forfeited. I won't say who. But I'm disappointed.",
+    "The 3x market amplifier was my idea. I accept no responsibility for the consequences.",
+    "Knights have lame knees this week. I find this deeply satisfying.",
+    "Courier Run tip: your courier is not your friend. It is your burden.",
+    "Remember: every dollar you lose in the market goes directly into my satisfaction.",
+    "I have organized the complaint box by level of futility. Yours is near the top.",
+    "The Federation clock ticks. The deadline approaches. The steward watches.",
+]
+
+
+def _fetch_world_headlines():
+    """Fetch world news via free RSS-to-JSON service (no API key needed)."""
+    feeds = [
+        'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',
+        'https://feeds.bbci.co.uk/news/rss.xml',
+        'https://rss.cnn.com/rss/edition.rss',
+    ]
+    items = []
+    for feed_url in feeds:
+        try:
+            r = requests.get(
+                'https://api.rss2json.com/v1/api.json',
+                params={'rss_url': feed_url, 'count': 6},
+                timeout=8,
+            )
+            if r.status_code == 200:
+                data = r.json()
+                for entry in (data.get('items') or [])[:6]:
+                    title = entry.get('title', '').strip()
+                    if title and len(title) > 10:
+                        items.append({'text': title, 'source': 'News'})
+                if items:
+                    break
+        except Exception:
+            continue
+    return items
+
+
+def _fetch_crypto_headlines():
+    """Fetch crypto-relevant ticker items from CoinGecko trending + top movers."""
+    items = []
+    try:
+        r = requests.get(
+            'https://api.coingecko.com/api/v3/search/trending',
+            timeout=8,
+        )
+        if r.status_code == 200:
+            data = r.json()
+            for c in (data.get('coins') or [])[:6]:
+                coin = c.get('item', {})
+                name = coin.get('name', '')
+                sym = coin.get('symbol', '')
+                if name:
+                    items.append({
+                        'text': f'{name} ({sym}) is trending on crypto markets',
+                        'source': 'Crypto',
+                    })
+    except Exception:
+        pass
+
+    try:
+        from app.routes.market import _fetch_markets
+        markets = _fetch_markets()
+        if markets:
+            top_gainers = sorted(
+                markets, key=lambda c: c.get('price_change_percentage_24h') or 0,
+                reverse=True,
+            )[:3]
+            top_losers = sorted(
+                markets, key=lambda c: c.get('price_change_percentage_24h') or 0,
+            )[:3]
+            for c in top_gainers:
+                pct = c.get('price_change_percentage_24h', 0)
+                price = c.get('current_price', 0)
+                if pct > 0:
+                    items.append({
+                        'text': (f"{c['name']} ({c.get('symbol','').upper()}) "
+                                 f"${price:,.2f} — up {pct:.1f}% today"),
+                        'source': 'Crypto',
+                    })
+            for c in top_losers:
+                pct = c.get('price_change_percentage_24h', 0)
+                price = c.get('current_price', 0)
+                if pct < -3:
+                    items.append({
+                        'text': (f"{c['name']} ({c.get('symbol','').upper()}) "
+                                 f"${price:,.2f} — down {abs(pct):.1f}% today"),
+                        'source': 'Crypto',
+                    })
+    except Exception:
+        pass
+    return items
+
+
+def _build_federation_items():
+    """Build ticker items from player data and recent federation events."""
+    items = []
+    try:
+        users = User.query.filter_by(is_bot=False).order_by(User.rating.desc()).all()
+        for u in users:
+            items.append({
+                'text': f'{u.username}: Rating {u.rating} | ${u.roman_gold:,} | {u.wins}W-{u.losses}L-{u.draws}D',
+                'source': 'Federation',
+            })
+
+        holdings_by_user = {}
+        for h in MarketHolding.query.all():
+            holdings_by_user.setdefault(h.user_id, []).append(h)
+
+        from app.routes.market import _price_map
+        all_coin_ids = set()
+        for hs in holdings_by_user.values():
+            for h in hs:
+                all_coin_ids.add(h.coin_id)
+        prices = _price_map(all_coin_ids) if all_coin_ids else {}
+
+        for u in users:
+            user_hs = holdings_by_user.get(u.id, [])
+            if user_hs:
+                total_val = sum(h.amount * prices.get(h.coin_id, 0) for h in user_hs)
+                total_inv = sum(h.amount * h.avg_buy_price for h in user_hs)
+                pnl = total_val - total_inv
+                sign = '+' if pnl >= 0 else ''
+                items.append({
+                    'text': f"{u.username}'s portfolio: ${total_val:,.0f} ({sign}${pnl:,.0f})",
+                    'source': 'Market',
+                })
+
+        recent_games = Game.query.filter_by(status='completed').order_by(
+            Game.completed_at.desc()
+        ).limit(5).all()
+        user_map = {u.id: u.username for u in users}
+        for g in recent_games:
+            w = user_map.get(g.white_id, '?')
+            b = user_map.get(g.black_id, '?')
+            if g.result == '1-0':
+                items.append({'text': f'{w} defeated {b} in Federation match', 'source': 'Match'})
+            elif g.result == '0-1':
+                items.append({'text': f'{b} defeated {w} in Federation match', 'source': 'Match'})
+            elif g.result == '1/2-1/2':
+                items.append({'text': f'{w} drew with {b} in Federation match', 'source': 'Match'})
+
+        courier_wins = CourierGame.query.filter_by(
+            winner='white'
+        ).order_by(CourierGame.completed_at.desc()).limit(3).all()
+        for cg in courier_wins:
+            uname = user_map.get(cg.user_id, '?')
+            items.append({
+                'text': f'{uname} completed a Courier Run and earned $50',
+                'source': 'Courier',
+            })
+
+    except Exception:
+        pass
+    return items
+
+
+def _build_enoch_quips():
+    """Pick a few random Enoch personality quips for the ticker."""
+    picks = random.sample(ENOCH_TICKER_QUIPS, min(5, len(ENOCH_TICKER_QUIPS)))
+    return [{'text': q, 'source': 'Enoch'} for q in picks]
+
+
+@main_bp.route('/api/ticker')
+@login_required
+def api_ticker():
+    """Return scrolling ticker items: news, crypto, federation stats, Enoch quips."""
+    now = time.time()
+    if now - _news_cache['ts'] > _NEWS_TTL or not _news_cache['items']:
+        news = _fetch_world_headlines()
+        crypto = _fetch_crypto_headlines()
+        federation = _build_federation_items()
+        quips = _build_enoch_quips()
+
+        all_items = []
+        all_items.extend(news[:8])
+        all_items.extend(crypto[:8])
+        all_items.extend(federation)
+        all_items.extend(quips)
+        random.shuffle(all_items)
+        _news_cache['items'] = all_items
+        _news_cache['ts'] = now
+
+    return jsonify(items=_news_cache['items'])

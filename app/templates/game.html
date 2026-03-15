@@ -121,7 +121,7 @@
     </div>
 
     {# ── Board (Chessground) ── #}
-    <div class="gv-board-wrap">
+    <div class="gv-board-wrap{% if game.custom_rule_name %} gv-decree-board{% endif %}">
         <div id="chessBoard"></div>
     </div>
 
@@ -364,6 +364,7 @@
         manifestVersion: "{{ manifest_version }}",
         initialEnochLine: {{ (enoch_line or '') | tojson }},
         customRuleName: {{ (game.custom_rule_name or '') | tojson }},
+        inCheck: {{ in_check | tojson }},
     };
 </script>
 {% endautoescape %}
@@ -387,7 +388,7 @@
     var input = document.getElementById('gameChatInput');
     var sendBtn = document.getElementById('gameChatSend');
     var composer = document.getElementById('gameChatComposer');
-    var gameId = window.GAME_DATA ? window.GAME_DATA.gameId : null;
+    var gameId = window.GAME_CONFIG ? window.GAME_CONFIG.gameId : null;
     if (!gameId) return;
 
     var lastMsgId = 0;

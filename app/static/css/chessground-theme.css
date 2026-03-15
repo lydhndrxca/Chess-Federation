@@ -1,6 +1,35 @@
-/* Board colours — Chess.com classic green/cream */
+/* Board colours — Chess.com classic green/cream (standard) */
 cg-board {
     background: repeating-conic-gradient(#eeeed2 0% 25%, #769656 0% 50%) 0 / 25% 25%;
+}
+
+/* Decree board — dark tiles with white grid lines */
+.gv-decree-board cg-board {
+    background: #1a1a1a;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.18) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px);
+    background-size: 12.5% 12.5%;
+}
+.gv-decree-board cg-board square.last-move {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.gv-decree-board cg-board square.selected {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+.gv-decree-board cg-board square.move-dest {
+    box-shadow: inset 0 0 0 5px rgba(255,255,255,0.35), inset 0 0 0 7px rgba(255,255,255,0.15);
+}
+.gv-decree-board cg-board square.move-dest.oc {
+    box-shadow: inset 0 0 0 5px rgba(255,255,255,0.35), inset 0 0 0 7px rgba(255,255,255,0.15);
+}
+.gv-decree-board coords.ranks coord,
+.gv-decree-board coords.files coord {
+    color: rgba(255, 255, 255, 0.35);
+}
+/* Black pieces get white outline via drop-shadow */
+.gv-decree-board piece.black {
+    filter: drop-shadow(0 0 1px rgba(255,255,255,0.6)) drop-shadow(0 0 0.5px rgba(255,255,255,0.4));
 }
 
 /* Last-move highlight */

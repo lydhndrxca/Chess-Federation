@@ -52,9 +52,9 @@ with app.app_context():
 
     schedule.power_position_holder_id = andrew.id
     schedule.rule_declaration = (
-        'Knights move three forward and two to the right or left '
-        '(Extended Knight). This rule applies to all player-vs-player '
-        'matches this week. Enoch matches remain standard.'
+        'Knights have lame knees — now the horses cannot move. '
+        'They remain on the board but are frozen in place. '
+        'This rule applies to all player-vs-player matches this week.'
     )
     db.session.commit()
 

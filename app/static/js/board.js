@@ -183,6 +183,35 @@ function playResultSound(result, playerColor) {
     s.play().catch(() => {});
 }
 
+/* ── Check Banner ── */
+
+function showCheckBanner(checkColor, playerColor) {
+    let banner = document.getElementById('checkBanner');
+    if (!checkColor) {
+        if (banner) banner.style.display = 'none';
+        return;
+    }
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'checkBanner';
+        banner.style.cssText = 'position:absolute;top:0;left:0;right:0;z-index:50;' +
+            'background:linear-gradient(90deg,rgba(220,40,40,0.9),rgba(180,20,20,0.85));' +
+            'color:#fff;text-align:center;font-weight:700;font-size:0.85rem;' +
+            'padding:6px 12px;letter-spacing:0.04em;text-transform:uppercase;' +
+            'border-bottom:2px solid rgba(255,80,80,0.6);pointer-events:none;';
+        const boardWrap = document.querySelector('.gv-board-wrap');
+        if (boardWrap) {
+            boardWrap.style.position = 'relative';
+            boardWrap.prepend(banner);
+        } else {
+            document.body.prepend(banner);
+        }
+    }
+    const isYou = checkColor === playerColor;
+    banner.textContent = isYou ? 'You are in check!' : 'Check!';
+    banner.style.display = 'block';
+}
+
 /* ── Material / Captured Pieces Display ── */
 
 const CAP_CHARS = {
@@ -293,11 +322,15 @@ function pseudoLegalSquares(sq, board, customRule) {
             }
         }
     } else if (piece === 'n') {
-        const offsets = (customRule && customRule.includes('Extended Knight'))
-            ? EXTENDED_KNIGHT : STANDARD_KNIGHT;
-        for (const [df, dr] of offsets) {
-            if (inBounds(f+df, r+dr) && canLand(f+df, r+dr))
-                targets.push(sqName(f+df, r+dr));
+        if (customRule && customRule.includes('Lame Knees')) {
+            // Knights are frozen — no moves at all
+        } else {
+            const offsets = (customRule && customRule.includes('Extended Knight'))
+                ? EXTENDED_KNIGHT : STANDARD_KNIGHT;
+            for (const [df, dr] of offsets) {
+                if (inBounds(f+df, r+dr) && canLand(f+df, r+dr))
+                    targets.push(sqName(f+df, r+dr));
+            }
         }
     } else if (piece === 'b') {
         for (const [df, dr] of [[1,1],[1,-1],[-1,1],[-1,-1]]) addSlide(df, dr);
@@ -391,6 +424,7 @@ class ChessBoard {
         this.hasCommended = config.hasCommended || false;
         this.isPractice = config.isPractice || false;
         this.customRuleName = config.customRuleName || '';
+        this.inCheck = config.inCheck || false;
         this.pollInterval = null;
 
         const orientation = this.playerColor === 'black' ? 'black' : 'white';
@@ -405,6 +439,7 @@ class ChessBoard {
             orientation,
             turnColor: this.isPlayerTurn ? this.playerColor : this.otherColor(),
             lastMove: shouldAnimateLastMove ? undefined : uciToLastMove(this.lastMoveUci),
+            check: shouldAnimateLastMove ? false : this.inCheck,
             coordinates: true,
             viewOnly: this.gameOver || !this.isParticipant,
             animation: { enabled: true, duration: shouldAnimateLastMove ? 400 : 200 },
@@ -421,11 +456,14 @@ class ChessBoard {
             premovable: { enabled: false },
         });
 
+        showCheckBanner(this.inCheck, this.playerColor);
+
         if (shouldAnimateLastMove) {
             setTimeout(() => {
                 this.ground.set({
                     fen: this.fen,
                     lastMove: uciToLastMove(this.lastMoveUci),
+                    check: this.inCheck,
                     animation: { enabled: true, duration: 400 },
                     movable: {
                         color: movableColor,
@@ -433,6 +471,7 @@ class ChessBoard {
                         showDests: true,
                     },
                 });
+                showCheckBanner(this.inCheck, this.playerColor);
                 if (this.lastMoveUci) {
                     const moves = document.querySelectorAll('.gv-ms, .gv-ms-b');
                     const lastMoveEl = moves.length ? moves[moves.length - 1] : null;
@@ -617,12 +656,14 @@ class ChessBoard {
                         this.legalMoves = legalData.legal_moves || [];
                         this.ground.set({
                             turnColor: this.playerColor,
+                            check: legalData.check || false,
                             movable: {
                                 color: this.playerColor,
                                 dests: buildDests(this.legalMoves),
                             },
                             viewOnly: false,
                         });
+                        showCheckBanner(legalData.check, this.playerColor);
                         updateTurn(true);
                     }
                 } else if (data.is_practice && !data.enoch_move) {
@@ -645,9 +686,11 @@ class ChessBoard {
                         fen: data.fen,
                         lastMove: uciToLastMove(uci),
                         turnColor: this.otherColor(),
+                        check: data.check || false,
                         movable: { color: undefined, dests: new Map() },
                         viewOnly: false,
                     });
+                    showCheckBanner(false, this.playerColor);
 
                     appendMove(data.move_number, data.san, this.playerColor);
                     if (!soundPlayed) playMoveSound(data.san, data.game_over);
@@ -715,6 +758,7 @@ class ChessBoard {
                     fen: data.fen,
                     lastMove: data.last_move ? [data.last_move.uci.substring(0, 2), data.last_move.uci.substring(2, 4)] : undefined,
                     turnColor: data.turn,
+                    check: data.check || false,
                 });
 
                 if (data.last_move) {
@@ -724,11 +768,13 @@ class ChessBoard {
                 if (data.captures) updateCaptures(data.captures);
                 if (data.enoch) updateEnoch(data.enoch);
                 if (data.sequence) updateSequence(data.sequence);
+                showCheckBanner(data.check, this.playerColor);
 
                 if (data.status === 'completed' || data.status === 'forfeited') {
                     this.gameOver = true;
                     this.stopPolling();
                     this.ground.set({ viewOnly: true });
+                    showCheckBanner(false, this.playerColor);
                     runEndSequence(data, this.gameId, this.hasCommended);
                     return;
                 }

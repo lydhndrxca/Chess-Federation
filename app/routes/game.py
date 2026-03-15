@@ -92,6 +92,15 @@ def _use_custom_rules(game):
             and getattr(game, 'game_type', 'weekly') != 'casual')
 
 
+def _check_color(fen):
+    """Return the color in check ('white'/'black') or False."""
+    import chess
+    board = chess.Board(fen)
+    if board.is_check():
+        return 'white' if board.turn == chess.WHITE else 'black'
+    return False
+
+
 def _player_color(game):
     if current_user.id == game.white_id:
         return 'white'
@@ -264,6 +273,7 @@ def view_game(game_id):
         captures=_get_captures(game.fen_current),
         weekly_rule=weekly_rule,
         prev_fen=prev_fen,
+        in_check=_check_color(game.fen_current),
     )
 
 
@@ -394,6 +404,7 @@ def make_move(game_id):
         'result_type': result_type,
         'move_number': result['move_number'],
         'captures': _get_captures(result['fen']),
+        'check': _check_color(result['fen']),
     }
     if enoch_line:
         resp['enoch'] = enoch_line
@@ -496,6 +507,7 @@ def game_state(game_id):
         'result_type': game.result_type,
         'move_count': game.move_count,
         'captures': _get_captures(game.fen_current),
+        'check': _check_color(game.fen_current),
         'last_move': {
             'san': last_move.move_san,
             'uci': last_move.move_uci,

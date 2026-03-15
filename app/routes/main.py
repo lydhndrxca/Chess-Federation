@@ -675,6 +675,7 @@ def api_ticker():
         all_items.extend(geology)
         all_items.extend(maple)
         all_items.extend(history)
+        all_items.append({'text': 'NEW — Complaints & Suggestions box now available in the menu. Enoch reads every one. Probably.', 'source': 'Federation'})
         random.shuffle(all_items)
         _news_cache['items'] = all_items
         _news_cache['ts'] = now

@@ -398,7 +398,7 @@ def _migrate_db(app):
 
     cur.execute(
         "UPDATE game SET custom_rule_name = 'Lame Knees' "
-        "WHERE custom_rule_name = 'Extended Knight' "
+        "WHERE custom_rule_name IN ('Extended Knight', 'The Extended Knight') "
         "AND status NOT IN ('completed', 'forfeited')"
     )
 

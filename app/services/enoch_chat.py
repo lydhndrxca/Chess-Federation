@@ -401,11 +401,16 @@ def ensure_weekly_summary():
         else:
             lines.append("  No completed matches last week.")
 
-        top_earners = sorted(users.values(), key=lambda u: u.roman_gold, reverse=True)[:3]
+        try:
+            from app.routes.main import compute_total_wealth
+            wealth = compute_total_wealth(list(users.values()))
+        except Exception:
+            wealth = {u.id: u.roman_gold for u in users.values()}
+        top_earners = sorted(users.values(), key=lambda u: wealth.get(u.id, 0), reverse=True)[:3]
         if top_earners:
-            lines.append("\nRichest players:")
+            lines.append("\nRichest players (cash + portfolio):")
             for u in top_earners:
-                lines.append(f"  {u.username}: ${u.roman_gold:,}")
+                lines.append(f"  {u.username}: ${wealth.get(u.id, u.roman_gold):,.0f}")
 
         lines.append("\nThe new decree is in effect. Play accordingly.")
         lines.append("\n— Enoch")
@@ -435,14 +440,22 @@ def maybe_cash_update():
 
     try:
         from app.models import User
-        users = User.query.filter_by(is_bot=False).order_by(User.roman_gold.desc()).all()
+        users = User.query.filter_by(is_bot=False).all()
         if not users:
             return None
 
+        try:
+            from app.routes.main import compute_total_wealth
+            wealth = compute_total_wealth(users)
+        except Exception:
+            wealth = {u.id: u.roman_gold for u in users}
+
+        ranked = sorted(users, key=lambda u: wealth.get(u.id, 0), reverse=True)
         lines = ["TREASURY UPDATE —\n"]
-        for u in users:
-            lines.append(f"  {u.username}: ${u.roman_gold:,}")
-        lines.append("\nThe ledger does not lie. — Enoch")
+        for u in ranked:
+            total = wealth.get(u.id, u.roman_gold)
+            lines.append(f"  {u.username}: ${total:,.0f}")
+        lines.append("\nCash + portfolio. The ledger does not lie. — Enoch")
 
         return _post_bot('\n'.join(lines))
     except Exception:

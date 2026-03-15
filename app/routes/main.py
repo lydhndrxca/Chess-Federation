@@ -144,6 +144,8 @@ def standings():
         is_active_player=True
     ).order_by(User.rating.desc()).all()
 
+    player_wealth = compute_total_wealth(standings_list)
+
     schedule = WeeklySchedule.query.filter_by(
         week_number=week, season=season_key
     ).first()
@@ -248,6 +250,7 @@ def standings():
         active_reckoning=active_reckoning,
         recent_chat=recent_chat,
         recent_chat_json=recent_chat_json,
+        player_wealth=player_wealth,
     )
 
 
@@ -548,14 +551,41 @@ def _fetch_crypto_headlines():
     return items
 
 
+def compute_total_wealth(users=None):
+    """Return {user_id: total_usd} = cash on hand + current crypto portfolio value."""
+    if users is None:
+        users = User.query.filter_by(is_bot=False).all()
+    wealth = {u.id: u.roman_gold for u in users}
+    try:
+        holdings_by_user = {}
+        for h in MarketHolding.query.all():
+            holdings_by_user.setdefault(h.user_id, []).append(h)
+        if holdings_by_user:
+            from app.routes.market import _price_map
+            all_coin_ids = set()
+            for hs in holdings_by_user.values():
+                for h in hs:
+                    all_coin_ids.add(h.coin_id)
+            prices = _price_map(all_coin_ids) if all_coin_ids else {}
+            for uid, hs in holdings_by_user.items():
+                portfolio_val = sum(h.amount * prices.get(h.coin_id, 0) for h in hs)
+                wealth[uid] = wealth.get(uid, 0) + portfolio_val
+    except Exception:
+        pass
+    return wealth
+
+
 def _build_federation_items():
     """Build ticker items from player data and recent federation events."""
     items = []
     try:
         users = User.query.filter_by(is_bot=False).order_by(User.rating.desc()).all()
+        wealth = compute_total_wealth(users)
+
         for u in users:
+            total = wealth.get(u.id, u.roman_gold)
             items.append({
-                'text': f'{u.username}: Rating {u.rating} | ${u.roman_gold:,} | {u.wins}W-{u.losses}L-{u.draws}D',
+                'text': f'{u.username}: Rating {u.rating} | ${total:,.0f} total | {u.wins}W-{u.losses}L-{u.draws}D',
                 'source': 'Federation',
             })
 

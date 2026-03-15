@@ -337,7 +337,7 @@
                     <span class="sp-rank-title">{{ player.tier.name }}</span>
                 </div>
                 <div class="sp-rank-right">
-                    <span class="sp-rank-cash">${{ '{:,.0f}'.format(player.roman_gold) }}</span>
+                    <span class="sp-rank-cash">${{ '{:,.0f}'.format(player_wealth.get(player.id, player.roman_gold)) }}</span>
                     <span class="sp-rank-rating">{{ player.rating }}</span>
                     <span class="sp-rank-record">{{ player.wins }}W {{ player.losses }}L {{ player.draws }}D</span>
                 </div>
@@ -1136,7 +1136,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     track.innerHTML = buildTickerHTML(items);
                     var totalWidth = track.scrollWidth / 2;
-                    track.style.animationDuration = Math.max(items.length * 4, 60) + 's';
+                    track.style.animationDuration = Math.max(items.length * 2, 30) + 's';
                 })
                 .catch(function() {
                     track.innerHTML = '<span class="sp-news-ticker-item">Headlines unavailable.</span>';

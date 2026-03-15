@@ -1125,7 +1125,27 @@ document.addEventListener('DOMContentLoaded', function() {
             return html + html;
         }
 
-        var SCROLL_PX_PER_SEC = 1000;
+        var SCROLL_PX_PER_SEC = 350;
+        var scrollPos = 0;
+        var halfWidth = 0;
+        var rafId = null;
+        var lastTs = null;
+        var paused = false;
+
+        function tickScroll(ts) {
+            if (!lastTs) lastTs = ts;
+            if (!paused && halfWidth > 0) {
+                var dt = (ts - lastTs) / 1000;
+                scrollPos -= SCROLL_PX_PER_SEC * dt;
+                if (scrollPos <= -halfWidth) scrollPos += halfWidth;
+                track.style.transform = 'translateX(' + scrollPos + 'px)';
+            }
+            lastTs = ts;
+            rafId = requestAnimationFrame(tickScroll);
+        }
+
+        track.addEventListener('mouseenter', function() { paused = true; });
+        track.addEventListener('mouseleave', function() { paused = false; lastTs = null; });
 
         function loadTicker() {
             fetch('/api/ticker')
@@ -1137,9 +1157,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         return;
                     }
                     track.innerHTML = buildTickerHTML(items);
-                    var halfWidth = track.scrollWidth / 2;
-                    var duration = Math.max(halfWidth / SCROLL_PX_PER_SEC, 10);
-                    track.style.animationDuration = duration + 's';
+                    track.style.animation = 'none';
+                    requestAnimationFrame(function() {
+                        halfWidth = track.scrollWidth / 2;
+                        if (!rafId) rafId = requestAnimationFrame(tickScroll);
+                    });
                 })
                 .catch(function() {
                     track.innerHTML = '<span class="sp-news-ticker-item">Headlines unavailable.</span>';

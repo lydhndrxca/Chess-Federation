@@ -645,8 +645,8 @@ def _build_federation_items():
 
 
 def _build_enoch_quips():
-    """Pick a few random Enoch personality quips for the ticker."""
-    picks = random.sample(ENOCH_TICKER_QUIPS, min(5, len(ENOCH_TICKER_QUIPS)))
+    """Pick random Enoch personality quips for the ticker."""
+    picks = random.sample(ENOCH_TICKER_QUIPS, min(10, len(ENOCH_TICKER_QUIPS)))
     return [{'text': q, 'source': 'Enoch'} for q in picks]
 
 
@@ -663,13 +663,13 @@ def api_ticker():
         crypto = _fetch_crypto_headlines()
         federation = _build_federation_items()
         quips = _build_enoch_quips()
-        geology = get_geology_facts(3)
-        maple = get_maple_syrup_tips(2)
+        geology = get_geology_facts(10)
+        maple = get_maple_syrup_tips(8)
         history = get_on_this_day(2)
 
         all_items = []
-        all_items.extend(news[:8])
-        all_items.extend(crypto[:8])
+        all_items.extend(news[:10])
+        all_items.extend(crypto[:10])
         all_items.extend(federation)
         all_items.extend(quips)
         all_items.extend(geology)

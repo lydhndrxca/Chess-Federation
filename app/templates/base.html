@@ -13,6 +13,7 @@
         <div class="nav-inner">
             <a href="{{ url_for('main.index') }}" class="nav-brand">Chess Federation</a>
             {% if current_user.is_authenticated %}
+            <span class="nav-3x-badge">3x EXTREME</span>
             <a href="{{ url_for('market.market_page') }}" class="nav-market-btn">Enoch Market</a>
             <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
                 <span></span><span></span><span></span>

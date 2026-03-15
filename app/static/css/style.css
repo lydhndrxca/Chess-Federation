@@ -64,6 +64,24 @@ a:hover { text-decoration: underline; }
     letter-spacing: 0.5px;
 }
 .nav-brand:hover { text-decoration: none; color: var(--accent); }
+.nav-3x-badge {
+    padding: 0.15rem 0.45rem;
+    background: #e74c3c;
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-radius: var(--radius);
+    white-space: nowrap;
+    margin-left: auto;
+    margin-right: 0.3rem;
+    animation: pulse3x 1.5s ease-in-out infinite;
+}
+@keyframes pulse3x {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.75; transform: scale(1.08); }
+}
 .nav-market-btn {
     padding: 0.25rem 0.7rem;
     background: linear-gradient(135deg, #c2a633, #d4b84a);
@@ -75,7 +93,6 @@ a:hover { text-decoration: underline; }
     border-radius: var(--radius);
     text-decoration: none;
     white-space: nowrap;
-    margin-left: auto;
     margin-right: 0.5rem;
 }
 .nav-market-btn:hover { filter: brightness(1.15); text-decoration: none; }

@@ -515,7 +515,7 @@ a:hover { text-decoration: underline; }
     align-items: center;
     height: 100%;
     white-space: nowrap;
-    animation: tickerScroll 30s linear infinite;
+    animation: tickerScroll 15s linear infinite;
     will-change: transform;
 }
 .sp-news-ticker-track:hover { animation-play-state: paused; }

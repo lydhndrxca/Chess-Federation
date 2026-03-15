@@ -1125,6 +1125,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return html + html;
         }
 
+        var SCROLL_PX_PER_SEC = 55;
+
         function loadTicker() {
             fetch('/api/ticker')
                 .then(function(r) { return r.json(); })
@@ -1135,8 +1137,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         return;
                     }
                     track.innerHTML = buildTickerHTML(items);
-                    var totalWidth = track.scrollWidth / 2;
-                    track.style.animationDuration = Math.max(items.length * 0.5, 8) + 's';
+                    var halfWidth = track.scrollWidth / 2;
+                    var duration = Math.max(halfWidth / SCROLL_PX_PER_SEC, 10);
+                    track.style.animationDuration = duration + 's';
                 })
                 .catch(function() {
                     track.innerHTML = '<span class="sp-news-ticker-item">Headlines unavailable.</span>';

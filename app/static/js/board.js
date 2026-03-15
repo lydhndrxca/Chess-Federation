@@ -1321,7 +1321,7 @@ function showNextGameBanner(nextGame) {
     const toolbar = container && container.querySelector('.gv-toolbar');
     if (toolbar) toolbar.parentNode.insertBefore(banner, toolbar);
     else if (container) container.appendChild(banner);
-    let countdown = 8;
+    let countdown = 1;
     const timer = setInterval(() => {
         countdown--;
         if (countdown <= 0) {

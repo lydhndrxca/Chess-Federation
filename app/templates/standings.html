@@ -1136,7 +1136,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     track.innerHTML = buildTickerHTML(items);
                     var totalWidth = track.scrollWidth / 2;
-                    track.style.animationDuration = Math.max(items.length * 2, 30) + 's';
+                    track.style.animationDuration = Math.max(items.length * 1, 15) + 's';
                 })
                 .catch(function() {
                     track.innerHTML = '<span class="sp-news-ticker-item">Headlines unavailable.</span>';

@@ -412,9 +412,87 @@ class CourierNet(nn.Module):
         return v
 
 
-def load_all_data():
-    """Load all game and evaluation data."""
-    all_data = []
+_PIECE_VAL = {chess.PAWN: 100, chess.KNIGHT: 320, chess.BISHOP: 330,
+              chess.ROOK: 500, chess.QUEEN: 900, chess.KING: 0}
+
+
+def _fast_eval(board, cw_sq, cb_sq, for_color):
+    """Lightweight evaluation: courier distance + material + safety.
+    Much faster than the full evaluate() — no legal move generation needed.
+    """
+    score = 0.0
+
+    # Courier distance to goal (most important feature)
+    if for_color == chess.WHITE:
+        my_c, enemy_c = cw_sq, cb_sq
+        my_goal_rank, enemy_goal_rank = 7, 0
+    else:
+        my_c, enemy_c = cb_sq, cw_sq
+        my_goal_rank, enemy_goal_rank = 0, 7
+
+    if my_c is not None:
+        my_dist = abs(my_goal_rank - chess.square_rank(my_c))
+        score += (7 - my_dist) * 50  # closer = better
+        if my_dist == 0:
+            score += 500  # about to win
+    else:
+        score -= 500  # courier captured = losing
+
+    if enemy_c is not None:
+        enemy_dist = abs(enemy_goal_rank - chess.square_rank(enemy_c))
+        score -= (7 - enemy_dist) * 50
+        if enemy_dist == 0:
+            score -= 500
+    else:
+        score += 500
+
+    # Material
+    for sq in chess.SQUARES:
+        p = board.piece_at(sq)
+        if p:
+            val = _PIECE_VAL.get(p.piece_type, 0)
+            if p.color == for_color:
+                score += val * 0.3
+            else:
+                score -= val * 0.3
+
+    # Pieces near own courier (protection)
+    if my_c is not None:
+        cf, cr = chess.square_file(my_c), chess.square_rank(my_c)
+        for df in range(-1, 2):
+            for dr in range(-1, 2):
+                if df == 0 and dr == 0:
+                    continue
+                f2, r2 = cf + df, cr + dr
+                if 0 <= f2 < 8 and 0 <= r2 < 8:
+                    p = board.piece_at(chess.square(f2, r2))
+                    if p and p.color == for_color:
+                        score += 15
+
+    # Pieces near enemy courier (attacking)
+    if enemy_c is not None:
+        cf, cr = chess.square_file(enemy_c), chess.square_rank(enemy_c)
+        for df in range(-1, 2):
+            for dr in range(-1, 2):
+                if df == 0 and dr == 0:
+                    continue
+                f2, r2 = cf + df, cr + dr
+                if 0 <= f2 < 8 and 0 <= r2 < 8:
+                    p = board.piece_at(chess.square(f2, r2))
+                    if p and p.color == for_color:
+                        score += 20
+
+    return score
+
+
+def load_all_data(use_heuristic_labels=True):
+    """Load all game and evaluation data.
+
+    If use_heuristic_labels is True, compute the heuristic evaluation for
+    each position to get continuous targets [-1, 1] instead of binary outcomes.
+    This dramatically improves NN training quality.
+    """
+    all_positions = []
 
     for d in (GAMES_DIR,):
         if not os.path.exists(d):
@@ -422,15 +500,45 @@ def load_all_data():
         for f in os.listdir(d):
             if f.endswith('.json'):
                 with open(os.path.join(d, f)) as fh:
-                    for pos in json.load(fh):
-                        all_data.append({
-                            'fen': pos['fen'],
-                            'cw': pos.get('cw'),
-                            'cb': pos.get('cb'),
-                            'target': pos['result'],
-                            'weight': 1.0,
-                        })
+                    all_positions.extend(json.load(fh))
 
+    all_data = []
+
+    if use_heuristic_labels and all_positions:
+        print(f"  Computing fast heuristic labels for {len(all_positions)} positions...")
+        t0 = time.time()
+        for i, pos in enumerate(all_positions):
+            cw = parse_square(pos['cw']) if pos['cw'] else None
+            cb = parse_square(pos['cb']) if pos['cb'] else None
+            board = chess.Board(pos['fen'])
+            for_color = board.turn
+            score = _fast_eval(board, cw, cb, for_color)
+            normalized = max(-1.0, min(1.0, score / 300.0))
+
+            game_result = pos.get('result', 0.0)
+            target = 0.6 * normalized + 0.4 * game_result
+
+            all_data.append({
+                'fen': pos['fen'],
+                'cw': pos.get('cw'),
+                'cb': pos.get('cb'),
+                'target': target,
+                'weight': 1.0,
+            })
+
+        elapsed = time.time() - t0
+        print(f"  Heuristic labels computed in {elapsed:.1f}s")
+    else:
+        for pos in all_positions:
+            all_data.append({
+                'fen': pos['fen'],
+                'cw': pos.get('cw'),
+                'cb': pos.get('cb'),
+                'target': pos.get('result', 0.0),
+                'weight': 1.0,
+            })
+
+    # LLM evaluations (high quality, weighted higher)
     if os.path.exists(EVALS_DIR):
         for f in os.listdir(EVALS_DIR):
             if f.endswith('.json'):
@@ -503,6 +611,8 @@ def train_network(epochs=40, batch_size=256, lr=0.001):
         train_ds, batch_size=batch_size, shuffle=True, pin_memory=False)
 
     best_val = float('inf')
+    patience = 15
+    no_improve = 0
     t0 = time.time()
 
     for epoch in range(epochs):
@@ -526,21 +636,31 @@ def train_network(epochs=40, batch_size=256, lr=0.001):
         avg_train = total_loss / max(batches, 1)
         lr_now = scheduler.get_last_lr()[0]
 
-        marker = " *" if val_loss < best_val else ""
+        marker = ""
+        if val_loss < best_val:
+            best_val = val_loss
+            torch.save(model.state_dict(), checkpoint_path)
+            no_improve = 0
+            marker = " *"
+        else:
+            no_improve += 1
+
         print(f"  Epoch {epoch+1:3d}/{epochs}  "
               f"Train: {avg_train:.6f}  Val: {val_loss:.6f}  "
               f"LR: {lr_now:.6f}{marker}")
 
-        if val_loss < best_val:
-            best_val = val_loss
-            torch.save(model.state_dict(), checkpoint_path)
+        if no_improve >= patience:
+            print(f"\n  Early stopping at epoch {epoch+1} (no improvement for {patience} epochs)")
+            break
 
         scheduler.step()
+
+    # Reload best checkpoint
+    model.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=True))
 
     elapsed = time.time() - t0
     ts = datetime.now().strftime('%Y%m%d_%H%M%S')
     torch.save(model.state_dict(), os.path.join(DATA_DIR, f"courier_net_{ts}.pt"))
-    torch.save(model.state_dict(), checkpoint_path)
     print(f"\n  Training done in {elapsed:.0f}s. Best val loss: {best_val:.6f}")
     return model
 

@@ -304,6 +304,27 @@ def ensure_courier_announcement():
     return msg
 
 
+_courier_brain_announced = False
+
+def ensure_courier_brain_announcement():
+    """Post a one-time Enoch announcement about his trained neural network."""
+    global _courier_brain_announced
+    if _courier_brain_announced:
+        return
+    existing = ChatMessage.query.filter(
+        ChatMessage.is_bot == True,
+        ChatMessage.content.contains("running a test. On myself"),
+    ).first()
+    if existing:
+        _courier_brain_announced = True
+        return
+    _courier_brain_announced = True
+    from app.services.courier_dialogue import COURIER_BRAIN_ANNOUNCE
+    msg = _post_bot(COURIER_BRAIN_ANNOUNCE)
+    db.session.commit()
+    return msg
+
+
 def maybe_quirk_interjection():
     """Occasional creepy Enoch quirks — late-night murmurings and accidental DMs.
 

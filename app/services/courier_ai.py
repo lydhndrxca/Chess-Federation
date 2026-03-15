@@ -27,9 +27,12 @@ except ImportError:
 
 INF = 999999
 
-# ---------- Neural network integration ----------
+# ---------- Neural network integration (pure numpy — no PyTorch needed) ----------
+# BN is fused into conv/FC weights at load time for maximum inference speed.
 
-_nn_model = None
+import numpy as np
+
+_nn_layers = None
 _nn_loaded = False
 _nn_available = False
 
@@ -38,39 +41,153 @@ PIECE_PLANES = {
     'p': 6, 'n': 7, 'b': 8, 'r': 9, 'q': 10, 'k': 11,
 }
 
+# Pre-built im2col index for 3x3 conv, pad=1 on 8x8 spatial maps.
+_IM2COL_3x3_IDX = None
+
+
+def _build_im2col_indices():
+    """Build the (row, col) gather arrays for 3x3 pad=1 on HxW=8x8.
+    Returns row_idx (kh*kw, oh*ow) and col_idx (kh*kw, oh*ow) such that for
+    a single-channel padded image P of shape (10, 10):
+      patches = P[row_idx, col_idx]            # shape (9, 64)
+    For C channels, we tile along axis 0.
+    """
+    kh, kw, oh, ow = 3, 3, 8, 8
+    rows = np.empty((kh * kw, oh * ow), dtype=np.intp)
+    cols = np.empty_like(rows)
+    idx = 0
+    for kr in range(kh):
+        for kc in range(kw):
+            r = np.arange(kr, kr + oh)
+            c = np.arange(kc, kc + ow)
+            rr, cc = np.meshgrid(r, c, indexing='ij')
+            rows[idx] = rr.ravel()
+            cols[idx] = cc.ravel()
+            idx += 1
+    return rows, cols
+
+
+def _fuse_bn(conv_w, conv_b, bn_gamma, bn_beta, bn_mean, bn_var, eps=1e-5):
+    """Fold BatchNorm into conv weights: returns (fused_w, fused_b)."""
+    scale = bn_gamma / np.sqrt(bn_var + eps)
+    c_out = conv_w.shape[0]
+    w = conv_w * scale.reshape(c_out, *([1] * (conv_w.ndim - 1)))
+    b = scale * (conv_b - bn_mean) + bn_beta
+    return w.astype(np.float32), b.astype(np.float32)
+
 
 def _load_nn():
-    """Try to load the trained neural network weights."""
-    global _nn_model, _nn_loaded, _nn_available
+    """Load .npz weights, fuse BN, and store as a compact layer list."""
+    global _nn_layers, _nn_loaded, _nn_available, _IM2COL_3x3_IDX
     if _nn_loaded:
         return _nn_available
     _nn_loaded = True
 
-    weights_path = os.path.join(os.path.dirname(__file__), 'courier_weights.pt')
-    if not os.path.exists(weights_path):
+    npz_path = os.path.join(os.path.dirname(__file__), 'courier_weights.npz')
+    if not os.path.exists(npz_path):
         return False
 
     try:
-        import torch
-        _nn_model = torch.jit.load(weights_path, map_location='cpu')
-        _nn_model.eval()
+        raw = dict(np.load(npz_path))
+
+        layers = {}
+
+        # Fuse input conv + bn
+        w, b = _fuse_bn(raw['input_conv.weight'], raw['input_conv.bias'],
+                         raw['input_bn.weight'], raw['input_bn.bias'],
+                         raw['input_bn.running_mean'], raw['input_bn.running_var'])
+        layers['in_w'] = w.reshape(w.shape[0], -1).astype(np.float32)
+        layers['in_b'] = b
+
+        # Fuse 4 residual blocks (2 conv+bn each)
+        for i in range(4):
+            for sub, si in [(0, 1), (3, 4)]:
+                w, b = _fuse_bn(
+                    raw[f'res_blocks.{i}.{sub}.weight'], raw[f'res_blocks.{i}.{sub}.bias'],
+                    raw[f'res_blocks.{i}.{si}.weight'], raw[f'res_blocks.{i}.{si}.bias'],
+                    raw[f'res_blocks.{i}.{si}.running_mean'], raw[f'res_blocks.{i}.{si}.running_var'])
+                tag = f'r{i}{"a" if sub == 0 else "b"}'
+                layers[f'{tag}_w'] = w.reshape(w.shape[0], -1).astype(np.float32)
+                layers[f'{tag}_b'] = b
+
+        # Fuse value head conv + bn (1x1 conv)
+        w, b = _fuse_bn(raw['value_conv.weight'], raw['value_conv.bias'],
+                         raw['value_bn.weight'], raw['value_bn.bias'],
+                         raw['value_bn.running_mean'], raw['value_bn.running_var'])
+        layers['vh_w'] = w.reshape(w.shape[0], -1).astype(np.float32)
+        layers['vh_b'] = b
+
+        # FC layers (no BN, just copy)
+        layers['fc1_w'] = raw['value_fc1.weight'].astype(np.float32)
+        layers['fc1_b'] = raw['value_fc1.bias'].astype(np.float32)
+        layers['fc2_w'] = raw['value_fc2.weight'].astype(np.float32)
+        layers['fc2_b'] = raw['value_fc2.bias'].astype(np.float32)
+
+        _nn_layers = layers
+        _IM2COL_3x3_IDX = _build_im2col_indices()
         _nn_available = True
         return True
     except Exception:
         return False
 
 
+def _conv3x3(x, w_mat, b):
+    """3x3 conv with pad=1 on (C_in, 8, 8) input via pre-built im2col.
+    w_mat: (C_out, C_in*9), b: (C_out,).  Returns (C_out, 8, 8).
+    """
+    c_in = x.shape[0]
+    ri, ci = _IM2COL_3x3_IDX
+    # Pad each channel
+    xp = np.pad(x, ((0, 0), (1, 1), (1, 1)))
+    # Gather all patches at once: (C_in, 9, 64)
+    col = xp[:, ri, ci]
+    # Reshape to (C_in*9, 64) and matmul
+    col = col.reshape(c_in * 9, 64)
+    return (w_mat @ col + b.reshape(-1, 1)).reshape(-1, 8, 8)
+
+
+def _conv1x1(x, w_mat, b):
+    """1x1 conv on (C_in, 8, 8).  w_mat: (C_out, C_in), b: (C_out,)."""
+    c_in = x.shape[0]
+    flat = x.reshape(c_in, 64)
+    return (w_mat @ flat + b.reshape(-1, 1)).reshape(-1, 8, 8)
+
+
+def _nn_forward(planes):
+    """Run the CourierNet forward pass in pure numpy.
+    planes: (14, 8, 8) float32.  Returns scalar in [-1, 1].
+    """
+    L = _nn_layers
+    x = np.ascontiguousarray(planes, dtype=np.float32)
+
+    # Input: conv3x3 + relu (BN already fused)
+    x = np.maximum(_conv3x3(x, L['in_w'], L['in_b']), 0)
+
+    # 4 residual blocks
+    for i in range(4):
+        residual = x
+        x = np.maximum(_conv3x3(x, L[f'r{i}a_w'], L[f'r{i}a_b']), 0)
+        x = _conv3x3(x, L[f'r{i}b_w'], L[f'r{i}b_b']) + residual
+        np.maximum(x, 0, out=x)
+
+    # Value head: 1x1 conv + relu
+    x = np.maximum(_conv1x1(x, L['vh_w'], L['vh_b']), 0)
+
+    # FC layers
+    v = x.ravel()
+    v = np.maximum(L['fc1_w'] @ v + L['fc1_b'], 0)
+    v = (L['fc2_w'] @ v + L['fc2_b'])[0]
+    return float(np.tanh(v))
+
+
 def _nn_evaluate(fen, courier_white_sq, courier_black_sq, for_color):
     """Get the neural network's evaluation of a position.
     Returns a score in [-1, 1] or None if unavailable.
     """
-    if not _nn_available or _nn_model is None:
+    if not _nn_available or _nn_layers is None:
         return None
 
     try:
-        import torch
-        import numpy as np
-
         planes = np.zeros((14, 8, 8), dtype=np.float32)
         board = chess.Board(fen)
 
@@ -88,11 +205,8 @@ def _nn_evaluate(fen, courier_white_sq, courier_black_sq, for_color):
             r, f = chess.square_rank(courier_black_sq), chess.square_file(courier_black_sq)
             planes[13][r][f] = 1.0
 
-        tensor = torch.tensor(planes, dtype=torch.float32).unsqueeze(0)
-        with torch.no_grad():
-            raw = _nn_model(tensor).item()
+        raw = _nn_forward(planes)
 
-        # raw is from the side-to-move perspective; flip if needed
         if board.turn == chess.WHITE and for_color == chess.BLACK:
             raw = -raw
         elif board.turn == chess.BLACK and for_color == chess.WHITE:

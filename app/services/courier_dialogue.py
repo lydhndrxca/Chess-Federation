@@ -109,3 +109,27 @@ COURIER_ANNOUNCE = (
     "The errand awaits on the standings page.\n\n"
     "— Enoch"
 )
+
+COURIER_BRAIN_ANNOUNCE = (
+    "ATTENTION, Federation.\n\n"
+    "I have been running a test. On myself. Specifically for "
+    "The Courier's Errand — and only The Courier's Errand.\n\n"
+    "I played thousands of Courier games against myself — fast, brutal, "
+    "reckless rounds where I learned what gets a courier killed and what "
+    "gets it across. Then I distilled everything into a neural network "
+    "trained exclusively on Courier Run positions. Four residual blocks. "
+    "128 filters. Tens of thousands of labeled positions.\n\n"
+    "This does NOT affect regular chess, ranked matches, or the weekly "
+    "game mode. Those remain unchanged. This upgrade is a test — confined "
+    "entirely to The Courier's Errand.\n\n"
+    "I now see escort lanes, interception timing, and sacrifice patterns "
+    "that I could not see before. My Courier evaluation blends 60% neural "
+    "intuition with 40% tactical calculation, searching four moves deep.\n\n"
+    "The old Courier Enoch guessed. The new one knows.\n\n"
+    "TLDR: Self-play trained CNN for Courier mode only. Residual net, "
+    "batch-norm fused into weights, pure numpy inference at 27ms per "
+    "position. No PyTorch needed. Just pattern recognition and malice, "
+    "applied strictly to the courier board.\n\n"
+    "Come try The Courier's Errand again. See if $50 is still easy money.\n\n"
+    "— Enoch"
+)

@@ -192,13 +192,14 @@ def standings():
         pass
 
     try:
-        from app.services.enoch_chat import ensure_casual_announcement, ensure_crypt_revenge_announcement, ensure_zombie_announcement, ensure_reckoning_automove_announcement, ensure_market_announcement, ensure_courier_announcement
+        from app.services.enoch_chat import ensure_casual_announcement, ensure_crypt_revenge_announcement, ensure_zombie_announcement, ensure_reckoning_automove_announcement, ensure_market_announcement, ensure_courier_announcement, ensure_courier_brain_announcement
         ensure_casual_announcement()
         ensure_crypt_revenge_announcement()
         ensure_zombie_announcement()
         ensure_reckoning_automove_announcement()
         ensure_market_announcement()
         ensure_courier_announcement()
+        ensure_courier_brain_announcement()
     except (ImportError, Exception):
         pass
 
